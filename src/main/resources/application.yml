@@ -1,0 +1,16 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /api
+
+hapi:
+  fhir:
+    url: ${HAPI_FHIR_URL:http://localhost:8080/fhir}
+
+springdoc:
+  swagger-ui:
+    path: /swagger
+
+logging:
+  level:
+    root: ${LOG_LEVEL:WARN}
