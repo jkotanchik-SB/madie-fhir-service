@@ -34,7 +34,7 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
     Bundle bundle = new Bundle();
 
     @BeforeEach
-    void buildBundle() {
+    void buildLibraryBundle() {
 
         String fhirHelpersCql = getStringFromTestResource("/includes/FHIRHelpers.cql");
         fhirHelpersLibrary = createLib(fhirHelpersCql);
@@ -50,6 +50,15 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
                 .thenReturn(Optional.of(fhirHelpersLibrary));
         String testCql = libraryService.getLibraryCql("FHIRHelpers", "4.0.001");
         assertTrue(testCql.contains("FHIRHelpers"));
+    }
+
+    @Test
+    void testLibraryBundleHasNoEntry() {
+        bundle.setEntry(null);
+        when(hapiFhirServer.fetchLibraryBundleByNameAndVersion(anyString(), anyString())).thenReturn(bundle);
+        Throwable exception = assertThrows(HapiLibraryNotFoundException.class, ()
+                -> libraryService.getLibraryCql("FHIRHelpers", "4.0.001"));
+        assertEquals("Cannot find a Hapi Fhir Library with name: FHIRHelpers, version: 4.0.001", exception.getMessage());
     }
 
     @Test

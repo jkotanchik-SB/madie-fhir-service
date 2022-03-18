@@ -9,7 +9,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
-@OpenAPIDefinition(info = @Info(title = "MADiE FHIR Services", description = "This is a SpringBoot 2.6.x restful service providing FHIR services to MADiE"))
+@OpenAPIDefinition(info = @Info(title = "MADiE FHIR Services",
+		description = "This is a SpringBoot 2.6.x restful service providing FHIR services to MADiE"))
 public class MadieFhirServiceApplication {
 
 	public static void main(String[] args) {
