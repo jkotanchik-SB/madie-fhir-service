@@ -9,7 +9,7 @@ hapi:
 
 springdoc:
   swagger-ui:
-    path: /swagger
+    path: ${SWAGGER_PATH:/swagger}
 
 logging:
   level:

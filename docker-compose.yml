@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  madie-fhir-service:
+    build:
+      context: .
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      HAPI_FHIR_URL: ${HAPI_FHIR_URL}
+      SWAGGER_PATH: ${SWAGGER_PATH}
+    volumes:
+      - ./:/app:cached
+      - ~/.m2:/root/.m2:consistent
+    ports:
+      - "8085:8085"
+
+
+ 
+
+
+ 
