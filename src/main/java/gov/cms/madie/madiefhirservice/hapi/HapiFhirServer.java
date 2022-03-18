@@ -68,7 +68,7 @@ public class HapiFhirServer {
     }
 
     public <T extends Resource> Optional<T> findLibraryResourceInBundle(Bundle bundle, Class<T> clazz) {
-        if (bundle.getTotal() > 1) {
+        if (bundle.getEntry().size() > 1) {
             log.error("Hapi-Fhir Resource for {} returned more than one resource count: {}",
                     clazz.getSimpleName(), bundle.getEntry().size());
             return Optional.empty();
