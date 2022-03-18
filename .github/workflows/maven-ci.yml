@@ -1,6 +1,12 @@
 name: Java CI
 
-on: [push]
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,5 +19,14 @@ jobs:
         with:
           java-version: '16'
           distribution: 'adopt'
+
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn clean install --file pom.xml
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
