@@ -13,4 +13,4 @@ springdoc:
 
 logging:
   level:
-    root: ${LOG_LEVEL:WARN}
+    root: ${LOG_LEVEL:INFO}
