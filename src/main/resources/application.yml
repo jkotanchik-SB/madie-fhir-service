@@ -7,9 +7,9 @@ hapi:
   fhir:
     url: ${HAPI_FHIR_URL:http://localhost:8080/fhir}
 
-springdoc:
-  swagger-ui:
-    path: ${SWAGGER_PATH:/swagger}
+#springdoc:
+#  swagger-ui:
+#    path: ${SWAGGER_PATH:/swagger}
 
 logging:
   level:

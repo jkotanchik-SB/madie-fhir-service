@@ -8,12 +8,20 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+  private static final String[] AUTH_WHITELIST = {
+          "/v3/api-docs/**",
+          "/swagger/**",
+          "/swagger-ui/**",
+          "/actuator/**"
+          // other public endpoints of your API may be appended to this array
+  };
+
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http.cors()
         .and()
         .authorizeRequests()
-        .antMatchers("/actuator/**")
+        .antMatchers(AUTH_WHITELIST)
         .permitAll()
         .and()
         .authorizeRequests()

@@ -8,6 +8,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL}
       HAPI_FHIR_URL: ${HAPI_FHIR_URL}
       SWAGGER_PATH: ${SWAGGER_PATH}
+      OKTA_ISSUER: ${OKTA_ISSUER}
+      OKTA_AUDIENCE: ${OKTA_AUDIENCE}
     volumes:
       - ./:/app:cached
       - ~/.m2:/root/.m2:consistent
