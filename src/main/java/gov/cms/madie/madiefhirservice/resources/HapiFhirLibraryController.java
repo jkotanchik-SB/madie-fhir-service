@@ -20,7 +20,8 @@ public class HapiFhirLibraryController {
   private final LibraryService libraryService;
 
   @Operation(summary = "Get Library's CQL from HAPI FHIR.",
-          description = "Fetches Library resource from HAPI FHIR and returns cql string, typically used by CQL-ELM Translator")
+          description = "Fetches Library resource from HAPI FHIR and returns cql string," +
+                  " typically used by CQL-ELM Translator")
   @GetMapping("/cql")
   public String getLibraryCql(@RequestParam String name, @RequestParam String version) {
     return libraryService.getLibraryCql(name, version);

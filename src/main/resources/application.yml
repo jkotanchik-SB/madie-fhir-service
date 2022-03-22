@@ -7,10 +7,15 @@ hapi:
   fhir:
     url: ${HAPI_FHIR_URL:http://localhost:8080/fhir}
 
-springdoc:
-  swagger-ui:
-    path: ${SWAGGER_PATH:/swagger}
+#springdoc:
+#  swagger-ui:
+#    path: ${SWAGGER_PATH:/swagger}
 
 logging:
   level:
-    root: ${LOG_LEVEL:WARN}
+    root: ${LOG_LEVEL:INFO}
+
+okta:
+  oauth2:
+    issuer: ${OKTA_ISSUER:https://dev-53861726.okta.com/oauth2/default}
+    audience: ${OKTA_AUDIENCE:api://default}
