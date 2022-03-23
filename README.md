@@ -2,11 +2,9 @@
 
 This is a SpringBoot micro-service which is responsible for operations associated with the FHIR Resources.
 
-
 MADiE FHIR Service uses madie-rest-commons as a dependencies, these artifacts are hosted on GitHub packages.
 
-
-GitHub requires authentication before downloading artifacts, So Add GitHub credentials ( recommended to use GitHub Access Token ).
+GitHub requires authentication before downloading dependency artifacts, So Add GitHub credentials ( recommended to use GitHub Access Token ).
 
 Add the following server in ./m2/settings.xml
 ```
