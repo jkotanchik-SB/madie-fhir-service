@@ -17,7 +17,7 @@ Add the following server in ./m2/settings.xml
   </servers>
 ```
 
-This project consumes resources from HAPI FHIR JPA Server. You can use the following documentation to get a local instance of HAPI FHIR. https://github.com/hapifhir/hapi-fhir-jpaserver-starter
+This project consumes resources from HAPI FHIR JPA Server. You can use the [HAPI FHIR documentation](https://github.com/hapifhir/hapi-fhir-jpaserver-starter) to get a local instance of HAPI FHIR.
 
 To build
 ```
