@@ -15,7 +15,6 @@ Add the following server in ./m2/settings.xml
       <password>Your Github Access Token</password>
     </server>
   </servers>
-</settings>
 ```
 
 This project consumes resources from HAPI FHIR JPA Server. You can use the following documentation to get a local instance of HAPI FHIR. https://github.com/hapifhir/hapi-fhir-jpaserver-starter
