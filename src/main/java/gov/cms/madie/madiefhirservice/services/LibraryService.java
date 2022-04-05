@@ -1,16 +1,21 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import gov.cms.madie.madiefhirservice.exceptions.DuplicateLibraryException;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.LibraryAttachmentNotFoundException;
+import gov.cms.madie.madiefhirservice.models.CqlLibrary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.Library;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +23,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class LibraryService {
-
+  private static final String LIBRARY_CANONICAL_BASE = "http://ecqi.healthit.gov/ecqms/Library/";
   private final HapiFhirServer hapiFhirServer;
 
   public String getLibraryCql(String name, String version) {
@@ -29,6 +34,15 @@ public class LibraryService {
     } else {
       throw new HapiLibraryNotFoundException(name, version);
     }
+  }
+
+  public boolean isLibraryResourcePresent(String name, String version) {
+    Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
+    if (!bundle.hasEntry()) {
+      return false;
+    }
+
+    return hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class).isPresent();
   }
 
   private String processBundle(String name, String version, Bundle bundle) {
@@ -56,5 +70,34 @@ public class LibraryService {
             .filter(a -> a.getContentType().equals("text/cql"))
             .findFirst()
             .orElseThrow(() -> new LibraryAttachmentNotFoundException(library, "text/cql"));
+  }
+
+  public Library createLibraryResourceForCqlLibrary(CqlLibrary cqlLibrary) {
+    boolean isLibraryPresent = isLibraryResourcePresent(
+      cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion());
+
+    if (isLibraryPresent) {
+      throw new DuplicateLibraryException(cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion());
+    }
+
+    Library library = convertToFhirLibrary(cqlLibrary);
+    hapiFhirServer.createResource(library);
+    return library;
+  }
+
+  public Library convertToFhirLibrary(CqlLibrary cqlLibrary) {
+    Library result = new Library();
+    result.setId(cqlLibrary.getId());
+    result.setLanguage("en");
+    result.setName(cqlLibrary.getCqlLibraryName());
+    result.setVersion(cqlLibrary.getVersion());
+    result.setDate(new Date());
+    result.setStatus(Enumerations.PublicationStatus.ACTIVE);
+    result.setPublisher(cqlLibrary.getSteward() != null && StringUtils.isNotBlank(cqlLibrary.getSteward()) ?
+      cqlLibrary.getSteward() : "UNKNOWN");
+    result.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), "UNKNOWN"));
+    result.setExperimental(cqlLibrary.isExperimental());
+    result.setUrl(LIBRARY_CANONICAL_BASE + cqlLibrary.getCqlLibraryName());
+    return result;
   }
 }
