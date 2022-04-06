@@ -6,6 +6,7 @@ import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.LibraryAttachmentNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.models.CqlLibrary;
+import gov.cms.madie.madiefhirservice.testhelpers.CqlLibraryTestHelper;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import org.hl7.fhir.r4.model.Bundle;
@@ -101,14 +102,7 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
 
     @Test
     void createLibraryResourceForCqlLibraryWhenLibraryIsValidAndNotDuplicate() {
-        CqlLibrary cqlLibrary = CqlLibrary.builder()
-          .id("as23bdr-23m5-34fgt")
-          .cqlLibraryName("TestLib001")
-          .version("1.01")
-          .steward("SB")
-          .description("This is a test description about this library.")
-          .experimental(true)
-          .build();
+        CqlLibrary cqlLibrary = CqlLibraryTestHelper.createCqlLibrary();
 
         when(hapiFhirServer.fetchLibraryBundleByNameAndVersion(anyString(), anyString()))
           .thenReturn(new Bundle());
@@ -123,21 +117,15 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
 
     @Test
     void createLibraryResourceForCqlLibraryWhenDuplicateLibrary() {
-        CqlLibrary cqlLibrary = CqlLibrary.builder()
-          .id("as23bdr-23m5-34fgt")
-          .cqlLibraryName("TestLib001")
-          .version("1.01")
-          .steward("SB")
-          .description("This is a test description about this library.")
-          .experimental(true)
-          .build();
+        CqlLibrary cqlLibrary = CqlLibraryTestHelper.createCqlLibrary();
         when(hapiFhirServer.fetchLibraryBundleByNameAndVersion(anyString(), anyString())).thenReturn(bundle);
         when(hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class))
           .thenReturn(Optional.of(new Library()));
 
         Throwable exception = assertThrows(DuplicateLibraryException.class, ()
           -> libraryService.createLibraryResourceForCqlLibrary(cqlLibrary));
-
-        assertEquals("Library resource with name: TestLib001, version: 1.01 already exists.", exception.getMessage());
+        String exceptionMessage = String.format("Library resource with name: %s, version: %s already exists.",
+          cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion() );
+        assertEquals(exceptionMessage, exception.getMessage());
     }
 }

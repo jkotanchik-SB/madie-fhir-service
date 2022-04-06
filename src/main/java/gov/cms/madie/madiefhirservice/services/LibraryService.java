@@ -23,7 +23,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class LibraryService {
-  private static final String LIBRARY_CANONICAL_BASE = "http://ecqi.healthit.gov/ecqms/Library/";
+  private static final String LIBRARY_BASE_URL = "http://ecqi.healthit.gov/ecqms/Library/";
   private final HapiFhirServer hapiFhirServer;
 
   public String getLibraryCql(String name, String version) {
@@ -97,7 +97,8 @@ public class LibraryService {
       cqlLibrary.getSteward() : "UNKNOWN");
     result.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), "UNKNOWN"));
     result.setExperimental(cqlLibrary.isExperimental());
-    result.setUrl(LIBRARY_CANONICAL_BASE + cqlLibrary.getCqlLibraryName());
+    result.setUrl(LIBRARY_BASE_URL + cqlLibrary.getCqlLibraryName());
+
     return result;
   }
 }

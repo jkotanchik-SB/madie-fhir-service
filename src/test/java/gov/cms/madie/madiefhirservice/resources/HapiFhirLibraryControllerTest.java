@@ -2,6 +2,7 @@ package gov.cms.madie.madiefhirservice.resources;
 
 import gov.cms.madie.madiefhirservice.models.CqlLibrary;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
+import gov.cms.madie.madiefhirservice.testhelpers.CqlLibraryTestHelper;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,17 +32,10 @@ class HapiFhirLibraryControllerTest {
 
     @Test
     void createLibraryResource() {
-        CqlLibrary cqlLibrary = CqlLibrary.builder()
-          .id("as23bdr-23m5-34fgt")
-          .cqlLibraryName("TestLib001")
-          .version("1.01")
-          .steward("SB")
-          .description("This is a test description about this library.")
-          .experimental(true)
-          .build();
+        CqlLibrary cqlLibrary = CqlLibraryTestHelper.createCqlLibrary();
         Library library = new Library();
-        library.setName("TestLib001");
-        library.setVersion("1.01");
+        library.setName(cqlLibrary.getCqlLibraryName());
+        library.setVersion(cqlLibrary.getVersion());
 
         when(libraryService.createLibraryResourceForCqlLibrary(any(CqlLibrary.class))).thenReturn(library);
 
