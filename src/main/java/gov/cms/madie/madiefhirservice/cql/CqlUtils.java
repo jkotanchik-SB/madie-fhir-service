@@ -3,10 +3,6 @@ package gov.cms.madie.madiefhirservice.cql;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-/**
- * This class contains methods broken out of CqlToMatXml to make it easier to test.
- * This class throws IllegalArgumentExceptions on all errors.
- */
 @Slf4j
 public class CqlUtils {
   public static final String BLOCK_COMMENT_END = "*/";
