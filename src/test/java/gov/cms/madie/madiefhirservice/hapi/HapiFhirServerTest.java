@@ -49,10 +49,10 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
     void buildLibraryBundle() {
 
         String fhirHelpersCql = getStringFromTestResource("/includes/FHIRHelpers.cql");
-        Library fhirHelpersLibrary = createLib(fhirHelpersCql);
+        Library fhirHelpersLibrary = createLibrary(fhirHelpersCql);
 
         String globalCommonsFunctionsCql = getStringFromTestResource("/includes/GlobalCommonFunctions.cql");
-        globalCommonsFunctionsLibrary = createLib(globalCommonsFunctionsCql);
+        globalCommonsFunctionsLibrary = createLibrary(globalCommonsFunctionsCql);
 
         Bundle.BundleEntryComponent bundleEntryComponent = bundle.addEntry();
         bundleEntryComponent.setResource(fhirHelpersLibrary);

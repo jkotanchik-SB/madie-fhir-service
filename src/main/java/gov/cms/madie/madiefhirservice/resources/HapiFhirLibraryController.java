@@ -1,7 +1,7 @@
 package gov.cms.madie.madiefhirservice.resources;
 
-import gov.cms.madie.madiefhirservice.models.CqlLibrary;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
+import gov.cms.madiejavamodels.library.CqlLibrary;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

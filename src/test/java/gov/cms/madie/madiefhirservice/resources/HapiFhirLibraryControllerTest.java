@@ -1,8 +1,9 @@
 package gov.cms.madie.madiefhirservice.resources;
 
-import gov.cms.madie.madiefhirservice.models.CqlLibrary;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
-import gov.cms.madie.madiefhirservice.testhelpers.CqlLibraryTestHelper;
+import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
+import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madiejavamodels.library.CqlLibrary;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class HapiFhirLibraryControllerTest {
+class HapiFhirLibraryControllerTest implements LibraryHelper, ResourceFileUtil {
 
     @InjectMocks
     HapiFhirLibraryController hapiFhirLibraryController;
@@ -32,7 +33,8 @@ class HapiFhirLibraryControllerTest {
 
     @Test
     void createLibraryResource() {
-        CqlLibrary cqlLibrary = CqlLibraryTestHelper.createCqlLibrary();
+        String cql = getStringFromTestResource("/test-cql/EXM124v7QICore4.cql");
+        CqlLibrary cqlLibrary = createCqlLibrary(cql);
         Library library = new Library();
         library.setName(cqlLibrary.getCqlLibraryName());
         library.setVersion(cqlLibrary.getVersion());
