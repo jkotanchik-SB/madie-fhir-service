@@ -23,8 +23,6 @@ import java.util.Map;
 @Getter
 @Slf4j
 public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
-  private static final String MISSING_INCLUDE_TEMPLATE =
-    "Could not find included library: {} for parent library {}v{}";
   private final List<cqlParser.IncludeDefinitionContext> includes = new ArrayList<>();
   private final List<cqlParser.ValuesetDefinitionContext> valueSets = new ArrayList<>();
   private final List<cqlParser.CodeDefinitionContext> codes = new ArrayList<>();
