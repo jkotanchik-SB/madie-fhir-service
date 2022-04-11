@@ -89,7 +89,7 @@ public class LibraryTranslatorService {
 
   private List<RelatedArtifact> distinctArtifacts(List<RelatedArtifact> artifacts) {
     List<RelatedArtifact> result = new ArrayList<>(artifacts.size());
-    //Remove duplicates. I wish HapiFhir implemented equals. Today it is SadFhir for me.
+    //Remove duplicates.
     artifacts.forEach(a -> {
       if (result.stream().noneMatch(ar -> Objects.deepEquals(a, ar))) {
         result.add(a);
@@ -101,8 +101,7 @@ public class LibraryTranslatorService {
 
   private List<DataRequirement> distinctDataRequirements(List<DataRequirement> reqs) {
     List<DataRequirement> result = new ArrayList<>(reqs.size());
-    //Remove duplicates. I wish HapiFhir implemented equals. Today it is SadFhir for me.
-    //Object.deepEquals doesn't work at all on codeFilter for some reason.
+    //Remove duplicates.
     for (DataRequirement req : reqs) {
       if (result.stream().noneMatch(r -> matchType(req.getType()).and(matchCodeFilter(req)).test(r))) {
         result.add(req);
