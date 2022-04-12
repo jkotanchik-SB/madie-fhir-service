@@ -1,6 +1,7 @@
 package gov.cms.madie.madiefhirservice.hapi;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -90,5 +91,14 @@ public class HapiFhirServer {
                     resource.getClass().getSimpleName());
             return Optional.empty();
         }
+    }
+
+    public MethodOutcome createResource(Resource resource) {
+        log.debug("Creating resource {} with id {} in HAPI",
+          resource.getResourceType() != null ? resource.getResourceType().name() : "null",
+          resource.getId());
+        MethodOutcome outcome = hapiClient.create().resource(resource).execute();
+        log.debug("Resource created successfully in HAPI. Resource id {}", resource.getId());
+        return outcome;
     }
 }

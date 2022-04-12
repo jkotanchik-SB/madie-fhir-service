@@ -7,6 +7,8 @@ hapi:
   fhir:
     url: ${HAPI_FHIR_URL:http://localhost:8080/fhir}
 
+fhir-base-url: ${FHIR_BASE_URL:http://ecqi.healthit.gov/ecqms}
+
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}

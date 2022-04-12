@@ -1,6 +1,7 @@
 package gov.cms.madie.madiefhirservice.hapi;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
@@ -12,12 +13,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.stubbing.defaultanswers.ReturnsDeepStubs;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
@@ -28,7 +33,6 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
     @Mock
     private FhirContext fhirContext;
 
-    @Mock
     IGenericClient hapiClient;
 
     Bundle bundle = new Bundle();
@@ -37,6 +41,7 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(hapiFhirServer, "hapiFhirUrl", "https://hapiFhirTestUrl.com");
+        hapiClient = mock(IGenericClient.class, new ReturnsDeepStubs());
         ReflectionTestUtils.setField(hapiFhirServer, "hapiClient", hapiClient);
     }
 
@@ -44,10 +49,10 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
     void buildLibraryBundle() {
 
         String fhirHelpersCql = getStringFromTestResource("/includes/FHIRHelpers.cql");
-        Library fhirHelpersLibrary = createLib(fhirHelpersCql);
+        Library fhirHelpersLibrary = createLibrary(fhirHelpersCql);
 
         String globalCommonsFunctionsCql = getStringFromTestResource("/includes/GlobalCommonFunctions.cql");
-        globalCommonsFunctionsLibrary = createLib(globalCommonsFunctionsCql);
+        globalCommonsFunctionsLibrary = createLibrary(globalCommonsFunctionsCql);
 
         Bundle.BundleEntryComponent bundleEntryComponent = bundle.addEntry();
         bundleEntryComponent.setResource(fhirHelpersLibrary);
@@ -91,5 +96,21 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
         // providing measure instance instead of library
         Optional<Library> optionalLibrary = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
         assertTrue(optionalLibrary.isEmpty());
+    }
+
+    @Test
+    void createResource() {
+        MethodOutcome outcome = new MethodOutcome();
+
+        Object when = hapiClient
+          .create()
+          .resource(any(Library.class))
+          .execute();
+
+        when((Object) when)
+          .thenReturn(outcome);
+
+        MethodOutcome methodOutcome = hapiFhirServer.createResource(new Library());
+        assertSame(outcome, methodOutcome);
     }
 }
