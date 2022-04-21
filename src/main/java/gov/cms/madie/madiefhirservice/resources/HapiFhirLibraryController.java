@@ -33,7 +33,7 @@ public class HapiFhirLibraryController {
     return libraryService.getLibraryCql(name, version);
   }
 
-  @Operation(summary = "Creates new Library Resource in HAPI FHIR.",
+  @Operation(summary = "Creates new Library Resource in HAPI FHIR. ",
     description = "Creates the new hapi FHIR Library Resource from MADiE Library " +
       "if the Library with same name and version does not exists in HAPI FHIR.")
   @PostMapping("/create")
