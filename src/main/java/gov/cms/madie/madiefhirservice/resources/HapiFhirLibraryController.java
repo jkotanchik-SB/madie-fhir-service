@@ -37,8 +37,8 @@ public class HapiFhirLibraryController {
     description = "Creates the new hapi FHIR Library Resource from MADiE Library " +
       "if the Library with same name and version does not exists in HAPI FHIR.")
   @PostMapping("/create")
-  public ResponseEntity<String> createLibraryResource(@RequestBody CqlLibrary cqlLibrary) {
+  public ResponseEntity<Library> createLibraryResource(@RequestBody CqlLibrary cqlLibrary) {
     Library library = libraryService.createLibraryResourceForCqlLibrary(cqlLibrary);
-    return ResponseEntity.status(HttpStatus.CREATED).body(library.getUrl());
+    return ResponseEntity.status(HttpStatus.CREATED).body(library);
   }
 }
