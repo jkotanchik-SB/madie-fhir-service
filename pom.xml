@@ -23,8 +23,7 @@
 		<repository>
 			<id>github</id>
 			<name>Github madie rest commons</name>
-			<url>https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons</url>
-			<releases><enabled>true</enabled></releases>
+			<url>https://maven.pkg.github.com/MeasureAuthoringTool</url>
 		</repository>
 	</repositories>
 
