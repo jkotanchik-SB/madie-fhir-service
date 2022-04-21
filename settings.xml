@@ -22,6 +22,12 @@
             <enabled>true</enabled>
           </snapshots>
         </repository>
+        <repository>
+          <id>github</id>
+          <name>MADiE java models</name>
+          <url>https://maven.pkg.github.com/measureauthoringtool/madie-java-models</url>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
       </repositories>
     </profile>
   </profiles>
