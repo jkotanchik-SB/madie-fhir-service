@@ -26,8 +26,8 @@ public class HapiFhirLibraryController {
   private final LibraryService libraryService;
 
   @Operation(summary = "Get Library's CQL from HAPI FHIR.",
-          description = "Fetches Library resource from HAPI FHIR and returns cql string," +
-                  " typically used by CQL-ELM Translator")
+    description = "Fetches Library resource from HAPI FHIR and returns cql string," +
+      " typically used by CQL-ELM Translator")
   @GetMapping("/cql")
   public String getLibraryCql(@RequestParam String name, @RequestParam String version) {
     return libraryService.getLibraryCql(name, version);
@@ -37,8 +37,8 @@ public class HapiFhirLibraryController {
     description = "Creates the new hapi FHIR Library Resource from MADiE Library " +
       "if the Library with same name and version does not exists in HAPI FHIR.")
   @PostMapping("/create")
-  public ResponseEntity<Library> createLibraryResource(@RequestBody CqlLibrary cqlLibrary) {
+  public ResponseEntity<String> createLibraryResource(@RequestBody CqlLibrary cqlLibrary) {
     Library library = libraryService.createLibraryResourceForCqlLibrary(cqlLibrary);
-    return ResponseEntity.status(HttpStatus.CREATED).body(library);
+    return ResponseEntity.status(HttpStatus.CREATED).body(library.getUrl());
   }
 }
