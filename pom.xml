@@ -26,6 +26,12 @@
 			<url>https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons</url>
 			<releases><enabled>true</enabled></releases>
 		</repository>
+		<repository>
+			<id>madie-java-models</id>
+			<name>MADiE java models</name>
+			<url>https://maven.pkg.github.com/measureauthoringtool/madie-java-models</url>
+			<snapshots><enabled>true</enabled></snapshots>
+		</repository>
 	</repositories>
 
 	<dependencies>
