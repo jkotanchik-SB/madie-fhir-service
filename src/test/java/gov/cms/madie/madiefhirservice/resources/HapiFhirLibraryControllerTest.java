@@ -31,20 +31,19 @@ class HapiFhirLibraryControllerTest implements LibraryHelper, ResourceFileUtil {
         verifyNoMoreInteractions(libraryService);
     }
 
-    @Test
-    void createLibraryResource() {
-        String cql = getStringFromTestResource("/test-cql/EXM124v7QICore4.cql");
-        CqlLibrary cqlLibrary = createCqlLibrary(cql);
-        Library library = new Library();
-        library.setName(cqlLibrary.getCqlLibraryName());
-        library.setVersion(cqlLibrary.getVersion());
+   @Test
+   void createLibraryResource() {
+       String cql = getStringFromTestResource("/test-cql/EXM124v7QICore4.cql");
+       CqlLibrary cqlLibrary = createCqlLibrary(cql);
+       Library library = new Library();
+       library.setName(cqlLibrary.getCqlLibraryName());
+       library.setVersion(cqlLibrary.getVersion());
+       library.setUrl("test-url");
+       when(libraryService.createLibraryResourceForCqlLibrary(any(CqlLibrary.class))).thenReturn(library);
 
-        when(libraryService.createLibraryResourceForCqlLibrary(any(CqlLibrary.class))).thenReturn(library);
-
-        ResponseEntity<Library> response = hapiFhirLibraryController.createLibraryResource(cqlLibrary);
-        verifyNoMoreInteractions(libraryService);
-        assertNotNull(response.getBody());
-        assertEquals(cqlLibrary.getCqlLibraryName(), response.getBody().getName());
-        assertEquals(cqlLibrary.getVersion(), response.getBody().getVersion());
-    }
+       ResponseEntity<String> response = hapiFhirLibraryController.createLibraryResource(cqlLibrary);
+       verifyNoMoreInteractions(libraryService);
+       assertNotNull(response.getBody());
+       assertEquals(library.getUrl(), response.getBody());
+   }
 }
