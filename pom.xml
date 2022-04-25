@@ -19,6 +19,16 @@
 		<springfox.version>3.0.0</springfox.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>github</id>
+			<name>Github madie rest commons</name>
+			<url>https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons</url>
+<!--			<snapshots><enabled>true</enabled></snapshots>-->
+			<releases><enabled>true</enabled></releases>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
