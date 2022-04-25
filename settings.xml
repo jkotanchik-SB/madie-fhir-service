@@ -17,16 +17,10 @@
         </repository>
         <repository>
           <id>github</id>
-          <url>https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons/</url>
+          <url>https://maven.pkg.github.com/MeasureAuthoringTool</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>
-        </repository>
-        <repository>
-          <id>madie-java-models</id>
-          <name>MADiE java models</name>
-          <url>https://maven.pkg.github.com/measureauthoringtool/madie-java-models</url>
-          <snapshots><enabled>true</enabled></snapshots>
         </repository>
       </repositories>
     </profile>

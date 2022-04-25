@@ -19,20 +19,15 @@
 		<springfox.version>3.0.0</springfox.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>github</id>
-			<name>Github madie rest commons</name>
-			<url>https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons</url>
-			<releases><enabled>true</enabled></releases>
-		</repository>
-		<repository>
-			<id>madie-java-models</id>
-			<name>MADiE java models</name>
-			<url>https://maven.pkg.github.com/measureauthoringtool/madie-java-models</url>
-			<snapshots><enabled>true</enabled></snapshots>
-		</repository>
-	</repositories>
+<!--	<repositories>-->
+<!--		<repository>-->
+<!--			<id>github</id>-->
+<!--			<name>Github madie rest commons</name>-->
+<!--			<url>https://maven.pkg.github.com/MeasureAuthoringTool</url>-->
+<!--&lt;!&ndash;			<snapshots><enabled>true</enabled></snapshots>&ndash;&gt;-->
+<!--			<releases><enabled>true</enabled></releases>-->
+<!--		</repository>-->
+<!--	</repositories>-->
 
 	<dependencies>
 		<dependency>
