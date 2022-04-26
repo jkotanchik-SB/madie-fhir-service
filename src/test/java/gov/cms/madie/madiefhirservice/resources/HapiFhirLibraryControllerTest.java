@@ -38,13 +38,11 @@ class HapiFhirLibraryControllerTest implements LibraryHelper, ResourceFileUtil {
         Library library = new Library();
         library.setName(cqlLibrary.getCqlLibraryName());
         library.setVersion(cqlLibrary.getVersion());
-
+        library.setUrl("test-url");
         when(libraryService.createLibraryResourceForCqlLibrary(any(CqlLibrary.class))).thenReturn(library);
-
-        ResponseEntity<Library> response = hapiFhirLibraryController.createLibraryResource(cqlLibrary);
+        ResponseEntity<String> response = hapiFhirLibraryController.createLibraryResource(cqlLibrary);
         verifyNoMoreInteractions(libraryService);
         assertNotNull(response.getBody());
-        assertEquals(cqlLibrary.getCqlLibraryName(), response.getBody().getName());
-        assertEquals(cqlLibrary.getVersion(), response.getBody().getVersion());
+        assertEquals(library.getUrl(), response.getBody());
     }
 }
