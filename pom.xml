@@ -17,6 +17,7 @@
 	<properties>
 		<java.version>16</java.version>
 		<springfox.version>3.0.0</springfox.version>
+		<cqframework.version>1.5.7</cqframework.version>
 	</properties>
 
 	<repositories>
@@ -77,7 +78,7 @@
 		<dependency>
 			<groupId>info.cqframework</groupId>
 			<artifactId>cql</artifactId>
-			<version>1.5.6</version>
+			<version>${cqframework.version}</version>
 		</dependency>
 
 		<dependency>
