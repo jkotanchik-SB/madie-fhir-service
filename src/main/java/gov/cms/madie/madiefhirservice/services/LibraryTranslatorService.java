@@ -28,8 +28,13 @@ import java.util.function.Predicate;
 @Service
 public class LibraryTranslatorService {
   public static final String CQL_CONTENT_TYPE = "text/cql";
+  public static final String XML_ELM_CONTENT_TYPE = "text/elm+json";
+  public static final String JSON_ELM_CONTENT_TYPE = "text/elm+xml";
+
   public static final String SYSTEM_TYPE = "http://terminology.hl7.org/CodeSystem/library-type";
   public static final String SYSTEM_CODE = "logic-library";
+
+  public static final String UNKNOWN_VALUE = "UNKNOWN";
 
   private final LibraryCqlVisitorFactory libCqlVisitorFactory;
 
@@ -50,11 +55,10 @@ public class LibraryTranslatorService {
     library.setDate(new Date());
     library.setStatus(Enumerations.PublicationStatus.ACTIVE);
     library.setPublisher(cqlLibrary.getSteward() != null && StringUtils.isNotBlank(cqlLibrary.getSteward()) ?
-      cqlLibrary.getSteward() :
-      "UNKNOWN");
-    library.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), "UNKNOWN"));
+        cqlLibrary.getSteward() : UNKNOWN_VALUE);
+    library.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), UNKNOWN_VALUE));
     library.setExperimental(cqlLibrary.isExperimental());
-    library.setContent(createContent(cqlLibrary.getCql(), "", ""));
+    library.setContent(createContent(cqlLibrary.getCql(), cqlLibrary.getElmJson(), cqlLibrary.getElmXml()));
     library.setType(createType(SYSTEM_TYPE, SYSTEM_CODE));
     library.setUrl(fhirBaseUrl + "/Library/" + cqlLibrary.getCqlLibraryName());
     library.setDataRequirement(distinctDataRequirements(visitor.getDataRequirements()));
@@ -65,11 +69,42 @@ public class LibraryTranslatorService {
     return library;
   }
 
+  public CqlLibrary convertToCqlLibrary(Library library) {
+    return CqlLibrary.builder()
+        .id(library.getMeta().getId())
+        .cqlLibraryName(library.getName())
+        .version(library.getVersion())
+        .steward(UNKNOWN_VALUE.equals(library.getPublisher()) ? null : library.getPublisher())
+        .description(UNKNOWN_VALUE.equals(library.getDescription()) ? null : library.getDescription())
+        .experimental(library.getExperimental())
+        .cql(attachmentToString(findAttachmentOfContentType(library, CQL_CONTENT_TYPE)))
+        .elmJson(attachmentToString(findAttachmentOfContentType(library, JSON_ELM_CONTENT_TYPE)))
+        .elmXml(attachmentToString(findAttachmentOfContentType(library, XML_ELM_CONTENT_TYPE)))
+        .build();
+  }
+
+  public String attachmentToString(Attachment attachment) {
+    if (attachment == null) {
+      return null;
+    }
+    return new String(attachment.getData());
+  }
+
+  public Attachment findAttachmentOfContentType(Library library, String contentType) {
+    if (library == null || library.getContent() == null) {
+      return null;
+    }
+    return library.getContent().stream()
+        .filter(a -> a.getContentType().equals(contentType))
+        .findFirst()
+        .orElse(null);
+  }
+
   private Meta createLibraryMeta() {
     // Currently, only one profile is allowed, but Bryn is under the impression multiples should work.
     // For now, it is just computable until we resolve this.
     return new Meta()
-      .addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/computable-library-cqfm");
+        .addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/computable-library-cqfm");
   }
 
   /**
@@ -79,11 +114,16 @@ public class LibraryTranslatorService {
    * @return The content element.
    */
   private List<Attachment> createContent(String cql, String elmJson, String elmXml) {
-    List<Attachment> attachments = new ArrayList<>(2);
-    attachments.add(createAttachment(CQL_CONTENT_TYPE, cql.getBytes()));
-    // TODO: XML & JSON contents
-    // attachments.add(createAttachment(XML_ELM_CONTENT_TYPE, elmXml.getBytes()));
-    // attachments.add(createAttachment(JSON_ELM_CONTENT_TYPE, elmJson.getBytes()));
+    List<Attachment> attachments = new ArrayList<>(3);
+    if (cql != null) {
+      attachments.add(createAttachment(CQL_CONTENT_TYPE, cql.getBytes()));
+    }
+    if (elmXml != null) {
+      attachments.add(createAttachment(XML_ELM_CONTENT_TYPE, elmXml.getBytes()));
+    }
+    if (elmJson != null) {
+      attachments.add(createAttachment(JSON_ELM_CONTENT_TYPE, elmJson.getBytes()));
+    }
     return attachments;
   }
 
@@ -125,32 +165,32 @@ public class LibraryTranslatorService {
       } else {
         // Match on path AND (code or value set)
         return StringUtils.equals(d.getCodeFilter().get(0).getPath(), o.getCodeFilter().get(0).getPath())
-          && (hasMatchingValueSet(d, o) || hasMatchingCode(o, d));
+            && (hasMatchingValueSet(d, o) || hasMatchingCode(o, d));
       }
     };
   }
 
   private boolean hasMatchingCode(DataRequirement o, DataRequirement d) {
     return (!CollectionUtils.isEmpty(d.getCodeFilter().get(0).getCode())
-      && !CollectionUtils.isEmpty(o.getCodeFilter().get(0).getCode())) &&
-      StringUtils.equals(d.getCodeFilter().get(0).getCode().get(0).getCode(),
-        o.getCodeFilter().get(0).getCode().get(0).getCode());
+        && !CollectionUtils.isEmpty(o.getCodeFilter().get(0).getCode())) &&
+        StringUtils.equals(d.getCodeFilter().get(0).getCode().get(0).getCode(),
+            o.getCodeFilter().get(0).getCode().get(0).getCode());
   }
 
   private boolean hasMatchingValueSet(DataRequirement d, DataRequirement o) {
     return (d.getCodeFilter().get(0).getValueSet() != null && o.getCodeFilter().get(0).getValueSet() != null) &&
-      StringUtils.equals(d.getCodeFilter().get(0).getValueSet(), o.getCodeFilter().get(0).getValueSet());
+        StringUtils.equals(d.getCodeFilter().get(0).getValueSet(), o.getCodeFilter().get(0).getValueSet());
   }
 
   private CodeableConcept createType(String type, String code) {
     return new CodeableConcept()
-      .setCoding(Collections.singletonList(new Coding(type, code, null)));
+        .setCoding(Collections.singletonList(new Coding(type, code, null)));
   }
 
   /* rawData are bytes that are NOT base64 encoded */
   private Attachment createAttachment(String contentType, byte[] rawData) {
     return new Attachment()
-      .setContentType(contentType)
-      .setData(rawData == null ? null : rawData);
+        .setContentType(contentType)
+        .setData(rawData == null ? null : rawData);
   }
 }

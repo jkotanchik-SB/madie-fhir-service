@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.resources;
 
+import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
@@ -12,6 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -44,5 +48,19 @@ class HapiFhirLibraryControllerTest implements LibraryHelper, ResourceFileUtil {
         verifyNoMoreInteractions(libraryService);
         assertNotNull(response.getBody());
         assertEquals(library.getUrl(), response.getBody());
+    }
+
+    @Test
+    void testGetLibraryResourceAsCqlLibraryThrowsException() {
+        when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenThrow(new HapiLibraryNotFoundException("Test", "1.0.000"));
+        assertThrows(HapiLibraryNotFoundException.class, () -> hapiFhirLibraryController.getLibraryResourceAsCqlLibrary("Test", "1.0.000"));
+    }
+
+    @Test
+    void testGetLibraryResourceAsCqlLibraryReturnsLibrary() {
+        CqlLibrary library = new CqlLibrary();
+        when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenReturn(library);
+        CqlLibrary output = hapiFhirLibraryController.getLibraryResourceAsCqlLibrary("Test", "1.0.000");
+        assertThat(output, is(equalTo(library)));
     }
 }
