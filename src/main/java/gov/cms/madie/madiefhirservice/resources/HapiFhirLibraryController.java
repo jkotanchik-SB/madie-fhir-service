@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Library;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,14 @@ public class HapiFhirLibraryController {
   @GetMapping("/cql")
   public String getLibraryCql(@RequestParam String name, @RequestParam String version) {
     return libraryService.getLibraryCql(name, version);
+  }
+
+  @Operation(summary = "Get Library's CQL, ELM JSON and ELM XML from HAPI FHIR",
+  description = "Fetches Library resource from HAPI FHIR and returns cql string, ELM JSON string," +
+      " and ELM XML string.")
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  public CqlLibrary getLibraryResourceAsCqlLibrary(@RequestParam String name, @RequestParam String version) {
+    return libraryService.getLibraryResourceAsCqlLibrary(name, version);
   }
 
   @Operation(summary = "Creates new Library Resource in HAPI FHIR. ",

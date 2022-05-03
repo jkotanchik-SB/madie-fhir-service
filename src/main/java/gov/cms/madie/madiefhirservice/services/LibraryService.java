@@ -33,6 +33,18 @@ public class LibraryService {
     }
   }
 
+  public CqlLibrary getLibraryResourceAsCqlLibrary(String name, String version) {
+    Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
+
+    if (bundle.hasEntry()) {
+      Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
+      return optional.map(libraryTranslatorService::convertToCqlLibrary)
+          .orElseThrow(() -> new HapiLibraryNotFoundException(name, version));
+    } else {
+      throw new HapiLibraryNotFoundException(name, version);
+    }
+  }
+
   public boolean isLibraryResourcePresent(String name, String version) {
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
     if (!bundle.hasEntry()) {
