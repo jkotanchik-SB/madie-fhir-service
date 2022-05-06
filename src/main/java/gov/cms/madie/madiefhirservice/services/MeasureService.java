@@ -61,12 +61,12 @@ public class MeasureService {
       .setCopyright(StringUtils.isBlank(copyright) ? UNKNOWN  : copyright)
       .setDisclaimer(StringUtils.isBlank(disclaimer) ? UNKNOWN  : disclaimer)
       .setRationale(rationale)
-      .setScoring(scoringConcept(madieMeasure.getMeasureScoring()))
+      .setScoring(buildScoringConcept(madieMeasure.getMeasureScoring()))
       .setLibrary(Collections.singletonList(
         new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
       .setPurpose(UNKNOWN)
-      .setContact(createContactDetailUrl())
-      .setMeta(createMeasureMeta(madieMeasure.getMeasureScoring()));
+      .setContact(buildContactDetailUrl())
+      .setMeta(buildMeasureMeta(madieMeasure.getMeasureScoring()));
 
     return measure;
   }
@@ -100,7 +100,7 @@ public class MeasureService {
       .toInstant());
   }
 
-  public CodeableConcept scoringConcept(String scoring) {
+  public CodeableConcept buildScoringConcept(String scoring) {
     if (StringUtils.isEmpty(scoring)) {
       return null;
     }
@@ -127,7 +127,7 @@ public class MeasureService {
       .setDisplay(display);
   }
 
-  public Meta createMeasureMeta(String scoring) {
+  public Meta buildMeasureMeta(String scoring) {
     Meta meta = new Meta();
     if (StringUtils.isBlank(scoring)) {
       log.error("Scoring type is null");
@@ -152,7 +152,7 @@ public class MeasureService {
     return meta;
   }
 
-  public List<ContactDetail> createContactDetailUrl() {
+  public List<ContactDetail> buildContactDetailUrl() {
     ContactDetail contactDetail = new ContactDetail();
     contactDetail.setTelecom(new ArrayList<>());
     contactDetail.getTelecom().add(buildContactPoint());
