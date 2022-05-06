@@ -1,7 +1,6 @@
 package gov.cms.madie.madiefhirservice.resources;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
 import gov.cms.madie.madiefhirservice.services.MeasureService;
 import gov.cms.madiejavamodels.measure.Measure;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.text.ParseException;
+
 @Slf4j
 @Controller
 @RequestMapping(path = "/hapiFhir/measures")
@@ -23,12 +24,12 @@ public class MeasureController {
   private MeasureService measureService;
 
   @PutMapping("/bundles")
-  public ResponseEntity<String> getMeasureBundle(@RequestBody Measure measure) {
-    Bundle bundle = measureService.createMeasureBundle();
-    FhirContext ctx = FhirContext.forR4();
-    IParser parser = ctx.newJsonParser();
-    parser.setPrettyPrint(true);
-    String serialized = parser.encodeResourceToString(bundle);
+  public ResponseEntity<String> getMeasureBundle(@RequestBody Measure measure) throws ParseException {
+    Bundle bundle = measureService.createMeasureBundle(measure);
+    String serialized = FhirContext.forR4()
+      .newJsonParser()
+      .setPrettyPrint(true)
+      .encodeResourceToString(bundle);
     return ResponseEntity.ok().body(serialized);
   }
 }
