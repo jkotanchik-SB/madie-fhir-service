@@ -1,7 +1,10 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
+import gov.cms.madie.madiefhirservice.hapi.PopulationUtils;
+import gov.cms.madiejavamodels.measure.Group;
 import gov.cms.madiejavamodels.measure.Measure;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Bundle;
@@ -10,8 +13,11 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.ContactDetail;
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.Expression;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Period;
+import static org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
+import static org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,17 +29,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MeasureService {
   public static final String UNKNOWN = "UNKNOWN";
+  public static final String TERMINOLOGY_SYSTEM_URI = "http://terminology.hl7.org/CodeSystem/measure-population";
 
   @Value("${fhir-base-url}")
   private String fhirBaseUrl;
 
+  //private final LibraryCqlVisitorFactory libCqlVisitorFactory;
+
   public Bundle createMeasureBundle(Measure madieMeasure) throws ParseException {
-    org.hl7.fhir.r4.model.Measure measure = getFhirMeasureFromMadieMeasure(madieMeasure);
+    org.hl7.fhir.r4.model.Measure measure = getFhirMeasureForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent bundleEntryComponent = new Bundle.BundleEntryComponent().setResource(measure);
     Bundle bundle = new Bundle()
       .setType(Bundle.BundleType.TRANSACTION);
@@ -41,7 +52,7 @@ public class MeasureService {
     return bundle;
   }
 
-  public org.hl7.fhir.r4.model.Measure getFhirMeasureFromMadieMeasure(Measure madieMeasure)
+  public org.hl7.fhir.r4.model.Measure getFhirMeasureForMadieMeasure(Measure madieMeasure)
     throws ParseException {
     String steward = madieMeasure.getMeasureMetaData().getSteward();
     String copyright = madieMeasure.getMeasureMetaData().getCopyright();
@@ -66,9 +77,38 @@ public class MeasureService {
         new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
       .setPurpose(UNKNOWN)
       .setContact(buildContactDetailUrl())
+      .setGroup(buildFhirPopulationGroups(madieMeasure.getGroups()))
       .setMeta(buildMeasureMeta(madieMeasure.getMeasureScoring()));
 
     return measure;
+  }
+
+  public List<MeasureGroupComponent> buildFhirPopulationGroups(List<Group> madieGroups) {
+    return madieGroups.stream()
+      .map(this::buildFhirPopulationGroup)
+      .collect(Collectors.toList());
+  }
+
+  public MeasureGroupComponent buildFhirPopulationGroup(Group madieGroup) {
+    List<MeasureGroupPopulationComponent> measurePopulations = madieGroup.getPopulation()
+      .entrySet()
+      .stream()
+      .map(entry -> {
+        String populationCode = PopulationUtils.toCode(String.valueOf(entry.getKey()));
+        String populationDisplay = PopulationUtils.getDisplay(String.valueOf(entry.getKey()));
+        return new MeasureGroupPopulationComponent()
+          .setCode(buildCodeableConcept(populationCode, TERMINOLOGY_SYSTEM_URI, populationDisplay))
+          .setCriteria(buildExpression("text/cql.identifier", entry.getValue()));
+        // TODO: Add an extension for measure observations
+      }).collect(Collectors.toList());
+
+    return new MeasureGroupComponent().setPopulation(measurePopulations);
+  }
+
+  public Expression buildExpression(String language, String expression) {
+    return new Expression()
+      .setLanguage(language)
+      .setExpression(expression);
   }
 
   public Period getPeriodFromDates(LocalDate startDate, LocalDate endDate ) throws ParseException {
