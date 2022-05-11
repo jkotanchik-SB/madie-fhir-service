@@ -1,7 +1,7 @@
 package gov.cms.madie.madiefhirservice.resources;
 
 import ca.uhn.fhir.context.FhirContext;
-import gov.cms.madie.madiefhirservice.services.MeasureService;
+import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
 import gov.cms.madiejavamodels.measure.Measure;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +19,13 @@ import java.text.ParseException;
 @Controller
 @RequestMapping(path = "/hapiFhir/measures")
 @Tag(name = "Measure-Controller", description = "Measure resources HAPI FHIR API")
-public class MeasureController {
+public class MeasureBundleController {
   @Autowired
-  private MeasureService measureService;
+  private MeasureBundleService measureBundleService;
 
   @PutMapping("/bundles")
   public ResponseEntity<String> getMeasureBundle(@RequestBody Measure measure) throws ParseException {
-    Bundle bundle = measureService.createMeasureBundle(measure);
+    Bundle bundle = measureBundleService.createMeasureBundle(measure);
     String serialized = FhirContext.forR4()
       .newJsonParser()
       .setPrettyPrint(true)
