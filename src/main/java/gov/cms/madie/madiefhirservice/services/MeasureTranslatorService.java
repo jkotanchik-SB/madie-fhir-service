@@ -35,10 +35,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MeasureTranslatorService {
   public static final String UNKNOWN = "UNKNOWN";
-  public static final String TERMINOLOGY_SYSTEM_URI = "http://terminology.hl7.org/CodeSystem/measure-population";
+  public static final String POPULATION_SYSTEM_URI = "http://terminology.hl7.org/CodeSystem/measure-population";
+  public static final String SCORING_SYSTEM_URI = "http://terminology.hl7.org/CodeSystem/measure-scoring";
 
   @Value("${fhir-base-url}")
   private String fhirBaseUrl;
+
+  @Value("${default-mp-start-date}")
+  private String measurementPeriodStart;
+
+  @Value("${default-mp-end-date}")
+  private String measurementPeriodEnd;
 
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure)
     throws ParseException {
@@ -85,7 +92,7 @@ public class MeasureTranslatorService {
         String populationCode = PopulationUtils.toCode(String.valueOf(entry.getKey()));
         String populationDisplay = PopulationUtils.getDisplay(String.valueOf(entry.getKey()));
         return new MeasureGroupPopulationComponent()
-          .setCode(buildCodeableConcept(populationCode, TERMINOLOGY_SYSTEM_URI, populationDisplay))
+          .setCode(buildCodeableConcept(populationCode, POPULATION_SYSTEM_URI, populationDisplay))
           .setCriteria(buildExpression("text/cql.identifier", entry.getValue()));
         // TODO: Add an extension for measure observations
       }).collect(Collectors.toList());
@@ -110,9 +117,9 @@ public class MeasureTranslatorService {
 
   public Period getDefaultPeriod() throws ParseException {
     Date startDate= new SimpleDateFormat("MM/dd/yyyy")
-      .parse("01/01/2023");
+      .parse(measurementPeriodStart);
     Date endDate = new SimpleDateFormat("MM/dd/yyyy")
-      .parse("31/12/2023");
+      .parse(measurementPeriodEnd);
 
     return new Period()
       .setStart(startDate, TemporalPrecisionEnum.DAY)
@@ -136,8 +143,7 @@ public class MeasureTranslatorService {
     if ("continuous variable".equals(code)) {
       code = "continuous-variable";
     }
-    String system = "http://terminology.hl7.org/CodeSystem/measure-scoring";
-    return buildCodeableConcept(code, system, scoring);
+    return buildCodeableConcept(code, SCORING_SYSTEM_URI, scoring);
   }
 
   public CodeableConcept buildCodeableConcept(String code, String system, String display) {

@@ -35,26 +35,26 @@ public class MeasureBundleService {
     org.hl7.fhir.r4.model.Measure measure = measureTranslatorService
       .createFhirMeasureForMadieMeasure(madieMeasure);
     // Bundle entry for Measure resource
-    Bundle.BundleEntryComponent bundleEntryComponent = getBundleEntryComponent(measure);
+    Bundle.BundleEntryComponent measureEntryComponent = getBundleEntryComponent(measure);
     Bundle bundle = new Bundle()
       .setType(Bundle.BundleType.TRANSACTION)
-      .addEntry(bundleEntryComponent);
+      .addEntry(measureEntryComponent);
     // Bundle entries for all the library resources of a MADiE Measure
-    List<Bundle.BundleEntryComponent> entryComponents = createBundleComponentsForLibrariesOfMadieMeasure(
-      madieMeasure);
-    entryComponents.forEach(c -> bundle.addEntry(c));
+    List<Bundle.BundleEntryComponent> libraryEntryComponents =
+      createBundleComponentsForLibrariesOfMadieMeasure(madieMeasure);
+    libraryEntryComponents.forEach(entryComponent -> bundle.addEntry(entryComponent));
     return bundle;
   }
 
   /**
-   * Returns main measure library along with included libraries
+   * Collects BundleEntryComponents for main measure library and included libraries
    * @param madieMeasure
    * @return list of Library BundleEntryComponents
    */
   public List<Bundle.BundleEntryComponent> createBundleComponentsForLibrariesOfMadieMeasure(Measure madieMeasure) {
-    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(madieMeasure.getCql());
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
+    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(madieMeasure.getCql());
     List<Bundle.BundleEntryComponent> libraryBundleComponents = visitor
       .getIncludedLibraries()
       .stream().
@@ -65,6 +65,7 @@ public class MeasureBundleService {
           .orElseThrow(() -> new HapiLibraryNotFoundException(libraryNameValuePair.getLeft(),
             libraryNameValuePair.getRight()));
     }).collect(Collectors.toList());
+    // add main library first in the list
     libraryBundleComponents.add(0, mainLibraryBundleComponent);
     return libraryBundleComponents;
   }
@@ -102,7 +103,7 @@ public class MeasureBundleService {
       .description(madieMeasure.getCqlLibraryName())
       .cql(madieMeasure.getCql())
       .elmJson(madieMeasure.getElmJson())
-      //.elmXml(madieMeasure.getElmXml())
+      //.elmXml(madieMeasure.getElmXml()) TODO: uncomment me when elmXml available on measure model
       .steward(madieMeasure.getMeasureMetaData().getSteward())
       .build();
   }
