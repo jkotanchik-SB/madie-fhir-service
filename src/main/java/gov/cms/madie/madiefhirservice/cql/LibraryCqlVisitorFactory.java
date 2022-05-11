@@ -1,7 +1,5 @@
 package gov.cms.madie.madiefhirservice.cql;
 
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
-import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.cqframework.cql.gen.cqlLexer;
