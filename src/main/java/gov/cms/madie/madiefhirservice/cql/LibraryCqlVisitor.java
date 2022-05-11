@@ -1,7 +1,6 @@
 package gov.cms.madie.madiefhirservice.cql;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +22,6 @@ import java.util.Map;
  */
 @Getter
 @Slf4j
-@RequiredArgsConstructor
 public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private final List<cqlParser.IncludeDefinitionContext> includes = new ArrayList<>();
   private final List<cqlParser.ValuesetDefinitionContext> valueSets = new ArrayList<>();
@@ -37,6 +35,10 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private String fhirBaseUrl;
   private String name;
   private String version;
+
+  public LibraryCqlVisitor(String fhirBaseUrl) {
+    this.fhirBaseUrl = fhirBaseUrl;
+  }
 
   /**
    * Stores off lib name and version.
