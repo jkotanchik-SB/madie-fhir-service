@@ -9,6 +9,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +28,8 @@ public class MeasureBundleController {
   private FhirContext fhirContext;
 
   @PutMapping("/bundles")
-  public ResponseEntity<String> getMeasureBundle(@RequestBody Measure measure) throws ParseException {
+  public ResponseEntity<String> getMeasureBundle(
+    @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) throws ParseException {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
     String serialized = fhirContext
       .newJsonParser()
