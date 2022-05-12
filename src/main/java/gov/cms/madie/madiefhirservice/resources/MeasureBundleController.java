@@ -23,10 +23,13 @@ public class MeasureBundleController {
   @Autowired
   private MeasureBundleService measureBundleService;
 
+  @Autowired
+  private FhirContext fhirContext;
+
   @PutMapping("/bundles")
   public ResponseEntity<String> getMeasureBundle(@RequestBody Measure measure) throws ParseException {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
-    String serialized = FhirContext.forR4()
+    String serialized = fhirContext
       .newJsonParser()
       .setPrettyPrint(true)
       .encodeResourceToString(bundle);

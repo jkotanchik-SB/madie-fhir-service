@@ -1,6 +1,7 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.hapi.PopulationUtils;
 import gov.cms.madiejavamodels.measure.Group;
 import gov.cms.madiejavamodels.measure.Measure;
@@ -35,8 +36,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MeasureTranslatorService {
   public static final String UNKNOWN = "UNKNOWN";
-  public static final String POPULATION_SYSTEM_URI = "http://terminology.hl7.org/CodeSystem/measure-population";
-  public static final String SCORING_SYSTEM_URI = "http://terminology.hl7.org/CodeSystem/measure-scoring";
 
   @Value("${fhir-base-url}")
   private String fhirBaseUrl;
@@ -92,7 +91,7 @@ public class MeasureTranslatorService {
         String populationCode = PopulationUtils.toCode(String.valueOf(entry.getKey()));
         String populationDisplay = PopulationUtils.getDisplay(String.valueOf(entry.getKey()));
         return new MeasureGroupPopulationComponent()
-          .setCode(buildCodeableConcept(populationCode, POPULATION_SYSTEM_URI, populationDisplay))
+          .setCode(buildCodeableConcept(populationCode, UriConstants.POPULATION_SYSTEM_URI, populationDisplay))
           .setCriteria(buildExpression("text/cql.identifier", entry.getValue()));
         // TODO: Add an extension for measure observations
       }).collect(Collectors.toList());
@@ -143,7 +142,7 @@ public class MeasureTranslatorService {
     if ("continuous variable".equals(code)) {
       code = "continuous-variable";
     }
-    return buildCodeableConcept(code, SCORING_SYSTEM_URI, scoring);
+    return buildCodeableConcept(code, UriConstants.SCORING_SYSTEM_URI, scoring);
   }
 
   public CodeableConcept buildCodeableConcept(String code, String system, String display) {
@@ -168,16 +167,16 @@ public class MeasureTranslatorService {
     } else {
       switch (scoring) {
         case "Proportion":
-          meta.addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/proportion-measure-cqfm");
+          meta.addProfile(UriConstants.PROPORTION_PROFILE_URI);
           break;
         case "Cohort":
-          meta.addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cohort-measure-cqfm");
+          meta.addProfile(UriConstants.COHORT_PROFILE_URI);
           break;
         case "Continuous Variable":
-          meta.addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cv-measure-cqfm");
+          meta.addProfile(UriConstants.CV_PROFILE_URI);
           break;
         case "Ratio":
-          meta.addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/ratio-measure-cqfm");
+          meta.addProfile(UriConstants.RATIO_PROFILE_URI);
           break;
         default:
           log.error("Cannot find scoring type for scoring: {}", scoring);
