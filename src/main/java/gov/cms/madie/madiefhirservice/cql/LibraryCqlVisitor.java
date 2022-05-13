@@ -54,7 +54,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   }
 
   /**
-   * Stores name value pairs of included libraries, include context, and relatedArtifacts
+   * Stores name/version pairs of included libraries, include context, and relatedArtifacts
    *
    * @param ctx The context.
    * @return Always null.
