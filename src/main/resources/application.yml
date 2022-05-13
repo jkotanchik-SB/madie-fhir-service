@@ -9,9 +9,6 @@ hapi:
 
 fhir-base-url: ${FHIR_BASE_URL:http://ecqi.healthit.gov/ecqms}
 
-default-mp-start-date: 01/01/2023
-default-mp-end-date: 31/12/2023
-
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}

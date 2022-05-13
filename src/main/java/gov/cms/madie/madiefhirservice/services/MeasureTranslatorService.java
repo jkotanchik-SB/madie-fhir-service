@@ -2,7 +2,6 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.madiefhirservice.hapi.PopulationUtils;
 import gov.cms.madiejavamodels.measure.Group;
 import gov.cms.madiejavamodels.measure.Measure;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +15,10 @@ import org.hl7.fhir.r4.model.ContactPoint;
 import org.hl7.fhir.r4.model.Expression;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Period;
-import static org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
-import static org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -30,6 +26,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
+import static org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 
 @Slf4j
 @Service
@@ -39,12 +38,6 @@ public class MeasureTranslatorService {
 
   @Value("${fhir-base-url}")
   private String fhirBaseUrl;
-
-  @Value("${default-mp-start-date}")
-  private String measurementPeriodStart;
-
-  @Value("${default-mp-end-date}")
-  private String measurementPeriodEnd;
 
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure)
     throws ParseException {
@@ -88,8 +81,8 @@ public class MeasureTranslatorService {
       .entrySet()
       .stream()
       .map(entry -> {
-        String populationCode = PopulationUtils.toCode(String.valueOf(entry.getKey()));
-        String populationDisplay = PopulationUtils.getDisplay(String.valueOf(entry.getKey()));
+        String populationCode = entry.getKey().toCode();
+        String populationDisplay = entry.getKey().getDisplay();
         return new MeasureGroupPopulationComponent()
           .setCode(buildCodeableConcept(populationCode, UriConstants.POPULATION_SYSTEM_URI, populationDisplay))
           .setCriteria(buildExpression("text/cql.identifier", entry.getValue()));
@@ -106,23 +99,9 @@ public class MeasureTranslatorService {
   }
 
   public Period getPeriodFromDates(LocalDate startDate, LocalDate endDate ) throws ParseException {
-    if(startDate == null || endDate == null) {
-      return getDefaultPeriod();
-    }
     return new Period()
       .setStart(convertLocalDateToDate(startDate), TemporalPrecisionEnum.DAY)
       .setEnd(convertLocalDateToDate(endDate), TemporalPrecisionEnum.DAY);
-  }
-
-  public Period getDefaultPeriod() throws ParseException {
-    Date startDate= new SimpleDateFormat("MM/dd/yyyy")
-      .parse(measurementPeriodStart);
-    Date endDate = new SimpleDateFormat("MM/dd/yyyy")
-      .parse(measurementPeriodEnd);
-
-    return new Period()
-      .setStart(startDate, TemporalPrecisionEnum.DAY)
-      .setEnd(endDate, TemporalPrecisionEnum.DAY);
   }
 
   public static Date convertLocalDateToDate(LocalDate localDate) {
