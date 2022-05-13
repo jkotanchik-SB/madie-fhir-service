@@ -28,8 +28,8 @@ import java.util.function.Predicate;
 @Service
 public class LibraryTranslatorService {
   public static final String CQL_CONTENT_TYPE = "text/cql";
-  public static final String XML_ELM_CONTENT_TYPE = "text/elm+json";
-  public static final String JSON_ELM_CONTENT_TYPE = "text/elm+xml";
+  public static final String XML_ELM_CONTENT_TYPE = "application/elm+json";
+  public static final String JSON_ELM_CONTENT_TYPE = "application/elm+xml";
 
   public static final String SYSTEM_TYPE = "http://terminology.hl7.org/CodeSystem/library-type";
   public static final String SYSTEM_CODE = "logic-library";
