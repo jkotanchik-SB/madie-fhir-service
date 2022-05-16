@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.text.ParseException;
-
 @Slf4j
 @Controller
 @RequestMapping(path = "/hapiFhir/measures")
@@ -29,7 +27,7 @@ public class MeasureBundleController {
 
   @PutMapping("/bundles")
   public ResponseEntity<String> getMeasureBundle(
-    @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) throws ParseException {
+    @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
     String serialized = fhirContext
       .newJsonParser()

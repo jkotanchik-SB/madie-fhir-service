@@ -18,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.text.ParseException;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -63,7 +62,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil{
   }
 
   @Test
-  public void testCreateMeasureBundle() throws ParseException {
+  public void testCreateMeasureBundle() {
     when(measureTranslatorService
       .createFhirMeasureForMadieMeasure(madieMeasure)).thenReturn(measure);
     when(hapiFhirServer.fetchHapiLibrary(anyString(), anyString()))
@@ -91,7 +90,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil{
   }
 
   @Test
-  public void testCreateMeasureBundleWhenIncludedLibraryNotFoundInHapi() throws ParseException {
+  public void testCreateMeasureBundleWhenIncludedLibraryNotFoundInHapi() {
     when(measureTranslatorService
       .createFhirMeasureForMadieMeasure(madieMeasure)).thenReturn(measure);
     when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class)))

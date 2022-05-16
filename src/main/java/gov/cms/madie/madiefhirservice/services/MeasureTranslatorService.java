@@ -18,7 +18,6 @@ import org.hl7.fhir.r4.model.Period;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -39,8 +38,7 @@ public class MeasureTranslatorService {
   @Value("${fhir-base-url}")
   private String fhirBaseUrl;
 
-  public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure)
-    throws ParseException {
+  public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure) {
     String steward = madieMeasure.getMeasureMetaData().getSteward();
     String copyright = madieMeasure.getMeasureMetaData().getCopyright();
     String disclaimer = madieMeasure.getMeasureMetaData().getDisclaimer();
@@ -98,7 +96,7 @@ public class MeasureTranslatorService {
       .setExpression(expression);
   }
 
-  public Period getPeriodFromDates(LocalDate startDate, LocalDate endDate ) throws ParseException {
+  public Period getPeriodFromDates(LocalDate startDate, LocalDate endDate ) {
     return new Period()
       .setStart(convertLocalDateToDate(startDate), TemporalPrecisionEnum.DAY)
       .setEnd(convertLocalDateToDate(endDate), TemporalPrecisionEnum.DAY);

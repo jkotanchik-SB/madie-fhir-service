@@ -14,8 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.text.ParseException;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,7 +33,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  public void testCreateFhirMeasureForMadieMeasure( ) throws ParseException {
+  public void testCreateFhirMeasureForMadieMeasure( ) {
     ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
 
     org.hl7.fhir.r4.model.Measure measure = measureTranslatorService

@@ -13,7 +13,6 @@ import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,7 +30,7 @@ public class MeasureBundleService {
    * Creates measure bundle that contains measure, main library,
    * and included libraries resources
    */
-  public Bundle createMeasureBundle(Measure madieMeasure) throws ParseException {
+  public Bundle createMeasureBundle(Measure madieMeasure) {
     org.hl7.fhir.r4.model.Measure measure = measureTranslatorService
       .createFhirMeasureForMadieMeasure(madieMeasure);
     // Bundle entry for Measure resource
