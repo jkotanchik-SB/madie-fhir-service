@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madiejavamodels.library.CqlLibrary;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +29,9 @@ import java.util.function.Predicate;
 @Service
 public class LibraryTranslatorService {
   public static final String CQL_CONTENT_TYPE = "text/cql";
-  public static final String XML_ELM_CONTENT_TYPE = "text/elm+json";
-  public static final String JSON_ELM_CONTENT_TYPE = "text/elm+xml";
-
-  public static final String SYSTEM_TYPE = "http://terminology.hl7.org/CodeSystem/library-type";
+  public static final String JSON_ELM_CONTENT_TYPE = "application/elm+json";
+  public static final String XML_ELM_CONTENT_TYPE = "application/elm+xml";
   public static final String SYSTEM_CODE = "logic-library";
-
   public static final String UNKNOWN_VALUE = "UNKNOWN";
 
   private final LibraryCqlVisitorFactory libCqlVisitorFactory;
@@ -59,7 +57,7 @@ public class LibraryTranslatorService {
     library.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), UNKNOWN_VALUE));
     library.setExperimental(cqlLibrary.isExperimental());
     library.setContent(createContent(cqlLibrary.getCql(), cqlLibrary.getElmJson(), cqlLibrary.getElmXml()));
-    library.setType(createType(SYSTEM_TYPE, SYSTEM_CODE));
+    library.setType(createType(UriConstants.LIBRARY_SYSTEM_TYPE_URI, SYSTEM_CODE));
     library.setUrl(fhirBaseUrl + "/Library/" + cqlLibrary.getCqlLibraryName());
     library.setDataRequirement(distinctDataRequirements(visitor.getDataRequirements()));
     library.setRelatedArtifact(distinctArtifacts(visitor.getRelatedArtifacts()));

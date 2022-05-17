@@ -68,6 +68,10 @@ public class HapiFhirServer {
                 .execute();
     }
 
+    public Optional<Library> fetchHapiLibrary(String name, String version) {
+        return findLibraryResourceInBundle(fetchLibraryBundleByNameAndVersion(name, version), Library.class);
+    }
+
     public <T extends Resource> Optional<T> findLibraryResourceInBundle(Bundle bundle, Class<T> clazz) {
         if (bundle.getEntry().size() > 1) {
             log.error("Hapi-Fhir Resource for {} returned more than one resource count: {}",

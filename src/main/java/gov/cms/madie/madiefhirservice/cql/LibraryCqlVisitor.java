@@ -31,8 +31,14 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private final List<RelatedArtifact> relatedArtifacts = new ArrayList<>();
   private final Map<String, Pair<Library, LibraryCqlVisitor>> libMap = new HashMap<>();
   private final Map<Integer, Library> libraryCacheMap = new HashMap<>();
+  private final List<Pair<String, String>> includedLibraries = new ArrayList<>();
+  private String fhirBaseUrl;
   private String name;
   private String version;
+
+  public LibraryCqlVisitor(String fhirBaseUrl) {
+    this.fhirBaseUrl = fhirBaseUrl;
+  }
 
   /**
    * Stores off lib name and version.
@@ -44,6 +50,28 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   public String visitLibraryDefinition(cqlParser.LibraryDefinitionContext ctx) {
     name = ctx.qualifiedIdentifier().getText();
     version = trim1(ctx.versionSpecifier().getText());
+    return null;
+  }
+
+  /**
+   * Stores name/version pairs of included libraries, include context, and relatedArtifacts
+   *
+   * @param ctx The context.
+   * @return Always null.
+   */
+  @Override
+  public String visitIncludeDefinition(cqlParser.IncludeDefinitionContext ctx) {
+    if (ctx.getChildCount() >= 4 &&
+      StringUtils.equals(ctx.getChild(0).getText(), "include") &&
+      StringUtils.equals(ctx.getChild(2).getText(), "version")) {
+      RelatedArtifact relatedArtifact = new RelatedArtifact();
+      relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
+      var nameVersion = getNameVersionFromInclude(ctx);
+      relatedArtifact.setUrl(fhirBaseUrl + "/Library/" + nameVersion.getLeft());
+      relatedArtifacts.add(relatedArtifact);
+      includedLibraries.add(nameVersion);
+      includes.add(ctx);
+    }
     return null;
   }
 
@@ -190,5 +218,9 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
 
   private String getFullText(ParserRuleContext context) {
     return context == null ? null : context.getText();
+  }
+
+  private Pair<String, String> getNameVersionFromInclude(cqlParser.IncludeDefinitionContext ctx) {
+    return Pair.of(ctx.getChild(1).getText(), trim1(ctx.getChild(3).getText()));
   }
 }
