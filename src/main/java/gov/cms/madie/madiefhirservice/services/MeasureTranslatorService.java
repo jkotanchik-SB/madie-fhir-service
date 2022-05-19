@@ -18,8 +18,6 @@ import org.hl7.fhir.r4.model.Period;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -96,19 +94,10 @@ public class MeasureTranslatorService {
       .setExpression(expression);
   }
 
-  public Period getPeriodFromDates(LocalDate startDate, LocalDate endDate ) {
+  public Period getPeriodFromDates(Date startDate, Date endDate ) {
     return new Period()
-      .setStart(convertLocalDateToDate(startDate), TemporalPrecisionEnum.DAY)
-      .setEnd(convertLocalDateToDate(endDate), TemporalPrecisionEnum.DAY);
-  }
-
-  public static Date convertLocalDateToDate(LocalDate localDate) {
-    if (localDate == null) {
-      return null;
-    }
-    return Date.from(localDate.atStartOfDay()
-      .atZone(ZoneId.systemDefault())
-      .toInstant());
+      .setStart(startDate, TemporalPrecisionEnum.DAY)
+      .setEnd(endDate, TemporalPrecisionEnum.DAY);
   }
 
   public CodeableConcept buildScoringConcept(String scoring) {
