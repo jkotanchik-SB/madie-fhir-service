@@ -102,7 +102,7 @@ public class MeasureBundleService {
       .description(madieMeasure.getCqlLibraryName())
       .cql(madieMeasure.getCql())
       .elmJson(madieMeasure.getElmJson())
-      //.elmXml(madieMeasure.getElmXml()) TODO: uncomment me when elmXml available on measure model
+      .elmXml(madieMeasure.getElmXml())
       .steward(madieMeasure.getMeasureMetaData().getSteward())
       .build();
   }
