@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -25,7 +26,7 @@ public class MeasureBundleController {
   @Autowired
   private FhirContext fhirContext;
 
-  @PutMapping("/bundles")
+  @PutMapping(value = "/bundles", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getMeasureBundle(
     @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
