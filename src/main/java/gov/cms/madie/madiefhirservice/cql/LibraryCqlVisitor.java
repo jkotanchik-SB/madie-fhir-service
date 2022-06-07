@@ -31,6 +31,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private final List<RelatedArtifact> relatedArtifacts = new ArrayList<>();
   private final Map<String, Pair<Library, LibraryCqlVisitor>> libMap = new HashMap<>();
   private final Map<Integer, Library> libraryCacheMap = new HashMap<>();
+  private final Map<String, String> valueSetNameUri = new HashMap<>();
   private final List<Pair<String, String>> includedLibraries = new ArrayList<>();
   private String fhirBaseUrl;
   private String name;
@@ -84,12 +85,15 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   @Override
   public String visitValuesetDefinition(cqlParser.ValuesetDefinitionContext ctx) {
     String uri = getUnquotedFullText(ctx.valuesetId());
+    String name= getUnquotedFullText(ctx.identifier());
     valueSets.add(ctx);
-
     RelatedArtifact relatedArtifact = new RelatedArtifact();
     relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
     relatedArtifact.setUrl(uri);
     relatedArtifacts.add(relatedArtifact);
+
+    //need to be polished once we human readable file
+    valueSetNameUri.put(name,uri);
 
     return null;
   }
@@ -193,6 +197,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
     var filter = new DataRequirement.DataRequirementCodeFilterComponent();
     filter.setPath(path);
     result.setCodeFilter(Collections.singletonList(filter));
+    filter.setValueSet(valueSetNameUri.get(valueSetOrCodeName));
     dataRequirements.add(result);
   }
 
