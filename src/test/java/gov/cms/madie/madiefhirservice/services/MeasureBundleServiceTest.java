@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -87,6 +88,8 @@ public class MeasureBundleServiceTest implements ResourceFileUtil{
 
     Library measureLibrary = (Library) bundle.getEntry().get(1).getResource();
     assertThat(measureLibrary.getName(), is(equalTo(madieMeasure.getCqlLibraryName())));
+    assertThat(measureLibrary.getContent(), is(notNullValue()));
+    assertThat(measureLibrary.getContent().size(), is(equalTo(2)));
   }
 
   @Test
