@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
-@RequestMapping(path = "/hapiFhir/measures")
+@RequestMapping(path = "/fhir/measures")
 @Tag(name = "Measure-Controller", description = "Measure resources HAPI FHIR API")
 public class MeasureBundleController {
   @Autowired

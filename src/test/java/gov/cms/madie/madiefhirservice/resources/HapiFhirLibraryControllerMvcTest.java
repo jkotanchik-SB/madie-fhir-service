@@ -32,7 +32,7 @@ public class HapiFhirLibraryControllerMvcTest {
   public void testGetLibraryResourceAsCqlLibraryReturnsNotFound() throws Exception {
     when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenThrow(new HapiLibraryNotFoundException("Test", "1.0.000"));
     mockMvc.perform(
-            get("/hapiFhir/libraries?name=Test&version=1.0.000")
+            get("/fhir/libraries?name=Test&version=1.0.000")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
         )
@@ -47,7 +47,7 @@ public class HapiFhirLibraryControllerMvcTest {
         .build();
     when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenReturn(library);
     mockMvc.perform(
-            get("/hapiFhir/libraries?name=Test&version=1.0.000")
+            get("/fhir/libraries?name=Test&version=1.0.000")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
         )
