@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping(path = "/hapiFhir/libraries")
+@RequestMapping(path = "/fhir/libraries")
 @Tag(name = "HAPI-FHIR-Library-Controller", description = "API for Library resources in HAPI")
 @RequiredArgsConstructor
 public class HapiFhirLibraryController {

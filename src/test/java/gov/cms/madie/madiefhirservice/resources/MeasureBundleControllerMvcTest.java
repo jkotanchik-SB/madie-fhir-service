@@ -47,7 +47,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
       .thenReturn(FhirContext.forR4().newJsonParser());
 
     mockMvc.perform(
-      MockMvcRequestBuilders.put("/hapiFhir/measures/bundles")
+      MockMvcRequestBuilders.put("/fhir/measures/bundles")
         .with(user(TEST_USER_ID))
         .with(csrf())
         .content(madieMeasureJson)
