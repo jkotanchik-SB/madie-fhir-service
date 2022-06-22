@@ -2,8 +2,8 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madiejavamodels.measure.Group;
-import gov.cms.madiejavamodels.measure.Measure;
+import gov.cms.madie.models.measure.Group;
+import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

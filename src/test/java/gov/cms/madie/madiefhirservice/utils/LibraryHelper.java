@@ -1,6 +1,6 @@
 package gov.cms.madie.madiefhirservice.utils;
 
-import gov.cms.madiejavamodels.library.CqlLibrary;
+import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.mat.cql.CqlTextParser;
 import gov.cms.mat.cql.elements.LibraryProperties;
 import org.hl7.fhir.r4.model.Library;

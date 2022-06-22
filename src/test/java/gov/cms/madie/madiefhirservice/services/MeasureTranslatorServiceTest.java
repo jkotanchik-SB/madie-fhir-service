@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madiejavamodels.measure.Measure;
+import gov.cms.madie.models.measure.Measure;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.Meta;
 import org.junit.jupiter.api.BeforeEach;

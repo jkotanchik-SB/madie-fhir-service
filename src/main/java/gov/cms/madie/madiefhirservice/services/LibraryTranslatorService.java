@@ -2,7 +2,7 @@ package gov.cms.madie.madiefhirservice.services;
 
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
-import gov.cms.madiejavamodels.library.CqlLibrary;
+import gov.cms.madie.models.library.CqlLibrary;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

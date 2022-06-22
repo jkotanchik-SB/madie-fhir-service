@@ -4,7 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madiejavamodels.measure.Measure;
+import gov.cms.madie.models.measure.Measure;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

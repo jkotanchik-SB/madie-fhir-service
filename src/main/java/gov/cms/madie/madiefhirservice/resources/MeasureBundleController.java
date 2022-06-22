@@ -2,7 +2,7 @@ package gov.cms.madie.madiefhirservice.resources;
 
 import ca.uhn.fhir.context.FhirContext;
 import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
-import gov.cms.madiejavamodels.measure.Measure;
+import gov.cms.madie.models.measure.Measure;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;

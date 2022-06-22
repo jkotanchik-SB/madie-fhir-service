@@ -2,7 +2,7 @@ package gov.cms.madie.madiefhirservice.resources;
 
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
-import gov.cms.madiejavamodels.library.CqlLibrary;
+import gov.cms.madie.models.library.CqlLibrary;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
