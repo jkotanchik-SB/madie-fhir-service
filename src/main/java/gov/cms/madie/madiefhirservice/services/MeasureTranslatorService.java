@@ -67,8 +67,6 @@ public class MeasureTranslatorService {
   }
 
   public List<MeasureGroupComponent> buildFhirPopulationGroups(List<Group> madieGroups) {
-    System.out.println(madieGroups.stream()
-            .map(this::buildFhirPopulationGroup));
     return madieGroups.stream()
       .map(this::buildFhirPopulationGroup)
       .collect(Collectors.toList());
