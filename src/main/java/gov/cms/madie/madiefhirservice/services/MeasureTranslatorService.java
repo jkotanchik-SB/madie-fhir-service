@@ -130,6 +130,7 @@ public class MeasureTranslatorService {
     Meta meta = new Meta();
     if (StringUtils.isBlank(scoring)) {
       log.error("Scoring type is null");
+
     } else {
       switch (scoring) {
         case "Proportion":
