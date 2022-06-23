@@ -4,7 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import gov.cms.madiejavamodels.measure.Measure;
+import gov.cms.madie.models.measure.Measure;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Resource;

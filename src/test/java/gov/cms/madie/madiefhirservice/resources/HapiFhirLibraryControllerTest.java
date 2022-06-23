@@ -4,7 +4,7 @@ import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madiejavamodels.library.CqlLibrary;
+import gov.cms.madie.models.library.CqlLibrary;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -3,7 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import gov.cms.madie.madiefhirservice.exceptions.DuplicateLibraryException;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.LibraryAttachmentNotFoundException;
-import gov.cms.madiejavamodels.library.CqlLibrary;
+import gov.cms.madie.models.library.CqlLibrary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Attachment;
