@@ -45,14 +45,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getRationale(),
       is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
     assertThat(measure.getPublisher(), is(equalTo("UNKNOWN")));
-    assertThat(measure.getScoring().getCoding().get(0).getDisplay(),
-      is(equalTo(madieMeasure.getMeasureScoring())));
     assertThat(measure.getUrl(), is(equalTo("cms.gov/Measure/"+ madieMeasure.getCqlLibraryName())));
     assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
       is(equalTo("01/01/2023")));
     assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
       is(equalTo("12/31/2023")));
-    assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.PROPORTION_PROFILE_URI)));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
 
     MeasureGroupPopulationComponent groupComponent = (MeasureGroupPopulationComponent)

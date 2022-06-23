@@ -83,8 +83,6 @@ public class MeasureBundleServiceTest implements ResourceFileUtil{
     assertThat(madieMeasure.getCqlLibraryName(), is(equalTo(measureResource.getName())));
     assertThat(madieMeasure.getMeasureMetaData().getSteward(),
       is(equalTo(measureResource.getGuidance())));
-    assertThat(madieMeasure.getMeasureScoring(),
-      is(equalTo(measureResource.getScoring().getCoding().get(0).getDisplay())));
 
     Library measureLibrary = (Library) bundle.getEntry().get(1).getResource();
     assertThat(measureLibrary.getName(), is(equalTo(madieMeasure.getCqlLibraryName())));

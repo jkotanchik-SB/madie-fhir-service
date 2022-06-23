@@ -55,13 +55,13 @@ public class MeasureTranslatorService {
       .setCopyright(StringUtils.isBlank(copyright) ? UNKNOWN  : copyright)
       .setDisclaimer(StringUtils.isBlank(disclaimer) ? UNKNOWN  : disclaimer)
       .setRationale(rationale)
-      .setScoring(buildScoringConcept(madieMeasure.getMeasureScoring()))
+      //.setScoring(buildScoringConcept(madieMeasure.getMeasureScoring()))
       .setLibrary(Collections.singletonList(
         new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
       .setPurpose(UNKNOWN)
       .setContact(buildContactDetailUrl())
-      .setGroup(buildFhirPopulationGroups(madieMeasure.getGroups()))
-      .setMeta(buildMeasureMeta(madieMeasure.getMeasureScoring()));
+      .setGroup(buildFhirPopulationGroups(madieMeasure.getGroups()));
+      //.setMeta(buildMeasureMeta(madieMeasure.getMeasureScoring()));
 
     return measure;
   }
