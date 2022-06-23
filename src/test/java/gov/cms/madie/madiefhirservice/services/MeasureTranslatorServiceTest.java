@@ -50,6 +50,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
       is(equalTo("01/01/2023")));
     assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
       is(equalTo("12/31/2023")));
+    assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.PROPORTION_PROFILE_URI)));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
 
     MeasureGroupPopulationComponent groupComponent = (MeasureGroupPopulationComponent)
