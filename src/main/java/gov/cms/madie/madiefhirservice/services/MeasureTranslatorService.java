@@ -55,13 +55,13 @@ public class MeasureTranslatorService {
       .setCopyright(StringUtils.isBlank(copyright) ? UNKNOWN  : copyright)
       .setDisclaimer(StringUtils.isBlank(disclaimer) ? UNKNOWN  : disclaimer)
       .setRationale(rationale)
-      .setScoring(buildScoringConcept(madieMeasure.getMeasureScoring()))
       .setLibrary(Collections.singletonList(
         new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
       .setPurpose(UNKNOWN)
       .setContact(buildContactDetailUrl())
       .setGroup(buildFhirPopulationGroups(madieMeasure.getGroups()))
-      .setMeta(buildMeasureMeta(madieMeasure.getMeasureScoring()));
+            //should be updated when multiple measure groups is supported
+      .setMeta(buildMeasureMeta(madieMeasure.getGroups().get(0).getScoring()));
 
     return measure;
   }
@@ -130,6 +130,7 @@ public class MeasureTranslatorService {
     Meta meta = new Meta();
     if (StringUtils.isBlank(scoring)) {
       log.error("Scoring type is null");
+
     } else {
       switch (scoring) {
         case "Proportion":

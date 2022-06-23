@@ -22,6 +22,5 @@
   "measurementPeriodStart": "2023-01-01T05:00:00.000Z",
   "measurementPeriodEnd": "2023-12-31T05:00:00.000Z",
   "model": "QI-Core",
-  "measureScoring": "Proportion",
   "measureMetaData": {}
 }
