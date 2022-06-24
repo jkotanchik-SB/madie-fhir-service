@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.utils;
 
+import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.mat.cql.CqlTextParser;
 import gov.cms.mat.cql.elements.LibraryProperties;
 import org.hl7.fhir.r4.model.Library;
@@ -7,7 +8,7 @@ import org.hl7.fhir.r4.model.Library;
 import java.util.UUID;
 
 public interface LibraryHelper {
-    default Library createLib(String cql) {
+    default Library createLibrary(String cql) {
         CqlTextParser cqlTextParser = new CqlTextParser(cql);
 
         LibraryProperties libraryProperties = cqlTextParser.getLibrary();
@@ -20,5 +21,21 @@ public interface LibraryHelper {
         library.setVersion(libraryProperties.getVersion());
         library.addContent().setContentType("text/cql").setData(cql.getBytes());
         return library;
+    }
+
+    default CqlLibrary createCqlLibrary(String cql) {
+        CqlTextParser cqlTextParser = new CqlTextParser(cql);
+        LibraryProperties libraryProperties = cqlTextParser.getLibrary();
+
+        CqlLibrary cqlLibrary = CqlLibrary.builder()
+          .id(UUID.randomUUID().toString())
+          .cqlLibraryName(libraryProperties.getName())
+          .version(libraryProperties.getVersion())
+          .steward("SemanticBits")
+          .description("Test Description for this library")
+          .experimental(true)
+          .cql(cql)
+          .build();
+        return cqlLibrary;
     }
 }
