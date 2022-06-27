@@ -120,7 +120,7 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
     Library libraryResource = libraryService.createLibraryResourceForCqlLibrary(cqlLibrary);
 
     assertEquals(libraryResource.getName(), cqlLibrary.getCqlLibraryName());
-    assertEquals(libraryResource.getVersion(), cqlLibrary.getVersion());
+    assertEquals(libraryResource.getVersion(), cqlLibrary.getVersion().toString());
   }
 
   @Test

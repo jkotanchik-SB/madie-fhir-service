@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.library.Version;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,11 +50,11 @@ public class LibraryTranslatorService {
     library.setId(cqlLibrary.getId());
     library.setLanguage("en");
     library.setName(cqlLibrary.getCqlLibraryName());
-    library.setVersion(cqlLibrary.getVersion());
+    library.setVersion(cqlLibrary.getVersion().toString());
     library.setDate(new Date());
     library.setStatus(Enumerations.PublicationStatus.ACTIVE);
-    library.setPublisher(cqlLibrary.getSteward() != null && StringUtils.isNotBlank(cqlLibrary.getSteward()) ?
-        cqlLibrary.getSteward() : UNKNOWN_VALUE);
+    library.setPublisher(cqlLibrary.getPublisher() != null && StringUtils.isNotBlank(cqlLibrary.getPublisher()) ?
+        cqlLibrary.getPublisher() : UNKNOWN_VALUE);
     library.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), UNKNOWN_VALUE));
     library.setExperimental(cqlLibrary.isExperimental());
     library.setContent(createContent(cqlLibrary.getCql(), cqlLibrary.getElmJson(), cqlLibrary.getElmXml()));
@@ -71,8 +72,8 @@ public class LibraryTranslatorService {
     return CqlLibrary.builder()
         .id(library.getMeta().getId())
         .cqlLibraryName(library.getName())
-        .version(library.getVersion())
-        .steward(UNKNOWN_VALUE.equals(library.getPublisher()) ? null : library.getPublisher())
+        .version(Version.parse(library.getVersion()))
+        .publisher(UNKNOWN_VALUE.equals(library.getPublisher()) ? null : library.getPublisher())
         .description(UNKNOWN_VALUE.equals(library.getDescription()) ? null : library.getDescription())
         .experimental(library.getExperimental())
         .cql(attachmentToString(findAttachmentOfContentType(library, CQL_CONTENT_TYPE)))

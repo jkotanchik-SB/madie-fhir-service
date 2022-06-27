@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.resources;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.services.LibraryService;
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.library.Version;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -43,7 +44,7 @@ public class HapiFhirLibraryControllerMvcTest {
   public void testGetLibraryResourceAsCqlLibraryReturnsLibrary() throws Exception {
     CqlLibrary library = CqlLibrary.builder()
         .cqlLibraryName("Test")
-        .version("1.0.000")
+        .version(Version.parse("1.0.000"))
         .build();
     when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenReturn(library);
     mockMvc.perform(

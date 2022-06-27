@@ -4,6 +4,7 @@ import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.library.Version;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,7 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
 
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
     assertEquals(library.getName(), cqlLibrary.getCqlLibraryName());
-    assertEquals(library.getVersion(), cqlLibrary.getVersion());
+    assertEquals(library.getVersion(), cqlLibrary.getVersion().toString());
     assertEquals(library.getDataRequirement().size(), visitor.getDataRequirements().size());
   }
 
@@ -85,7 +86,7 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     CqlLibrary output = libraryTranslatorService.convertToCqlLibrary(library);
     assertThat(output, is(notNullValue()));
     assertThat(output.getCqlLibraryName(), is(equalTo("LibraryName")));
-    assertThat(output.getVersion(), is(equalTo("1.2.000")));
+    assertThat(output.getVersion(), is(equalTo(Version.parse("1.2.000"))));
     assertThat(output.getCql(), is(equalTo("CQL_CONTENT")));
     assertThat(output.getElmJson(), is(equalTo("JSON_ELM_CONTENT")));
     assertThat(output.getElmXml(), is(equalTo("XML_ELM_CONTENT")));
