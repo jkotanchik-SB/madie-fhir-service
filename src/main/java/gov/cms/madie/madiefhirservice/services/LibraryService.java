@@ -83,10 +83,10 @@ public class LibraryService {
 
   public Library createLibraryResourceForCqlLibrary(CqlLibrary cqlLibrary) {
     boolean isLibraryPresent = isLibraryResourcePresent(
-      cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion());
+      cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
 
     if (isLibraryPresent) {
-      throw new DuplicateLibraryException(cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion());
+      throw new DuplicateLibraryException(cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
     }
 
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);

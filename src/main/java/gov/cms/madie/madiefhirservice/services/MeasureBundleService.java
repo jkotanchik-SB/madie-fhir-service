@@ -5,6 +5,7 @@ import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.library.Version;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,12 +99,11 @@ public class MeasureBundleService {
       .builder()
       .id(madieMeasure.getCqlLibraryName())
       .cqlLibraryName(madieMeasure.getCqlLibraryName())
-      .version(madieMeasure.getVersion())
+      .version(Version.parse(madieMeasure.getVersion()))
       .description(madieMeasure.getCqlLibraryName())
       .cql(madieMeasure.getCql())
       .elmJson(madieMeasure.getElmJson())
       .elmXml(madieMeasure.getElmXml())
-      .steward(madieMeasure.getMeasureMetaData().getSteward())
       .build();
   }
 }

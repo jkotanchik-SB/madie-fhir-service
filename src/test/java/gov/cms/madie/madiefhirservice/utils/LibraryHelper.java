@@ -1,6 +1,7 @@
 package gov.cms.madie.madiefhirservice.utils;
 
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.library.Version;
 import gov.cms.mat.cql.CqlTextParser;
 import gov.cms.mat.cql.elements.LibraryProperties;
 import org.hl7.fhir.r4.model.Library;
@@ -30,8 +31,8 @@ public interface LibraryHelper {
         CqlLibrary cqlLibrary = CqlLibrary.builder()
           .id(UUID.randomUUID().toString())
           .cqlLibraryName(libraryProperties.getName())
-          .version(libraryProperties.getVersion())
-          .steward("SemanticBits")
+          .version(Version.parse(libraryProperties.getVersion()))
+          .publisher("SemanticBits")
           .description("Test Description for this library")
           .experimental(true)
           .cql(cql)
