@@ -73,19 +73,19 @@ public class MeasureTranslatorService {
   }
 
   public MeasureGroupComponent buildFhirPopulationGroup(Group madieGroup) {
-    List<MeasureGroupPopulationComponent> measurePopulations = madieGroup.getPopulation()
-      .entrySet()
+    List<MeasureGroupPopulationComponent> measurePopulations = madieGroup.getPopulations()
       .stream()
-      .map(entry -> {
-        String populationCode = entry.getKey().toCode();
-        String populationDisplay = entry.getKey().getDisplay();
-        return new MeasureGroupPopulationComponent()
+      .map(population -> {
+        String populationCode = population.getName().toCode();
+        String populationDisplay = population.getName().getDisplay();
+        return (MeasureGroupPopulationComponent)(new MeasureGroupPopulationComponent()
           .setCode(buildCodeableConcept(populationCode, UriConstants.POPULATION_SYSTEM_URI, populationDisplay))
-          .setCriteria(buildExpression("text/cql.identifier", entry.getValue()));
+          .setCriteria(buildExpression("text/cql.identifier", population.getDefinition()))
+          .setId(population.getId()));
         // TODO: Add an extension for measure observations
       }).collect(Collectors.toList());
 
-    return new MeasureGroupComponent().setPopulation(measurePopulations);
+    return (MeasureGroupComponent)(new MeasureGroupComponent().setPopulation(measurePopulations).setId(madieGroup.getId()));
   }
 
   public Expression buildExpression(String language, String expression) {
