@@ -85,7 +85,8 @@ public class MeasureTranslatorService {
         // TODO: Add an extension for measure observations
       }).collect(Collectors.toList());
 
-    return (MeasureGroupComponent)(new MeasureGroupComponent().setPopulation(measurePopulations).setId(madieGroup.getId()));
+    return (MeasureGroupComponent)(new MeasureGroupComponent().setPopulation(measurePopulations)
+        .setId(madieGroup.getId()));
   }
 
   public Expression buildExpression(String language, String expression) {
