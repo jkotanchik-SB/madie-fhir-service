@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>gov.cms.madie</groupId>
 	<artifactId>madie-fhir-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>Madie fhir Service</name>
 	<description>Fhir Service for MADiE</description>
 
@@ -118,7 +118,7 @@
 		<dependency>
 			<groupId>gov.cms.madie</groupId>
 			<artifactId>madie-java-models</artifactId>
-			<version>0.1.4-SNAPSHOT</version>
+			<version>0.2.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

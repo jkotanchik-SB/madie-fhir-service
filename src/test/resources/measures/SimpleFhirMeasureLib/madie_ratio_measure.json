@@ -29,7 +29,8 @@
           "name": "numerator",
           "definition": "num"
         }
-      ]
+      ],
+      "measureGroupTypes": ["Outcome"]
     }
   ],
   "createdAt": "2022-04-29T13:10:34.412Z",
