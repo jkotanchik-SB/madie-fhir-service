@@ -7,12 +7,17 @@
   "groups": [
     {
       "id": "626be4370ca8110d3b22404b",
-      "scoring": "Proportion",
+      "scoring": "Ratio",
       "populations": [
         {
           "id": "id1",
           "name": "initialPopulation",
           "definition": "ipp"
+        },
+        {
+          "id": "id4",
+          "name": "initialPopulation",
+          "definition": "ipp2"
         },
         {
           "id": "id2",

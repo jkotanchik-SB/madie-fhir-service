@@ -16,6 +16,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 
@@ -25,11 +26,15 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   private MeasureTranslatorService measureTranslatorService;
 
   private Measure madieMeasure;
+  private Measure madieRatioMeasure;
 
   @BeforeEach
   public void setUp() throws JsonProcessingException {
     String madieMeasureJson = getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
+    String madieRatioMeasureJson = getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_ratio_measure.json");
+    madieRatioMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieRatioMeasureJson);
+
   }
 
   @Test
@@ -53,12 +58,54 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.PROPORTION_PROFILE_URI)));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
 
-    MeasureGroupPopulationComponent groupComponent = (MeasureGroupPopulationComponent)
-      measure.getGroup().get(0).getPopulation().get(0);
+    assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupComponent = measure.getGroup().get(0).getPopulation().get(0);
     assertThat(groupComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
     assertThat(groupComponent.getCriteria().getExpression(), is(equalTo("ipp")));
     assertThat(groupComponent.getCode().getCoding().get(0).getDisplay(), is(equalTo("Initial Population")));
     assertThat(groupComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+    assertThat(groupComponent.getId(), is(notNullValue()));
+  }
+
+
+
+  @Test
+  public void testCreateFhirMeasureForMadieRatioMeasure( ) {
+    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
+
+    org.hl7.fhir.r4.model.Measure measure = measureTranslatorService
+        .createFhirMeasureForMadieMeasure(madieRatioMeasure);
+
+    assertThat(measure.getName(), is(equalTo(madieMeasure.getCqlLibraryName())));
+    assertThat(measure.getGuidance(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getSteward())));
+    assertThat(measure.getRationale(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
+    assertThat(measure.getPublisher(), is(equalTo("UNKNOWN")));
+    assertThat(measure.getUrl(), is(equalTo("cms.gov/Measure/"+ madieMeasure.getCqlLibraryName())));
+    assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
+        is(equalTo("01/01/2023")));
+    assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
+        is(equalTo("12/31/2023")));
+    assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.RATIO_PROFILE_URI)));
+    assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
+
+    assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupComponent = measure.getGroup().get(0).getPopulation().get(0);
+    assertThat(groupComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupComponent.getCriteria().getExpression(), is(equalTo("ipp")));
+    assertThat(groupComponent.getCode().getCoding().get(0).getDisplay(), is(equalTo("Initial Population")));
+    assertThat(groupComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+    assertThat(groupComponent.getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupComponent2 = measure.getGroup().get(0).getPopulation().get(1);
+    assertThat(groupComponent2.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupComponent2.getCriteria().getExpression(), is(equalTo("ipp2")));
+    assertThat(groupComponent2.getCode().getCoding().get(0).getDisplay(), is(equalTo("Initial Population")));
+    assertThat(groupComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+    assertThat(groupComponent2.getId(), is(notNullValue()));
   }
 
   @Test
