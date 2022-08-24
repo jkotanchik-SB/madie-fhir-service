@@ -90,8 +90,7 @@ public class MeasureTranslatorService {
 
   public MeasureGroupComponent buildFhirPopulationGroup(Group madieGroup) {
     List<MeasureGroupPopulationComponent> measurePopulations = madieGroup.getPopulations()
-      .stream().sorted(Population::compareTo)
-      .map(population -> {
+      .stream().map(population -> {
         String populationCode = population.getName().toCode();
         String  populationDisplay = population.getName().getDisplay();
         return (MeasureGroupPopulationComponent)(new MeasureGroupPopulationComponent()
@@ -108,29 +107,32 @@ public class MeasureTranslatorService {
 
   private Extension buildPopulationTypeExtension(Population population, Group madieGroup) {
     //TODO: I feel like this should be in a QICore specific module
-    Extension extension = null;
+    AtomicReference<Extension> extension = new AtomicReference<Extension>();
     AtomicReference<String> id  = new AtomicReference<String>();
-    if (population.getName().equals( PopulationType.INITIAL_POPULATION)) {
-        //then get associationType and find the group.populatino that matches and give it the ID
-        AssociationType associationType = population.getAssociationType();
-        madieGroup.getPopulations().forEach(pop -> {          
-          if (associationType != null && 
-              pop.getName().toCode().equalsIgnoreCase(associationType.toString())) {
-            pop.setReferenceId(population.getId());            
+    if (population.getName().equals( PopulationType.DENOMINATOR) ||
+        population.getName().equals( PopulationType.NUMERATOR)) {
+        madieGroup.getPopulations().forEach(pop -> {
+          //find the pop that has initial_populatino, associationType = population.getName() and then set the extension
+          if (pop.getName().equals(PopulationType.INITIAL_POPULATION) &&
+              (pop.getAssociationType() != null && 
+                pop.getAssociationType().toString().equalsIgnoreCase(population.getName().toCode())
+                )
+              )
+          {
+            IBaseDatatype theValue = new StringType(pop.getId());
+            //TODO investigate whether these URLS can change; 
+            //  if they are codified in HAPI FHIR Libraries.. 
+            //  we should define a separate property file with this list 
+            extension.set(
+                new Extension("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference", 
+                    theValue)) ;
           }
         });
         
     }
-    else if (population.getName().equals( PopulationType.DENOMINATOR) ||
-        population.getName().equals( PopulationType.NUMERATOR)) {
-      IBaseDatatype theValue = new StringType(population.getReferenceId());
-      //TODO investigate whether these URLS can change; 
-      //  if they are codified in HAPI FHIR Libraries.. 
-      //  we should define a separate property file with this list 
-      extension = new Extension("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference", theValue) ;
-    }
+
     //value is a codeable concept
-    return extension;
+    return extension.get();
   }
 
   public Expression buildExpression(String language, String expression) {
