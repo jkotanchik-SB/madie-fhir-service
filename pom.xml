@@ -69,6 +69,18 @@
 			<version>5.7.0</version>
 		</dependency>
 
+		<!-- Validation resources for FHIR validations -->
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-validation</artifactId>
+			<version>5.7.9</version>
+		</dependency>
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-validation-resources-r4</artifactId>
+			<version>5.7.9</version>
+		</dependency>
+
 		<!--Provides Feasibility to interact with HAPI FHIR JPA Server-->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
@@ -118,7 +130,7 @@
 		<dependency>
 			<groupId>gov.cms.madie</groupId>
 			<artifactId>madie-java-models</artifactId>
-			<version>0.2.4-SNAPSHOT</version>
+			<version>0.2.6-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
