@@ -70,14 +70,14 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
       is(equalTo("01/01/2023")));
     assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
       is(equalTo("12/31/2023")));
-    assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.PROPORTION_PROFILE_URI)));
+    assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.RATIO_PROFILE_URI)));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
 
     assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
 
     MeasureGroupPopulationComponent groupComponent = measure.getGroup().get(0).getPopulation().get(0);
     assertThat(groupComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
-    assertThat(groupComponent.getCriteria().getExpression(), is(equalTo("ipp")));
+    assertThat(groupComponent.getCriteria().getExpression(), is(equalTo("SDE Ethnicity")));
     assertThat(groupComponent.getCode().getCoding().get(0).getDisplay(), is(equalTo("Initial Population")));
     assertThat(groupComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
     assertThat(groupComponent.getId(), is(notNullValue()));
@@ -98,13 +98,13 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getRationale(),
         is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
     assertThat(measure.getPublisher(), is(equalTo("UNKNOWN")));
-    assertThat(measure.getUrl(), is(equalTo("cms.gov/Measure/"+ madieMeasure.getCqlLibraryName())));
+    assertThat(measure.getUrl(), is(equalTo("cms.gov/Measure/"+ madieRatioMeasure.getCqlLibraryName())));
     assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
         is(equalTo("01/01/2023")));
     assertThat(DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
     assertThat(measure.getMeta().getProfile().get(0).getValue(), is(equalTo(UriConstants.RATIO_PROFILE_URI)));
-    assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
+    assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
 
     assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
 
