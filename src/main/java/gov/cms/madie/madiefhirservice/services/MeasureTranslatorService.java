@@ -1,29 +1,43 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
+import ca.uhn.fhir.model.primitive.StringDt;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.models.measure.AssociationType;
 import gov.cms.madie.models.measure.Group;
 import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.Population;
+import gov.cms.madie.models.measure.PopulationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.CanonicalType;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.ContactDetail;
 import org.hl7.fhir.r4.model.ContactPoint;
 import org.hl7.fhir.r4.model.Expression;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Period;
+import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Type;
+import org.hl7.fhir.r4.model.codesystems.MeasurePopulation;
+import org.hl7.fhir.r4.model.codesystems.MeasureType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
+import javax.persistence.Tuple;
 import static org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import static org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 
@@ -67,6 +81,8 @@ public class MeasureTranslatorService {
   }
 
   public List<MeasureGroupComponent> buildFhirPopulationGroups(List<Group> madieGroups) {
+
+
     return madieGroups.stream()
       .map(this::buildFhirPopulationGroup)
       .collect(Collectors.toList());
@@ -74,19 +90,49 @@ public class MeasureTranslatorService {
 
   public MeasureGroupComponent buildFhirPopulationGroup(Group madieGroup) {
     List<MeasureGroupPopulationComponent> measurePopulations = madieGroup.getPopulations()
-      .stream()
-      .map(population -> {
+      .stream().map(population -> {
         String populationCode = population.getName().toCode();
-        String populationDisplay = population.getName().getDisplay();
+        String  populationDisplay = population.getName().getDisplay();
         return (MeasureGroupPopulationComponent)(new MeasureGroupPopulationComponent()
           .setCode(buildCodeableConcept(populationCode, UriConstants.POPULATION_SYSTEM_URI, populationDisplay))
           .setCriteria(buildExpression("text/cql.identifier", population.getDefinition()))
-          .setId(population.getId()));
+          .setId(population.getId()))
+          .addExtension(buildPopulationTypeExtension(population, madieGroup));
         // TODO: Add an extension for measure observations
       }).collect(Collectors.toList());
 
     return (MeasureGroupComponent)(new MeasureGroupComponent().setPopulation(measurePopulations)
         .setId(madieGroup.getId()));
+  }
+
+  private Extension buildPopulationTypeExtension(Population population, Group madieGroup) {
+    //TODO: I feel like this should be in a QICore specific module
+    AtomicReference<Extension> extension = new AtomicReference<Extension>();
+    AtomicReference<String> id  = new AtomicReference<String>();
+    if (population.getName().equals( PopulationType.DENOMINATOR) ||
+        population.getName().equals( PopulationType.NUMERATOR)) {
+        madieGroup.getPopulations().forEach(pop -> {
+          //find the pop that has initial_populatino, associationType = population.getName() and then set the extension
+          if (pop.getName().equals(PopulationType.INITIAL_POPULATION) &&
+              (pop.getAssociationType() != null && 
+                pop.getAssociationType().toString().equalsIgnoreCase(population.getName().toCode())
+                )
+              )
+          {
+            IBaseDatatype theValue = new StringType(pop.getId());
+            //TODO investigate whether these URLS can change; 
+            //  if they are codified in HAPI FHIR Libraries.. 
+            //  we should define a separate property file with this list 
+            extension.set(
+                new Extension("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference", 
+                    theValue)) ;
+          }
+        });
+        
+    }
+
+    //value is a codeable concept
+    return extension.get();
   }
 
   public Expression buildExpression(String language, String expression) {
@@ -115,7 +161,7 @@ public class MeasureTranslatorService {
   public CodeableConcept buildCodeableConcept(String code, String system, String display) {
     CodeableConcept codeableConcept = new CodeableConcept();
     codeableConcept.setCoding(new ArrayList<>());
-    codeableConcept.getCoding()
+    codeableConcept.getCoding()  
       .add(buildCoding(code, system, display));
     return codeableConcept;
   }

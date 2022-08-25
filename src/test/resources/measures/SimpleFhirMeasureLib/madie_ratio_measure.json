@@ -12,13 +12,15 @@
         {
           "id": "id1",
           "name": "initialPopulation",
-          "definition": "ipp"
+          "definition": "ipp",
+          "associationType":"Denominator"          
         },
         {
           "id": "id4",
           "name": "initialPopulation",
-          "definition": "ipp2"
-        },
+          "definition": "ipp2",
+          "associationType":"Numerator"
+       	},
         {
           "id": "id2",
           "name": "denominator",
@@ -30,7 +32,23 @@
           "definition": "num"
         }
       ],
-      "measureGroupTypes": ["Outcome"]
+      "measureGroupTypes": ["Outcome"],
+         "measureObservations":null,
+         "groupDescription":"test 4495 group 1",
+         "improvementNotation":"",
+         "rateAggregation":"",         
+         "scoringUnit":{
+            "label":"kg kilogram",
+            "value":{
+               "code":"kg",
+               "name":"kilogram",
+               "guidance":null
+            }
+         },
+         "stratifications":[
+            
+         ],
+         "populationBasis":"Account"
     }
   ],
   "createdAt": "2022-04-29T13:10:34.412Z",
