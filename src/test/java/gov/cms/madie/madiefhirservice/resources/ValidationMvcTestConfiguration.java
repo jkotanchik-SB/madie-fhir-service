@@ -1,8 +1,7 @@
-package gov.cms.madie.madiefhirservice.config;
+package gov.cms.madie.madiefhirservice.resources;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
-import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.common.hapi.validation.support.CommonCodeSystemsTerminologyService;
 import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.NpmPackageValidationSupport;
@@ -10,12 +9,13 @@ import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 
-@Slf4j
 @Configuration
-public class HapiFhirConfig {
+@Profile("MvcTest")
+public class ValidationMvcTestConfiguration {
 
   @Bean
   public FhirContext fhirContext() {
