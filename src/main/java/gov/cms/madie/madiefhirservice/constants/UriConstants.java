@@ -8,4 +8,8 @@ public final class UriConstants {
   public static final String COHORT_PROFILE_URI = "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cohort-measure-cqfm";
   public static final String CV_PROFILE_URI = "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cv-measure-cqfm";
   public static final String RATIO_PROFILE_URI = "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/ratio-measure-cqfm";
+
+  public static final class QiCore {
+    public static final String PATIENT_PROFILE_URI = "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient";
+  }
 }
