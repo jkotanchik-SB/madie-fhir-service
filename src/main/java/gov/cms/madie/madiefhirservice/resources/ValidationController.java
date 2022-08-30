@@ -28,7 +28,9 @@ import org.springframework.web.client.HttpClientErrorException;
 @Slf4j
 @RestController
 @RequestMapping(path = "/fhir/validations")
-@Tag(name = "HAPI-FHIR-Validation-Controller", description = "API for validating resources using HAPI utilities")
+@Tag(
+    name = "HAPI-FHIR-Validation-Controller",
+    description = "API for validating resources using HAPI utilities")
 @AllArgsConstructor
 public class ValidationController {
 
@@ -37,11 +39,13 @@ public class ValidationController {
 
   @PostMapping(
       path = "/bundles",
-      consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE
-  )
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public HapiOperationOutcome validateBundle(HttpEntity<String> request) {
-    LenientErrorHandler lenientErrorHandler = new LenientErrorHandler().setErrorOnInvalidValue(false);
-    IParser parser = fhirContext.newJsonParser().setParserErrorHandler(lenientErrorHandler).setPrettyPrint(true);
+    LenientErrorHandler lenientErrorHandler =
+        new LenientErrorHandler().setErrorOnInvalidValue(false);
+    IParser parser =
+        fhirContext.newJsonParser().setParserErrorHandler(lenientErrorHandler).setPrettyPrint(true);
     IBaseResource resource;
     try {
       resource = parser.parseResource(request.getBody());
@@ -57,8 +61,7 @@ public class ValidationController {
           HttpStatus.BAD_REQUEST.value(),
           false,
           "An error occurred while parsing the resource",
-          operationOutcome
-      );
+          operationOutcome);
     }
 
     // only validate bundles
@@ -74,8 +77,7 @@ public class ValidationController {
           HttpStatus.BAD_REQUEST.value(),
           false,
           "Resource must have resourceType of 'Bundle'",
-          operationOutcome
-      );
+          operationOutcome);
     }
 
     // Ask the context for a validator
@@ -99,12 +101,7 @@ public class ValidationController {
   }
 
   protected HapiOperationOutcome encodeOutcome(
-      IParser parser,
-      int code,
-      boolean successful,
-      String message,
-      OperationOutcome outcome
-  ) {
+      IParser parser, int code, boolean successful, String message, OperationOutcome outcome) {
     try {
       ObjectMapper mapper = new ObjectMapper();
       String outcomeString = parser.encodeResourceToString(outcome);
@@ -118,5 +115,4 @@ public class ValidationController {
       throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
     }
   }
-
 }

@@ -20,20 +20,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping(path = "/fhir/measures")
 @Tag(name = "Measure-Controller", description = "Measure resources HAPI FHIR API")
 public class MeasureBundleController {
-  @Autowired
-  private MeasureBundleService measureBundleService;
+  @Autowired private MeasureBundleService measureBundleService;
 
-  @Autowired
-  private FhirContext fhirContext;
+  @Autowired private FhirContext fhirContext;
 
   @PutMapping(value = "/bundles", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getMeasureBundle(
-    @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
+      @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
-    String serialized = fhirContext
-      .newJsonParser()
-      .setPrettyPrint(true)
-      .encodeResourceToString(bundle);
+    String serialized =
+        fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
     return ResponseEntity.ok().body(serialized);
   }
 }

@@ -9,11 +9,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   private static final String[] AUTH_WHITELIST = {
-          "/v3/api-docs/**",
-          "/swagger/**",
-          "/swagger-ui/**",
-          "/actuator/**"
-          // other public endpoints of your API may be appended to this array
+    "/v3/api-docs/**", "/swagger/**", "/swagger-ui/**", "/actuator/**"
+    // other public endpoints of your API may be appended to this array
   };
 
   @Override

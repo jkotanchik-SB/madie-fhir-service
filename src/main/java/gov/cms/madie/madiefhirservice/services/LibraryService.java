@@ -37,8 +37,10 @@ public class LibraryService {
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
 
     if (bundle.hasEntry()) {
-      Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
-      return optional.map(libraryTranslatorService::convertToCqlLibrary)
+      Optional<Library> optional =
+          hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
+      return optional
+          .map(libraryTranslatorService::convertToCqlLibrary)
           .orElseThrow(() -> new HapiLibraryNotFoundException(name, version));
     } else {
       throw new HapiLibraryNotFoundException(name, version);
@@ -76,17 +78,19 @@ public class LibraryService {
 
   private Attachment findCqlAttachment(Library library) {
     return library.getContent().stream()
-      .filter(a -> a.getContentType().equals("text/cql"))
-      .findFirst()
-      .orElseThrow(() -> new LibraryAttachmentNotFoundException(library, "text/cql"));
+        .filter(a -> a.getContentType().equals("text/cql"))
+        .findFirst()
+        .orElseThrow(() -> new LibraryAttachmentNotFoundException(library, "text/cql"));
   }
 
   public Library createLibraryResourceForCqlLibrary(CqlLibrary cqlLibrary) {
-    boolean isLibraryPresent = isLibraryResourcePresent(
-      cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
+    boolean isLibraryPresent =
+        isLibraryResourcePresent(
+            cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
 
     if (isLibraryPresent) {
-      throw new DuplicateLibraryException(cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
+      throw new DuplicateLibraryException(
+          cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
     }
 
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);

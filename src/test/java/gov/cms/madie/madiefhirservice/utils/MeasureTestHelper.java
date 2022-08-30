@@ -15,8 +15,7 @@ public class MeasureTestHelper {
     if (StringUtils.isEmpty(json)) {
       return null;
     }
-    ObjectMapper objectMapper = new ObjectMapper()
-      .registerModule(new JavaTimeModule());
+    ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     return objectMapper.readValue(json, Measure.class);
   }
 
@@ -24,22 +23,21 @@ public class MeasureTestHelper {
     if (StringUtils.isEmpty(json)) {
       return null;
     }
-    return FhirContext.forR4()
-      .newJsonParser()
-      .parseResource(clazz, json);
+    return FhirContext.forR4().newJsonParser().parseResource(clazz, json);
   }
 
-
   public static Bundle createTestMeasureBundle() {
-    org.hl7.fhir.r4.model.Measure measure = new  org.hl7.fhir.r4.model.Measure();
-    measure.setName("TestCMS0001")
-      .setTitle("TestTitle001")
-      .setExperimental(true)
-      .setUrl("/Measure/TestCMS0001")
-      .setPublisher("CMS").setCopyright("CMS copyright").setVersion("0.0.001");
+    org.hl7.fhir.r4.model.Measure measure = new org.hl7.fhir.r4.model.Measure();
+    measure
+        .setName("TestCMS0001")
+        .setTitle("TestTitle001")
+        .setExperimental(true)
+        .setUrl("/Measure/TestCMS0001")
+        .setPublisher("CMS")
+        .setCopyright("CMS copyright")
+        .setVersion("0.0.001");
     return new Bundle()
-      .setType(Bundle.BundleType.TRANSACTION)
-      .addEntry(new Bundle.BundleEntryComponent()
-        .setResource(measure));
+        .setType(Bundle.BundleType.TRANSACTION)
+        .addEntry(new Bundle.BundleEntryComponent().setResource(measure));
   }
 }

@@ -38,23 +38,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ValidationControllerTest implements ResourceFileUtil {
 
-  @Mock
-  FhirContext fhirContext;
+  @Mock FhirContext fhirContext;
 
-  @Mock
-  ValidationSupportChain validationSupportChain;
+  @Mock ValidationSupportChain validationSupportChain;
 
-  @Mock
-  FhirValidator fhirValidator;
+  @Mock FhirValidator fhirValidator;
 
-  @Mock
-  HttpEntity<String> entity;
+  @Mock HttpEntity<String> entity;
 
-  @Mock
-  JsonParser parser;
+  @Mock JsonParser parser;
 
-  @InjectMocks
-  private ValidationController validationController;
+  @InjectMocks private ValidationController validationController;
 
   @BeforeEach
   void beforeEach() {
@@ -103,13 +97,14 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(outcome);
     when(result.isSuccessful()).thenReturn(false);
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
-    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
+    when(parser.encodeResourceToString(any(OperationOutcome.class)))
+        .thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
     HapiOperationOutcome output = validationController.validateBundle(entity);
     assertThat(output, is(notNullValue()));
     assertThat(output.getCode(), is(equalTo(HttpStatus.OK.value())));
     assertThat(output.isSuccessful(), is(false));
     assertThat(output.getOutcomeResponse() instanceof Map, is(true));
-    Map outcomeResponse = (Map)output.getOutcomeResponse();
+    Map outcomeResponse = (Map) output.getOutcomeResponse();
     Object resourceType = outcomeResponse.get("resourceType");
     assertThat(resourceType, is(equalTo("OperationOutcome")));
   }
@@ -129,7 +124,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(outcome);
     when(result.isSuccessful()).thenReturn(true);
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
-    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
+    when(parser.encodeResourceToString(any(OperationOutcome.class)))
+        .thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
     HapiOperationOutcome output = validationController.validateBundle(entity);
     assertThat(output, is(notNullValue()));
     assertThat(output.getCode(), is(equalTo(HttpStatus.OK.value())));

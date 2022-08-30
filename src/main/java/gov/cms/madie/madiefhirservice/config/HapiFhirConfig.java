@@ -23,7 +23,8 @@ public class HapiFhirConfig {
   }
 
   @Bean
-  public ValidationSupportChain validationSupportChain411(@Autowired FhirContext fhirContext) throws IOException {
+  public ValidationSupportChain validationSupportChain411(@Autowired FhirContext fhirContext)
+      throws IOException {
     NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
 
@@ -31,7 +32,6 @@ public class HapiFhirConfig {
         npmPackageSupport,
         new DefaultProfileValidationSupport(fhirContext),
         new InMemoryTerminologyServerValidationSupport(fhirContext),
-        new CommonCodeSystemsTerminologyService(fhirContext)
-    );
+        new CommonCodeSystemsTerminologyService(fhirContext));
   }
 }
