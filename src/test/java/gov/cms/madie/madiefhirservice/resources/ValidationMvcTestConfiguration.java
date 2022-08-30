@@ -26,7 +26,8 @@ public class ValidationMvcTestConfiguration {
   }
 
   @Bean
-  public ValidationSupportChain validationSupportChain411(@Autowired FhirContext fhirContext) throws IOException {
+  public ValidationSupportChain validationSupportChain411(@Autowired FhirContext fhirContext)
+      throws IOException {
     NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
 
@@ -34,15 +35,13 @@ public class ValidationMvcTestConfiguration {
         npmPackageSupport,
         new DefaultProfileValidationSupport(fhirContext),
         new InMemoryTerminologyServerValidationSupport(fhirContext),
-        new CommonCodeSystemsTerminologyService(fhirContext)
-    );
+        new CommonCodeSystemsTerminologyService(fhirContext));
   }
 
   @Bean
   public FhirValidator npmFhirValidator(
       @Autowired FhirContext fhirContext,
-      @Autowired ValidationSupportChain validationSupportChain
-  ) {
+      @Autowired ValidationSupportChain validationSupportChain) {
     // Ask the context for a validator
     FhirValidator validator = fhirContext.newValidator();
 

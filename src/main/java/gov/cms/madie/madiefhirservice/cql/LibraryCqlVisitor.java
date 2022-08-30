@@ -62,9 +62,9 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
    */
   @Override
   public String visitIncludeDefinition(cqlParser.IncludeDefinitionContext ctx) {
-    if (ctx.getChildCount() >= 4 &&
-      StringUtils.equals(ctx.getChild(0).getText(), "include") &&
-      StringUtils.equals(ctx.getChild(2).getText(), "version")) {
+    if (ctx.getChildCount() >= 4
+        && StringUtils.equals(ctx.getChild(0).getText(), "include")
+        && StringUtils.equals(ctx.getChild(2).getText(), "version")) {
       RelatedArtifact relatedArtifact = new RelatedArtifact();
       relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
       var nameVersion = getNameVersionFromInclude(ctx);
@@ -85,15 +85,15 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   @Override
   public String visitValuesetDefinition(cqlParser.ValuesetDefinitionContext ctx) {
     String uri = getUnquotedFullText(ctx.valuesetId());
-    String name= getUnquotedFullText(ctx.identifier());
+    String name = getUnquotedFullText(ctx.identifier());
     valueSets.add(ctx);
     RelatedArtifact relatedArtifact = new RelatedArtifact();
     relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
     relatedArtifact.setUrl(uri);
     relatedArtifacts.add(relatedArtifact);
 
-    //need to be polished once we human readable file
-    valueSetNameUri.put(name,uri);
+    // need to be polished once we human readable file
+    valueSetNameUri.put(name, uri);
 
     return null;
   }
@@ -103,8 +103,11 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
     codeSystems.add(ctx);
     RelatedArtifact relatedArtifact = new RelatedArtifact();
     relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
-    relatedArtifact.setUrl(getUnquotedFullText(ctx.codesystemId()) +
-      (ctx.versionSpecifier() != null ? "|" + getUnquotedFullText(ctx.versionSpecifier()) : ""));
+    relatedArtifact.setUrl(
+        getUnquotedFullText(ctx.codesystemId())
+            + (ctx.versionSpecifier() != null
+                ? "|" + getUnquotedFullText(ctx.versionSpecifier())
+                : ""));
     relatedArtifacts.add(relatedArtifact);
     return null;
   }
@@ -124,14 +127,14 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   @Override
   public String visitRetrieve(cqlParser.RetrieveContext ctx) {
     if (matchesPathRetrieve(ctx)) {
-      handleDataRequirement(trimQuotes(ctx.getChild(1).getText()),
-        ctx.getChild(3).getText(),
-        trimQuotes(ctx.getChild(5).getText()));
+      handleDataRequirement(
+          trimQuotes(ctx.getChild(1).getText()),
+          ctx.getChild(3).getText(),
+          trimQuotes(ctx.getChild(5).getText()));
 
     } else if (matchesNonPathRetrieve(ctx)) {
-      handleDataRequirement(trimQuotes(ctx.getChild(1).getText()),
-        "code",
-        trimQuotes(ctx.getChild(3).getText()));
+      handleDataRequirement(
+          trimQuotes(ctx.getChild(1).getText()), "code", trimQuotes(ctx.getChild(3).getText()));
     } else if (matchesTypeRetrieve(ctx)) {
       handleTypeDataRequirement(trimQuotes(ctx.getChild(1).getText()));
       log.debug("Added type retrieve: " + ctx.getText());
@@ -140,9 +143,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
     return null;
   }
 
-  /**
-   * @return Has to be something so always null.
-   */
+  /** @return Has to be something so always null. */
   @Override
   protected String defaultResult() {
     return null;
@@ -155,9 +156,9 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private boolean matchesTypeRetrieve(cqlParser.RetrieveContext ctx) {
     // define FirstInpatientEncounter:
     //   First([Encounter] E where E.class = 'inpatient' sort by period.start desc)
-    return ctx.getChildCount() == 3 &&
-      ctx.getChild(0).getText().equals("[") &&
-      ctx.getChild(2).getText().equals("]");
+    return ctx.getChildCount() == 3
+        && ctx.getChild(0).getText().equals("[")
+        && ctx.getChild(2).getText().equals("]");
   }
 
   /**
@@ -165,11 +166,11 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
    * @return Returns true if the retrieve is a valueset retrieve.
    */
   private boolean matchesPathRetrieve(cqlParser.RetrieveContext ctx) {
-    return ctx.getChildCount() == 7 &&
-      ctx.getChild(0).getText().equals("[") &&
-      ctx.getChild(2).getText().equals(":") &&
-      ctx.getChild(4).getText().equals("in") &&
-      ctx.getChild(6).getText().equals("]");
+    return ctx.getChildCount() == 7
+        && ctx.getChild(0).getText().equals("[")
+        && ctx.getChild(2).getText().equals(":")
+        && ctx.getChild(4).getText().equals("in")
+        && ctx.getChild(6).getText().equals("]");
   }
 
   /**
@@ -177,10 +178,10 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
    * @return Returns true if the retrieve is a valueset retrieve.
    */
   private boolean matchesNonPathRetrieve(cqlParser.RetrieveContext ctx) {
-    return ctx.getChildCount() == 5 &&
-      ctx.getChild(0).getText().equals("[") &&
-      ctx.getChild(2).getText().equals(":") &&
-      ctx.getChild(4).getText().equals("]");
+    return ctx.getChildCount() == 5
+        && ctx.getChild(0).getText().equals("[")
+        && ctx.getChild(2).getText().equals(":")
+        && ctx.getChild(4).getText().equals("]");
   }
 
   private void handleTypeDataRequirement(String type) {

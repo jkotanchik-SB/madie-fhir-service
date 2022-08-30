@@ -25,13 +25,14 @@ public class ResourceValidationService {
 
   public OperationOutcome validateBundleResourcesProfiles(IBaseBundle bundleResource) {
     List<IBaseResource> resources = BundleUtil.toListOfResources(fhirContext, bundleResource);
-    Map<Class<? extends Resource>, String> resourceProfileMap = validationConfig.getResourceProfileMap();
+    Map<Class<? extends Resource>, String> resourceProfileMap =
+        validationConfig.getResourceProfileMap();
     OperationOutcome operationOutcome = new OperationOutcome();
     for (IBaseResource resource : resources) {
       if (resourceProfileMap.containsKey(resource.getClass())) {
         final String requiredProfile = resourceProfileMap.get(resource.getClass());
-        if(resource.getMeta().getProfile().stream().noneMatch(p ->
-            requiredProfile.equalsIgnoreCase(p.getValueAsString()))) {
+        if (resource.getMeta().getProfile().stream()
+            .noneMatch(p -> requiredProfile.equalsIgnoreCase(p.getValueAsString()))) {
           OperationOutcomeUtil.addIssue(
               fhirContext,
               operationOutcome,
@@ -48,9 +49,6 @@ public class ResourceValidationService {
   private String formatMissingProfileMessage(IBaseResource resource, final String profile) {
     return String.format(
         "Resource of type [%s] must declare conformance to profile [%s].",
-        resource.fhirType(),
-        profile
-    );
+        resource.fhirType(), profile);
   }
-
 }

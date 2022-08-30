@@ -11,6 +11,7 @@ import java.util.Map;
 public class ValidationConfig {
 
   private static final Map<Class<? extends Resource>, String> validationConfigMap;
+
   static {
     validationConfigMap = Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI);
   }
@@ -18,5 +19,4 @@ public class ValidationConfig {
   public Map<Class<? extends Resource>, String> getResourceProfileMap() {
     return Map.copyOf(validationConfigMap);
   }
-
 }

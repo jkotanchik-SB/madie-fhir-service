@@ -31,19 +31,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ResourceValidationServiceTest {
 
-  @Spy
-  FhirContext fhirContext;
+  @Spy FhirContext fhirContext;
 
-  @Mock
-  ValidationConfig validationConfig;
+  @Mock ValidationConfig validationConfig;
 
-  @InjectMocks
-  ResourceValidationService validationService;
+  @InjectMocks ResourceValidationService validationService;
 
   @Test
   void testValidateBundleResourcesProfilesReturnsNoIssuesForEmptyBundle() {
     try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
-      utilities.when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
           .thenReturn(List.of());
       Bundle bundle = new Bundle();
       OperationOutcome output = validationService.validateBundleResourcesProfiles(bundle);
@@ -55,11 +53,9 @@ class ResourceValidationServiceTest {
   @Test
   void testValidateBundleResourcesProfilesReturnsIssueForMissingProfile() {
     try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
-      utilities.when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
-          .thenReturn(List.of(
-              new Patient(),
-              new Encounter()
-          ));
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(new Patient(), new Encounter()));
 
       when(validationConfig.getResourceProfileMap())
           .thenReturn(Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI));
@@ -77,11 +73,9 @@ class ResourceValidationServiceTest {
     Patient p = new Patient();
     p.getMeta().addProfile(UriConstants.RATIO_PROFILE_URI);
     try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
-      utilities.when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
-          .thenReturn(List.of(
-              p,
-              new Encounter()
-          ));
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, new Encounter()));
 
       when(validationConfig.getResourceProfileMap())
           .thenReturn(Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI));
@@ -99,11 +93,9 @@ class ResourceValidationServiceTest {
     Patient p = new Patient();
     p.getMeta().addProfile(UriConstants.QiCore.PATIENT_PROFILE_URI);
     try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
-      utilities.when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
-          .thenReturn(List.of(
-              p,
-              new Encounter()
-          ));
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, new Encounter()));
 
       when(validationConfig.getResourceProfileMap())
           .thenReturn(Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI));
@@ -114,5 +106,4 @@ class ResourceValidationServiceTest {
       assertThat(output.hasIssue(), is(false));
     }
   }
-
 }

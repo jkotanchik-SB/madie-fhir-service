@@ -12,6 +12,7 @@ import gov.cms.madie.madiefhirservice.exceptions.HapiJsonException;
 import gov.cms.madie.madiefhirservice.services.ResourceValidationService;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.measure.HapiOperationOutcome;
+import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
@@ -43,26 +44,21 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ValidationControllerTest implements ResourceFileUtil {
 
-  @Mock
-  FhirContext fhirContext;
+  @Mock FhirContext fhirContext;
 
-  @Mock
-  ResourceValidationService validationService;
+  @Mock ValidationSupportChain validationSupportChain;
 
-  @Mock
-  FhirValidator fhirValidator;
+  @Mock ResourceValidationService validationService;
 
-  @Mock
-  HttpEntity<String> entity;
+  @Mock FhirValidator fhirValidator;
 
-  @Mock
-  ObjectMapper mapper;
+  @Mock HttpEntity<String> entity;
 
-  @Mock
-  JsonParser parser;
+  @Mock JsonParser parser;
 
-  @InjectMocks
-  private ValidationController validationController;
+  @Mock ObjectMapper mapper;
+
+  @InjectMocks private ValidationController validationController;
 
   @BeforeEach
   void beforeEach() {
@@ -75,7 +71,7 @@ class ValidationControllerTest implements ResourceFileUtil {
   void testValidationControllerReturnsOutcomeForBadBundleType() throws JsonProcessingException {
     when(parser.parseResource(any(Class.class), anyString())).thenReturn(new Patient());
     when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{}");
-    when(mapper.readValue(anyString(), any(Class.class))).thenReturn(new HashMap<String,Object>());
+    when(mapper.readValue(anyString(), any(Class.class))).thenReturn(new HashMap<String, Object>());
 
     when(entity.getBody()).thenReturn("{\"resourceType\": \"Patient\" }");
     HapiOperationOutcome output = validationController.validateBundle(entity);
@@ -86,7 +82,8 @@ class ValidationControllerTest implements ResourceFileUtil {
 
   @Test
   void testValidationControllerReturnsOutcomeForDataFormatException() {
-    when(parser.parseResource(any(Class.class), anyString())).thenThrow(new DataFormatException("BAD JSON, BAD!"));
+    when(parser.parseResource(any(Class.class), anyString()))
+        .thenThrow(new DataFormatException("BAD JSON, BAD!"));
     when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{}");
 
     when(entity.getBody()).thenReturn("{\"foo\": \"foo2\" }");
@@ -98,7 +95,8 @@ class ValidationControllerTest implements ResourceFileUtil {
 
   @Test
   void testValidationControllerReturnsOutcomeForClassCastException() {
-    when(parser.parseResource(any(Class.class), anyString())).thenThrow(new ClassCastException("wrong resource type!"));
+    when(parser.parseResource(any(Class.class), anyString()))
+        .thenThrow(new ClassCastException("wrong resource type!"));
     when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{}");
 
     when(entity.getBody()).thenReturn("{\"foo\": \"foo2\" }");
@@ -110,10 +108,13 @@ class ValidationControllerTest implements ResourceFileUtil {
 
   @Test
   void testValidationControllerReturnsExceptionForProcessingError() throws JsonProcessingException {
-    when(parser.parseResource(any(Class.class), anyString())).thenThrow(new ClassCastException("wrong resource type!"));
-//    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenThrow(new RuntimeException("OH NO!"));
+    when(parser.parseResource(any(Class.class), anyString()))
+        .thenThrow(new ClassCastException("wrong resource type!"));
+    //    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenThrow(new
+    // RuntimeException("OH NO!"));
     when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{}");
-    when(mapper.readValue(anyString(), any(Class.class))).thenThrow(new RuntimeException("JsonProcessingException!!"));
+    when(mapper.readValue(anyString(), any(Class.class)))
+        .thenThrow(new RuntimeException("JsonProcessingException!!"));
 
     when(entity.getBody()).thenReturn("{\"foo\": \"foo2\" }");
     assertThrows(HapiJsonException.class, () -> validationController.validateBundle(entity));
@@ -136,14 +137,16 @@ class ValidationControllerTest implements ResourceFileUtil {
   }
 
   @Test
-  void testValidationControllerReturnsExceptionForErrorProcessingOutput() throws JsonProcessingException {
+  void testValidationControllerReturnsExceptionForErrorProcessingOutput()
+      throws JsonProcessingException {
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
     when(parser.parseResource(any(Class.class), anyString())).thenReturn(new Bundle());
     when(entity.getBody()).thenReturn(tc1Json);
     ValidationResult result = Mockito.mock(ValidationResult.class);
     Map<String, Object> mockOutcome = new HashMap<>();
     mockOutcome.put("resourceType", "OperationOutcome");
-    when(mapper.readValue(anyString(), any(Class.class))).thenThrow(new RuntimeException("JsonProcessingException"));
+    when(mapper.readValue(anyString(), any(Class.class)))
+        .thenThrow(new RuntimeException("JsonProcessingException"));
 
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
@@ -153,7 +156,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(outcome);
     when(result.isSuccessful()).thenReturn(false);
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
-    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
+    when(parser.encodeResourceToString(any(OperationOutcome.class)))
+        .thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
     assertThrows(HapiJsonException.class, () -> validationController.validateBundle(entity));
   }
 
@@ -176,13 +180,14 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(outcome);
     when(result.isSuccessful()).thenReturn(false);
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
-    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
+    when(parser.encodeResourceToString(any(OperationOutcome.class)))
+        .thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
     HapiOperationOutcome output = validationController.validateBundle(entity);
     assertThat(output, is(notNullValue()));
     assertThat(output.getCode(), is(equalTo(HttpStatus.OK.value())));
     assertThat(output.isSuccessful(), is(false));
     assertThat(output.getOutcomeResponse() instanceof Map, is(true));
-    Map outcomeResponse = (Map)output.getOutcomeResponse();
+    Map outcomeResponse = (Map) output.getOutcomeResponse();
     Object resourceType = outcomeResponse.get("resourceType");
     assertThat(resourceType, is(equalTo("OperationOutcome")));
   }
@@ -201,7 +206,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(outcome);
     when(result.isSuccessful()).thenReturn(true);
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
-    when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
+    when(parser.encodeResourceToString(any(OperationOutcome.class)))
+        .thenReturn("{ \"resourceType\": \"OperationOutcome\" }");
     HapiOperationOutcome output = validationController.validateBundle(entity);
     assertThat(output, is(notNullValue()));
     assertThat(output.getCode(), is(equalTo(HttpStatus.OK.value())));

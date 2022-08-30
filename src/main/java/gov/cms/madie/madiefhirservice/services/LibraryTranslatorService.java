@@ -53,11 +53,14 @@ public class LibraryTranslatorService {
     library.setVersion(cqlLibrary.getVersion().toString());
     library.setDate(new Date());
     library.setStatus(Enumerations.PublicationStatus.ACTIVE);
-    library.setPublisher(cqlLibrary.getPublisher() != null && StringUtils.isNotBlank(cqlLibrary.getPublisher()) ?
-        cqlLibrary.getPublisher() : UNKNOWN_VALUE);
+    library.setPublisher(
+        cqlLibrary.getPublisher() != null && StringUtils.isNotBlank(cqlLibrary.getPublisher())
+            ? cqlLibrary.getPublisher()
+            : UNKNOWN_VALUE);
     library.setDescription(StringUtils.defaultString(cqlLibrary.getDescription(), UNKNOWN_VALUE));
     library.setExperimental(cqlLibrary.isExperimental());
-    library.setContent(createContent(cqlLibrary.getCql(), cqlLibrary.getElmJson(), cqlLibrary.getElmXml()));
+    library.setContent(
+        createContent(cqlLibrary.getCql(), cqlLibrary.getElmJson(), cqlLibrary.getElmXml()));
     library.setType(createType(UriConstants.LIBRARY_SYSTEM_TYPE_URI, SYSTEM_CODE));
     library.setUrl(fhirBaseUrl + "/Library/" + cqlLibrary.getCqlLibraryName());
     library.setDataRequirement(distinctDataRequirements(visitor.getDataRequirements()));
@@ -74,7 +77,8 @@ public class LibraryTranslatorService {
         .cqlLibraryName(library.getName())
         .version(Version.parse(library.getVersion()))
         .publisher(UNKNOWN_VALUE.equals(library.getPublisher()) ? null : library.getPublisher())
-        .description(UNKNOWN_VALUE.equals(library.getDescription()) ? null : library.getDescription())
+        .description(
+            UNKNOWN_VALUE.equals(library.getDescription()) ? null : library.getDescription())
         .experimental(library.getExperimental())
         .cql(attachmentToString(findAttachmentOfContentType(library, CQL_CONTENT_TYPE)))
         .elmJson(attachmentToString(findAttachmentOfContentType(library, JSON_ELM_CONTENT_TYPE)))
@@ -100,16 +104,18 @@ public class LibraryTranslatorService {
   }
 
   private Meta createLibraryMeta() {
-    // Currently, only one profile is allowed, but Bryn is under the impression multiples should work.
+    // Currently, only one profile is allowed, but Bryn is under the impression multiples should
+    // work.
     // For now, it is just computable until we resolve this.
     return new Meta()
-        .addProfile("http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/computable-library-cqfm");
+        .addProfile(
+            "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/computable-library-cqfm");
   }
 
   /**
    * @param elmJson elmJson String
-   * @param cql     cql String
-   * @param elmXml  elmXml String
+   * @param cql cql String
+   * @param elmXml elmXml String
    * @return The content element.
    */
   private List<Attachment> createContent(String cql, String elmJson, String elmXml) {
@@ -128,21 +134,23 @@ public class LibraryTranslatorService {
 
   private List<RelatedArtifact> distinctArtifacts(List<RelatedArtifact> artifacts) {
     List<RelatedArtifact> result = new ArrayList<>(artifacts.size());
-    //Remove duplicates.
-    artifacts.forEach(a -> {
-      if (result.stream().noneMatch(ar -> Objects.deepEquals(a, ar))) {
-        result.add(a);
-      }
-    });
+    // Remove duplicates.
+    artifacts.forEach(
+        a -> {
+          if (result.stream().noneMatch(ar -> Objects.deepEquals(a, ar))) {
+            result.add(a);
+          }
+        });
     result.sort(Comparator.comparing(RelatedArtifact::getUrl));
     return result;
   }
 
   private List<DataRequirement> distinctDataRequirements(List<DataRequirement> reqs) {
     List<DataRequirement> result = new ArrayList<>(reqs.size());
-    //Remove duplicates.
+    // Remove duplicates.
     for (DataRequirement req : reqs) {
-      if (result.stream().noneMatch(r -> matchType(req.getType()).and(matchCodeFilter(req)).test(r))) {
+      if (result.stream()
+          .noneMatch(r -> matchType(req.getType()).and(matchCodeFilter(req)).test(r))) {
         result.add(req);
       }
     }
@@ -155,15 +163,18 @@ public class LibraryTranslatorService {
 
   private Predicate<DataRequirement> matchCodeFilter(DataRequirement o) {
     return d -> {
-      if ((CollectionUtils.isEmpty(d.getCodeFilter()) && CollectionUtils.isEmpty(o.getCodeFilter()))) {
+      if ((CollectionUtils.isEmpty(d.getCodeFilter())
+          && CollectionUtils.isEmpty(o.getCodeFilter()))) {
         // Match when both code filters are empty
         return true;
-      } else if ((CollectionUtils.isEmpty(d.getCodeFilter()) || CollectionUtils.isEmpty(o.getCodeFilter()))) {
+      } else if ((CollectionUtils.isEmpty(d.getCodeFilter())
+          || CollectionUtils.isEmpty(o.getCodeFilter()))) {
         // No match if either code filter is empty
         return false;
       } else {
         // Match on path AND (code or value set)
-        return StringUtils.equals(d.getCodeFilter().get(0).getPath(), o.getCodeFilter().get(0).getPath())
+        return StringUtils.equals(
+                d.getCodeFilter().get(0).getPath(), o.getCodeFilter().get(0).getPath())
             && (hasMatchingValueSet(d, o) || hasMatchingCode(o, d));
       }
     };
@@ -171,25 +182,25 @@ public class LibraryTranslatorService {
 
   private boolean hasMatchingCode(DataRequirement o, DataRequirement d) {
     return (!CollectionUtils.isEmpty(d.getCodeFilter().get(0).getCode())
-        && !CollectionUtils.isEmpty(o.getCodeFilter().get(0).getCode())) &&
-        StringUtils.equals(d.getCodeFilter().get(0).getCode().get(0).getCode(),
+            && !CollectionUtils.isEmpty(o.getCodeFilter().get(0).getCode()))
+        && StringUtils.equals(
+            d.getCodeFilter().get(0).getCode().get(0).getCode(),
             o.getCodeFilter().get(0).getCode().get(0).getCode());
   }
 
   private boolean hasMatchingValueSet(DataRequirement d, DataRequirement o) {
-    return (d.getCodeFilter().get(0).getValueSet() != null && o.getCodeFilter().get(0).getValueSet() != null) &&
-        StringUtils.equals(d.getCodeFilter().get(0).getValueSet(), o.getCodeFilter().get(0).getValueSet());
+    return (d.getCodeFilter().get(0).getValueSet() != null
+            && o.getCodeFilter().get(0).getValueSet() != null)
+        && StringUtils.equals(
+            d.getCodeFilter().get(0).getValueSet(), o.getCodeFilter().get(0).getValueSet());
   }
 
   private CodeableConcept createType(String type, String code) {
-    return new CodeableConcept()
-        .setCoding(Collections.singletonList(new Coding(type, code, null)));
+    return new CodeableConcept().setCoding(Collections.singletonList(new Coding(type, code, null)));
   }
 
   /* rawData are bytes that are NOT base64 encoded */
   private Attachment createAttachment(String contentType, byte[] rawData) {
-    return new Attachment()
-        .setContentType(contentType)
-        .setData(rawData == null ? null : rawData);
+    return new Attachment().setContentType(contentType).setData(rawData == null ? null : rawData);
   }
 }

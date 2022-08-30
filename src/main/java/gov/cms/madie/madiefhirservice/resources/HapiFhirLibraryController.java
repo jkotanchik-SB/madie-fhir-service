@@ -26,25 +26,32 @@ public class HapiFhirLibraryController {
 
   private final LibraryService libraryService;
 
-  @Operation(summary = "Get Library's CQL from HAPI FHIR.",
-    description = "Fetches Library resource from HAPI FHIR and returns cql string," +
-      " typically used by CQL-ELM Translator")
+  @Operation(
+      summary = "Get Library's CQL from HAPI FHIR.",
+      description =
+          "Fetches Library resource from HAPI FHIR and returns cql string,"
+              + " typically used by CQL-ELM Translator")
   @GetMapping("/cql")
   public String getLibraryCql(@RequestParam String name, @RequestParam String version) {
     return libraryService.getLibraryCql(name, version);
   }
 
-  @Operation(summary = "Get Library's CQL, ELM JSON and ELM XML from HAPI FHIR",
-  description = "Fetches Library resource from HAPI FHIR and returns cql string, ELM JSON string," +
-      " and ELM XML string.")
+  @Operation(
+      summary = "Get Library's CQL, ELM JSON and ELM XML from HAPI FHIR",
+      description =
+          "Fetches Library resource from HAPI FHIR and returns cql string, ELM JSON string,"
+              + " and ELM XML string.")
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public CqlLibrary getLibraryResourceAsCqlLibrary(@RequestParam String name, @RequestParam String version) {
+  public CqlLibrary getLibraryResourceAsCqlLibrary(
+      @RequestParam String name, @RequestParam String version) {
     return libraryService.getLibraryResourceAsCqlLibrary(name, version);
   }
 
-  @Operation(summary = "Creates new Library Resource in HAPI FHIR. ",
-    description = "Creates the new hapi FHIR Library Resource from MADiE Library " +
-      "if the Library with same name and version does not exists in HAPI FHIR.")
+  @Operation(
+      summary = "Creates new Library Resource in HAPI FHIR. ",
+      description =
+          "Creates the new hapi FHIR Library Resource from MADiE Library "
+              + "if the Library with same name and version does not exists in HAPI FHIR.")
   @PostMapping("/create")
   public ResponseEntity<String> createLibraryResource(@RequestBody CqlLibrary cqlLibrary) {
     Library library = libraryService.createLibraryResourceForCqlLibrary(cqlLibrary);

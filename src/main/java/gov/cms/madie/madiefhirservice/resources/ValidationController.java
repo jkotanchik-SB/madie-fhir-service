@@ -7,9 +7,10 @@ import ca.uhn.fhir.parser.LenientErrorHandler;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import gov.cms.madie.models.measure.HapiOperationOutcome;
 import gov.cms.madie.madiefhirservice.exceptions.HapiJsonException;
 import gov.cms.madie.madiefhirservice.services.ResourceValidationService;
-import gov.cms.madie.models.measure.HapiOperationOutcome;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping(path = "/fhir/validations")
-@Tag(name = "HAPI-FHIR-Validation-Controller", description = "API for validating resources using HAPI utilities")
+@Tag(
+    name = "HAPI-FHIR-Validation-Controller",
+    description = "API for validating resources using HAPI utilities")
 @AllArgsConstructor
 public class ValidationController {
 
@@ -37,51 +40,40 @@ public class ValidationController {
 
   @PostMapping(
       path = "/bundles",
-      consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE
-  )
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public HapiOperationOutcome validateBundle(HttpEntity<String> request) {
-    LenientErrorHandler lenientErrorHandler = new LenientErrorHandler().setErrorOnInvalidValue(false);
-    IParser parser = fhirContext.newJsonParser().setParserErrorHandler(lenientErrorHandler).setPrettyPrint(true);
+    LenientErrorHandler lenientErrorHandler =
+        new LenientErrorHandler().setErrorOnInvalidValue(false);
+    IParser parser =
+        fhirContext.newJsonParser().setParserErrorHandler(lenientErrorHandler).setPrettyPrint(true);
+
     Bundle bundle;
+
     try {
       bundle = parser.parseResource(Bundle.class, request.getBody());
-    } catch (DataFormatException ex) {
-      OperationOutcome operationOutcome = new OperationOutcome();
-      operationOutcome.addIssue()
-          .setSeverity(OperationOutcome.IssueSeverity.ERROR)
-          .setCode(OperationOutcome.IssueType.INVALID)
-          .setDiagnostics(ex.getMessage());
-      return encodeOutcome(
-          parser,
-          HttpStatus.BAD_REQUEST.value(),
-          false,
-          "An error occurred while parsing the resource",
-          operationOutcome
-      );
-    } catch (ClassCastException ex) {
-      OperationOutcome operationOutcome = new OperationOutcome();
-      operationOutcome.addIssue()
-          .setSeverity(OperationOutcome.IssueSeverity.ERROR)
-          .setCode(OperationOutcome.IssueType.INVALID)
-          .setDiagnostics("resourceType must be 'Bundle'");
-      return encodeOutcome(
-          parser,
-          HttpStatus.BAD_REQUEST.value(),
-          false,
-          "Resource must have resourceType of 'Bundle'",
-          operationOutcome
-      );
+    } catch (DataFormatException | ClassCastException ex) {
+      return invalidErrorOutcome(
+          parser, "An error occurred while parsing the resource", ex.getMessage());
     }
 
-    OperationOutcome requiredProfilesOutcome = validationService.validateBundleResourcesProfiles(bundle);
+    // only validate bundles
+    if (!"BUNDLE".equalsIgnoreCase(bundle.fhirType())) {
+      return invalidErrorOutcome(
+          parser,
+          "\"Resource must have resourceType of 'Bundle'",
+          "Resource must have resourceType of 'Bundle'");
+    }
+
+    OperationOutcome requiredProfilesOutcome =
+        validationService.validateBundleResourcesProfiles(bundle);
     if (requiredProfilesOutcome.hasIssue()) {
       return encodeOutcome(
           parser,
           HttpStatus.BAD_REQUEST.value(),
           false,
           "Some resources in the bundle are missing required profile declarations.",
-          requiredProfilesOutcome
-      );
+          requiredProfilesOutcome);
     }
 
     ValidationResult result = validator.validateWithResult(bundle);
@@ -97,13 +89,19 @@ public class ValidationController {
     }
   }
 
+  private HapiOperationOutcome invalidErrorOutcome(
+      IParser parser, String message, String exceptionMessage) {
+    OperationOutcome operationOutcome = new OperationOutcome();
+    operationOutcome
+        .addIssue()
+        .setSeverity(OperationOutcome.IssueSeverity.ERROR)
+        .setCode(OperationOutcome.IssueType.INVALID)
+        .setDiagnostics(exceptionMessage);
+    return encodeOutcome(parser, HttpStatus.BAD_REQUEST.value(), false, message, operationOutcome);
+  }
+
   protected HapiOperationOutcome encodeOutcome(
-      IParser parser,
-      int code,
-      boolean successful,
-      String message,
-      OperationOutcome outcome
-  ) {
+      IParser parser, int code, boolean successful, String message, OperationOutcome outcome) {
     try {
       String outcomeString = parser.encodeResourceToString(outcome);
       return HapiOperationOutcome.builder()
@@ -116,5 +114,4 @@ public class ValidationController {
       throw new HapiJsonException("An error occurred processing the validation results", ex);
     }
   }
-
 }

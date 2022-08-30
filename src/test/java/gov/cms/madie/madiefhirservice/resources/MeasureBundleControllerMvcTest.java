@@ -27,36 +27,33 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
   private static final String TEST_USER_ID = "john_doe";
 
-  @MockBean
-  private MeasureBundleService measureBundleService;
+  @MockBean private MeasureBundleService measureBundleService;
 
-  @MockBean
-  private FhirContext fhirContext;
+  @MockBean private FhirContext fhirContext;
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
   @Test
   public void testGetMeasureBundle() throws Exception {
-    String madieMeasureJson = getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson =
+        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class)))
-      .thenReturn(testBundle);
-    when(fhirContext.newJsonParser())
-      .thenReturn(FhirContext.forR4().newJsonParser());
+    when(measureBundleService.createMeasureBundle(any(Measure.class))).thenReturn(testBundle);
+    when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
-    mockMvc.perform(
-      MockMvcRequestBuilders.put("/fhir/measures/bundles")
-        .with(user(TEST_USER_ID))
-        .with(csrf())
-        .content(madieMeasureJson)
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-    ).andExpect(status().isOk())
-      .andExpect(jsonPath("$.resourceType").value("Bundle"))
-      .andExpect(jsonPath("$.entry[0].resource.resourceType").value("Measure"))
-      .andExpect(jsonPath("$.entry[0].resource.name").value("TestCMS0001"))
-      .andExpect(jsonPath("$.entry[0].resource.version").value("0.0.001"));
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/measures/bundles")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .content(madieMeasureJson)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resourceType").value("Bundle"))
+        .andExpect(jsonPath("$.entry[0].resource.resourceType").value("Measure"))
+        .andExpect(jsonPath("$.entry[0].resource.name").value("TestCMS0001"))
+        .andExpect(jsonPath("$.entry[0].resource.version").value("0.0.001"));
     verify(measureBundleService, times(1)).createMeasureBundle(any(Measure.class));
   }
 }

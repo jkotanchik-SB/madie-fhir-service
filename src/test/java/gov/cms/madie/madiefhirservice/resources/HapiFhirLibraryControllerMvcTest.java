@@ -23,38 +23,31 @@ public class HapiFhirLibraryControllerMvcTest {
 
   private static final String TEST_USER_ID = "test-okta-user-id-123";
 
-  @MockBean
-  private LibraryService libraryService;
+  @MockBean private LibraryService libraryService;
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
   @Test
   public void testGetLibraryResourceAsCqlLibraryReturnsNotFound() throws Exception {
-    when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenThrow(new HapiLibraryNotFoundException("Test", "1.0.000"));
-    mockMvc.perform(
-            get("/fhir/libraries?name=Test&version=1.0.000")
-                .with(user(TEST_USER_ID))
-                .with(csrf())
-        )
+    when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString()))
+        .thenThrow(new HapiLibraryNotFoundException("Test", "1.0.000"));
+    mockMvc
+        .perform(
+            get("/fhir/libraries?name=Test&version=1.0.000").with(user(TEST_USER_ID)).with(csrf()))
         .andExpect(status().isNotFound());
   }
 
   @Test
   public void testGetLibraryResourceAsCqlLibraryReturnsLibrary() throws Exception {
-    CqlLibrary library = CqlLibrary.builder()
-        .cqlLibraryName("Test")
-        .version(Version.parse("1.0.000"))
-        .build();
-    when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenReturn(library);
-    mockMvc.perform(
-            get("/fhir/libraries?name=Test&version=1.0.000")
-                .with(user(TEST_USER_ID))
-                .with(csrf())
-        )
+    CqlLibrary library =
+        CqlLibrary.builder().cqlLibraryName("Test").version(Version.parse("1.0.000")).build();
+    when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString()))
+        .thenReturn(library);
+    mockMvc
+        .perform(
+            get("/fhir/libraries?name=Test&version=1.0.000").with(user(TEST_USER_ID)).with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.cqlLibraryName").value("Test"))
         .andExpect(jsonPath("$.version").value("1.0.000"));
   }
 }
-

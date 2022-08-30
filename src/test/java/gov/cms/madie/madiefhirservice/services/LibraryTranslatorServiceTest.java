@@ -29,10 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHelper {
-  @InjectMocks
-  private LibraryTranslatorService libraryTranslatorService;
-  @Mock
-  private LibraryCqlVisitorFactory libCqlVisitorFactory;
+  @InjectMocks private LibraryTranslatorService libraryTranslatorService;
+  @Mock private LibraryCqlVisitorFactory libCqlVisitorFactory;
 
   private CqlLibrary cqlLibrary;
   private String exm1234Cql;
@@ -45,7 +43,7 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
 
   @Test
   public void convertToFhirLibrary() {
-    var visitor =  new LibraryCqlVisitorFactory().visit(exm1234Cql);
+    var visitor = new LibraryCqlVisitorFactory().visit(exm1234Cql);
     when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
 
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
@@ -56,7 +54,7 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
 
   @Test
   public void testConvertToFhirLibraryHandlesElmJsonElmXml() {
-    var visitor =  new LibraryCqlVisitorFactory().visit(exm1234Cql);
+    var visitor = new LibraryCqlVisitorFactory().visit(exm1234Cql);
     when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
     cqlLibrary.setElmJson("ELMJSON");
     cqlLibrary.setElmXml("ELMXML");
@@ -110,7 +108,9 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
 
   @Test
   public void testFindAttachmentOfContentTypeHandlesNullLibrary() {
-    Attachment output = libraryTranslatorService.findAttachmentOfContentType(null, LibraryTranslatorService.CQL_CONTENT_TYPE);
+    Attachment output =
+        libraryTranslatorService.findAttachmentOfContentType(
+            null, LibraryTranslatorService.CQL_CONTENT_TYPE);
     assertThat(output, is(nullValue()));
   }
 
@@ -118,7 +118,9 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
   public void testFindAttachmentOfContentTypeHandlesNullAttachments() {
     Library library = new Library();
     library.setContent(null);
-    Attachment output = libraryTranslatorService.findAttachmentOfContentType(library, LibraryTranslatorService.CQL_CONTENT_TYPE);
+    Attachment output =
+        libraryTranslatorService.findAttachmentOfContentType(
+            library, LibraryTranslatorService.CQL_CONTENT_TYPE);
     assertThat(output, is(nullValue()));
   }
 
@@ -126,7 +128,9 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
   public void testFindAttachmentOfContentTypeHandlesEmptyAttachments() {
     Library library = new Library();
     library.setContent(List.of());
-    Attachment output = libraryTranslatorService.findAttachmentOfContentType(library, LibraryTranslatorService.CQL_CONTENT_TYPE);
+    Attachment output =
+        libraryTranslatorService.findAttachmentOfContentType(
+            library, LibraryTranslatorService.CQL_CONTENT_TYPE);
     assertThat(output, is(nullValue()));
   }
 
@@ -136,7 +140,9 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     Attachment a1 = new Attachment();
     a1.setContentType(LibraryTranslatorService.JSON_ELM_CONTENT_TYPE);
     library.setContent(List.of(a1));
-    Attachment output = libraryTranslatorService.findAttachmentOfContentType(library, LibraryTranslatorService.CQL_CONTENT_TYPE);
+    Attachment output =
+        libraryTranslatorService.findAttachmentOfContentType(
+            library, LibraryTranslatorService.CQL_CONTENT_TYPE);
     assertThat(output, is(nullValue()));
   }
 
@@ -150,7 +156,9 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     a2.setContentType(LibraryTranslatorService.CQL_CONTENT_TYPE);
     a2.setData("Attachment2".getBytes());
     library.setContent(List.of(a1, a2));
-    Attachment output = libraryTranslatorService.findAttachmentOfContentType(library, LibraryTranslatorService.CQL_CONTENT_TYPE);
+    Attachment output =
+        libraryTranslatorService.findAttachmentOfContentType(
+            library, LibraryTranslatorService.CQL_CONTENT_TYPE);
     assertThat(output, is(notNullValue()));
     assertThat(output.getContentType(), is(equalTo(LibraryTranslatorService.CQL_CONTENT_TYPE)));
     assertThat(output.getData(), is(equalTo("Attachment2".getBytes())));

@@ -22,45 +22,49 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class HapiFhirLibraryControllerTest implements LibraryHelper, ResourceFileUtil {
 
-    @InjectMocks
-    HapiFhirLibraryController hapiFhirLibraryController;
+  @InjectMocks HapiFhirLibraryController hapiFhirLibraryController;
 
-    @Mock
-    LibraryService libraryService;
+  @Mock LibraryService libraryService;
 
-    @Test
-    void findLibraryHapiCql() {
-        when(libraryService.getLibraryCql("TestLibrary", "1.0.0")).thenReturn("Cql From HAPI FHIR");
-        assertEquals("Cql From HAPI FHIR", hapiFhirLibraryController.getLibraryCql("TestLibrary", "1.0.0"));
-        verifyNoMoreInteractions(libraryService);
-    }
+  @Test
+  void findLibraryHapiCql() {
+    when(libraryService.getLibraryCql("TestLibrary", "1.0.0")).thenReturn("Cql From HAPI FHIR");
+    assertEquals(
+        "Cql From HAPI FHIR", hapiFhirLibraryController.getLibraryCql("TestLibrary", "1.0.0"));
+    verifyNoMoreInteractions(libraryService);
+  }
 
-    @Test
-    void createLibraryResource() {
-        String cql = getStringFromTestResource("/test-cql/EXM124v7QICore4.cql");
-        CqlLibrary cqlLibrary = createCqlLibrary(cql);
-        Library library = new Library();
-        library.setName(cqlLibrary.getCqlLibraryName());
-        library.setVersion(cqlLibrary.getVersion().toString());
-        library.setUrl("test-url");
-        when(libraryService.createLibraryResourceForCqlLibrary(any(CqlLibrary.class))).thenReturn(library);
-        ResponseEntity<String> response = hapiFhirLibraryController.createLibraryResource(cqlLibrary);
-        verifyNoMoreInteractions(libraryService);
-        assertNotNull(response.getBody());
-        assertEquals(library.getUrl(), response.getBody());
-    }
+  @Test
+  void createLibraryResource() {
+    String cql = getStringFromTestResource("/test-cql/EXM124v7QICore4.cql");
+    CqlLibrary cqlLibrary = createCqlLibrary(cql);
+    Library library = new Library();
+    library.setName(cqlLibrary.getCqlLibraryName());
+    library.setVersion(cqlLibrary.getVersion().toString());
+    library.setUrl("test-url");
+    when(libraryService.createLibraryResourceForCqlLibrary(any(CqlLibrary.class)))
+        .thenReturn(library);
+    ResponseEntity<String> response = hapiFhirLibraryController.createLibraryResource(cqlLibrary);
+    verifyNoMoreInteractions(libraryService);
+    assertNotNull(response.getBody());
+    assertEquals(library.getUrl(), response.getBody());
+  }
 
-    @Test
-    void testGetLibraryResourceAsCqlLibraryThrowsException() {
-        when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenThrow(new HapiLibraryNotFoundException("Test", "1.0.000"));
-        assertThrows(HapiLibraryNotFoundException.class, () -> hapiFhirLibraryController.getLibraryResourceAsCqlLibrary("Test", "1.0.000"));
-    }
+  @Test
+  void testGetLibraryResourceAsCqlLibraryThrowsException() {
+    when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString()))
+        .thenThrow(new HapiLibraryNotFoundException("Test", "1.0.000"));
+    assertThrows(
+        HapiLibraryNotFoundException.class,
+        () -> hapiFhirLibraryController.getLibraryResourceAsCqlLibrary("Test", "1.0.000"));
+  }
 
-    @Test
-    void testGetLibraryResourceAsCqlLibraryReturnsLibrary() {
-        CqlLibrary library = new CqlLibrary();
-        when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString())).thenReturn(library);
-        CqlLibrary output = hapiFhirLibraryController.getLibraryResourceAsCqlLibrary("Test", "1.0.000");
-        assertThat(output, is(equalTo(library)));
-    }
+  @Test
+  void testGetLibraryResourceAsCqlLibraryReturnsLibrary() {
+    CqlLibrary library = new CqlLibrary();
+    when(libraryService.getLibraryResourceAsCqlLibrary(anyString(), anyString()))
+        .thenReturn(library);
+    CqlLibrary output = hapiFhirLibraryController.getLibraryResourceAsCqlLibrary("Test", "1.0.000");
+    assertThat(output, is(equalTo(library)));
+  }
 }

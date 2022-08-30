@@ -31,27 +31,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ValidationControllerMvcTest implements ResourceFileUtil {
   private static final String TEST_USER_ID = "john_doe";
 
-  @MockBean
-  private ResourceValidationService validationService;
+  @Autowired private FhirContext fhirContext;
 
-  @Autowired
-  private FhirContext fhirContext;
+  @MockBean private ResourceValidationService validationService;
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
   @Test
   void testUnsuccessfulOutcomeReturnedForInvalidFhirJson() throws Exception {
     final String testCaseJson = "{ }";
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             MockMvcRequestBuilders.post("/fhir/validations/bundles")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
                 .content(testCaseJson)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-        )
-        .andDo((result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andDo(
+            (result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.code").value(400))
         .andExpect(jsonPath("$.successful").value(false));
@@ -61,14 +59,15 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
   void testUnsuccessfulOutcomeReturnedForBadResourceType() throws Exception {
     final String testCaseJson = "{\"resourceType\": \"Patient\" }";
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             MockMvcRequestBuilders.post("/fhir/validations/bundles")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
                 .content(testCaseJson)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-        )
-        .andDo((result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andDo(
+            (result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.code").value(400))
         .andExpect(jsonPath("$.successful").value(false));
@@ -80,14 +79,15 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             MockMvcRequestBuilders.post("/fhir/validations/bundles")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
                 .content(tc1Json)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-        )
-        .andDo((result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andDo(
+            (result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.code").value(200))
         .andExpect(jsonPath("$.successful").value(false));
@@ -101,14 +101,15 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(operationOutcomeWithIssues);
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             MockMvcRequestBuilders.post("/fhir/validations/bundles")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
                 .content(tc1Json)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-        )
-        .andDo((result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andDo(
+            (result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.code").value(400))
         .andExpect(jsonPath("$.successful").value(false));
@@ -120,17 +121,17 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             MockMvcRequestBuilders.post("/fhir/validations/bundles")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
                 .content(tc1Json)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-        )
-        .andDo((result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andDo(
+            (result) -> assertThat(result.getResponse().getContentAsString(), is(notNullValue())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.code").value(200))
         .andExpect(jsonPath("$.successful").value(true));
   }
-
 }
