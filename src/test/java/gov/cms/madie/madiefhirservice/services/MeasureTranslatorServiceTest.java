@@ -1,16 +1,14 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
-import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madie.models.measure.AssociationType;
-import gov.cms.madie.models.measure.Group;
-import gov.cms.madie.models.measure.Measure;
-import gov.cms.madie.models.measure.MeasureScoring;
-import gov.cms.madie.models.measure.Population;
-import gov.cms.madie.models.measure.PopulationType;
-import gov.cms.madie.models.measure.Stratification;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Expression;
@@ -25,18 +23,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import static org.assertj.core.api.Assertions.fail;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.nullable;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
+import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.measure.AssociationType;
+import gov.cms.madie.models.measure.Group;
+import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.MeasureScoring;
+import gov.cms.madie.models.measure.Population;
+import gov.cms.madie.models.measure.PopulationType;
+import gov.cms.madie.models.measure.Stratification;
 
 @ExtendWith(MockitoExtension.class)
 public class MeasureTranslatorServiceTest implements ResourceFileUtil {
