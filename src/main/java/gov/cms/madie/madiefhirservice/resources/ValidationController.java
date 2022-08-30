@@ -5,17 +5,15 @@ import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.LenientErrorHandler;
 import ca.uhn.fhir.validation.FhirValidator;
-import ca.uhn.fhir.validation.IValidatorModule;
 import ca.uhn.fhir.validation.ValidationResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gov.cms.madie.madiefhirservice.exceptions.HapiJsonException;
+import gov.cms.madie.madiefhirservice.services.ResourceValidationService;
 import gov.cms.madie.models.measure.HapiOperationOutcome;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
-import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.OperationOutcome;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -23,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @RestController
@@ -33,7 +30,10 @@ import org.springframework.web.client.HttpClientErrorException;
 public class ValidationController {
 
   private FhirContext fhirContext;
-  private ValidationSupportChain validationSupportChain;
+  private FhirValidator validator;
+  private ResourceValidationService validationService;
+
+  private ObjectMapper mapper;
 
   @PostMapping(
       path = "/bundles",
@@ -42,13 +42,12 @@ public class ValidationController {
   public HapiOperationOutcome validateBundle(HttpEntity<String> request) {
     LenientErrorHandler lenientErrorHandler = new LenientErrorHandler().setErrorOnInvalidValue(false);
     IParser parser = fhirContext.newJsonParser().setParserErrorHandler(lenientErrorHandler).setPrettyPrint(true);
-    IBaseResource resource;
+    Bundle bundle;
     try {
-      resource = parser.parseResource(request.getBody());
+      bundle = parser.parseResource(Bundle.class, request.getBody());
     } catch (DataFormatException ex) {
       OperationOutcome operationOutcome = new OperationOutcome();
-      operationOutcome
-          .addIssue()
+      operationOutcome.addIssue()
           .setSeverity(OperationOutcome.IssueSeverity.ERROR)
           .setCode(OperationOutcome.IssueType.INVALID)
           .setDiagnostics(ex.getMessage());
@@ -59,13 +58,9 @@ public class ValidationController {
           "An error occurred while parsing the resource",
           operationOutcome
       );
-    }
-
-    // only validate bundles
-    if (!"BUNDLE".equalsIgnoreCase(resource.fhirType())) {
+    } catch (ClassCastException ex) {
       OperationOutcome operationOutcome = new OperationOutcome();
-      operationOutcome
-          .addIssue()
+      operationOutcome.addIssue()
           .setSeverity(OperationOutcome.IssueSeverity.ERROR)
           .setCode(OperationOutcome.IssueType.INVALID)
           .setDiagnostics("resourceType must be 'Bundle'");
@@ -78,23 +73,27 @@ public class ValidationController {
       );
     }
 
-    // Ask the context for a validator
-    FhirValidator validator = fhirContext.newValidator();
+    OperationOutcome requiredProfilesOutcome = validationService.validateBundleResourcesProfiles(bundle);
+    if (requiredProfilesOutcome.hasIssue()) {
+      return encodeOutcome(
+          parser,
+          HttpStatus.BAD_REQUEST.value(),
+          false,
+          "Some resources in the bundle are missing required profile declarations.",
+          requiredProfilesOutcome
+      );
+    }
 
-    // Create a validation module and register it
-    IValidatorModule module = new FhirInstanceValidator(validationSupportChain);
-    validator.registerValidatorModule(module);
-    ValidationResult result = validator.validateWithResult(resource);
-    String outcomeString = parser.encodeResourceToString(result.toOperationOutcome());
+    ValidationResult result = validator.validateWithResult(bundle);
     try {
-      ObjectMapper mapper = new ObjectMapper();
+      String outcomeString = parser.encodeResourceToString(result.toOperationOutcome());
       return HapiOperationOutcome.builder()
           .code(HttpStatus.OK.value())
           .successful(result.isSuccessful())
           .outcomeResponse(mapper.readValue(outcomeString, Object.class))
           .build();
-    } catch (JsonProcessingException jpe) {
-      throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+    } catch (Exception ex) {
+      throw new HapiJsonException("An error occurred processing the validation results", ex);
     }
   }
 
@@ -106,7 +105,6 @@ public class ValidationController {
       OperationOutcome outcome
   ) {
     try {
-      ObjectMapper mapper = new ObjectMapper();
       String outcomeString = parser.encodeResourceToString(outcome);
       return HapiOperationOutcome.builder()
           .code(code)
@@ -114,8 +112,8 @@ public class ValidationController {
           .successful(successful)
           .outcomeResponse(mapper.readValue(outcomeString, Object.class))
           .build();
-    } catch (JsonProcessingException jpe) {
-      throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+    } catch (Exception ex) {
+      throw new HapiJsonException("An error occurred processing the validation results", ex);
     }
   }
 
