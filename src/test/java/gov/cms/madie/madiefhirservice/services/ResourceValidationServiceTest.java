@@ -71,7 +71,7 @@ class ResourceValidationServiceTest {
   @Test
   void testValidateBundleResourcesProfilesReturnsIssueForIncorrectProfile() {
     Patient p = new Patient();
-    p.getMeta().addProfile(UriConstants.RATIO_PROFILE_URI);
+    p.getMeta().addProfile(UriConstants.CqfMeasures.RATIO_PROFILE_URI);
     try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
       utilities
           .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))

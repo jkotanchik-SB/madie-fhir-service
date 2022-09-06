@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,6 +18,7 @@ import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
 import org.hl7.fhir.r4.model.Meta;
+import org.hl7.fhir.r4.model.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,12 +74,22 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
-    assertThat(
-        measure.getMeta().getProfile().get(0).getValue(),
-        is(equalTo(UriConstants.RATIO_PROFILE_URI)));
+    assertThat(measure.getMeta().getProfile().size(), is(equalTo(0)));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
 
-    assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
+    assertThat(measure.getGroup().get(0), is(notNullValue()));
+    MeasureGroupComponent group1 = measure.getGroup().get(0);
+    assertThat(group1.getId(), is(equalTo("62f66b2e02b96d3a6ababefb")));
+    Extension group1Ex = group1.getExtension().get(0);
+    assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
+    CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());
+    assertThat(group1CodeableConcept.getCoding(), is(notNullValue()));
+    assertThat(group1CodeableConcept.getCoding().size(), is(equalTo(1)));
+    assertThat(group1CodeableConcept.getCoding().get(0), is(notNullValue()));
+    assertThat(
+        group1CodeableConcept.getCoding().get(0).getSystem(),
+        is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
+    assertThat(group1CodeableConcept.getCoding().get(0).getCode(), is(equalTo("ratio")));
 
     MeasureGroupPopulationComponent groupComponent =
         measure.getGroup().get(0).getPopulation().get(0);
@@ -89,6 +101,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         groupComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
     assertThat(groupComponent.getId(), is(notNullValue()));
+
+    assertThat(measure.getGroup().get(1), is(notNullValue()));
+    MeasureGroupComponent group2 = measure.getGroup().get(1);
+    assertThat(group2.getId(), is(equalTo("62fb788bfb3c765290171e75")));
+    Extension group2Ex = group2.getExtension().get(0);
+    assertThat(group2Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
+    CodeableConcept group2CodeableConcept = group2Ex.castToCodeableConcept(group2Ex.getValue());
+    assertThat(group2CodeableConcept.getCoding(), is(notNullValue()));
+    assertThat(group2CodeableConcept.getCoding().size(), is(equalTo(1)));
+    assertThat(group2CodeableConcept.getCoding().get(0), is(notNullValue()));
+    assertThat(
+        group2CodeableConcept.getCoding().get(0).getSystem(),
+        is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
+    assertThat(group2CodeableConcept.getCoding().get(0).getCode(), is(equalTo("ratio")));
   }
 
   @Test
@@ -111,10 +137,22 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
-    assertThat(
-        measure.getMeta().getProfile().get(0).getValue(),
-        is(equalTo(UriConstants.RATIO_PROFILE_URI)));
+    assertThat(measure.getMeta().getProfile().size(), is(equalTo(0)));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
+
+    assertThat(measure.getGroup().get(0), is(notNullValue()));
+    MeasureGroupComponent group1 = measure.getGroup().get(0);
+    assertThat(group1.getId(), is(equalTo("626be4370ca8110d3b22404b")));
+    Extension group1Ex = group1.getExtension().get(0);
+    assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
+    CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());
+    assertThat(group1CodeableConcept.getCoding(), is(notNullValue()));
+    assertThat(group1CodeableConcept.getCoding().size(), is(equalTo(1)));
+    assertThat(group1CodeableConcept.getCoding().get(0), is(notNullValue()));
+    assertThat(
+        group1CodeableConcept.getCoding().get(0).getSystem(),
+        is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
+    assertThat(group1CodeableConcept.getCoding().get(0).getCode(), is(equalTo("ratio")));
 
     assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
 
@@ -139,26 +177,6 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         groupComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
     assertThat(groupComponent2.getId(), is(notNullValue()));
-  }
-
-  @Test
-  public void testBuildMeasureMetaForScoring() {
-    // Meta for Proportion Scoring
-    Meta meta = measureTranslatorService.buildMeasureMeta("Proportion");
-    assertThat(
-        meta.getProfile().get(0).getValue(), is(equalTo(UriConstants.PROPORTION_PROFILE_URI)));
-
-    // Meta for Cohort Scoring
-    meta = measureTranslatorService.buildMeasureMeta("Cohort");
-    assertThat(meta.getProfile().get(0).getValue(), is(equalTo(UriConstants.COHORT_PROFILE_URI)));
-
-    // Meta for Continuous Variable Scoring
-    meta = measureTranslatorService.buildMeasureMeta("Continuous Variable");
-    assertThat(meta.getProfile().get(0).getValue(), is(equalTo(UriConstants.CV_PROFILE_URI)));
-
-    // Meta for Ratio Scoring
-    meta = measureTranslatorService.buildMeasureMeta("Ratio");
-    assertThat(meta.getProfile().get(0).getValue(), is(equalTo(UriConstants.RATIO_PROFILE_URI)));
   }
 
   @Test

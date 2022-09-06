@@ -66,9 +66,7 @@ public class MeasureTranslatorService {
                 new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetailUrl())
-        .setGroup(buildGroups(madieMeasure.getGroups()))
-        // should be updated when multiple measure groups is supported
-        .setMeta(buildMeasureMeta(madieMeasure.getGroups().get(0).getScoring()));
+        .setGroup(buildGroups(madieMeasure.getGroups()));
 
     return measure;
   }
@@ -85,7 +83,11 @@ public class MeasureTranslatorService {
         (new MeasureGroupComponent()
             .setPopulation(measurePopulations)
             .setStratifier(measureStratifications)
-            .setId(madieGroup.getId()));
+            .setId(madieGroup.getId())
+            .addExtension(
+                new Extension(
+                    UriConstants.CqfMeasures.SCORING_URI,
+                    buildScoringConcept(madieGroup.getScoring()))));
   }
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
@@ -213,32 +215,6 @@ public class MeasureTranslatorService {
 
   public Coding buildCoding(String code, String system, String display) {
     return new Coding().setCode(code).setSystem(system).setDisplay(display);
-  }
-
-  public Meta buildMeasureMeta(String scoring) {
-    Meta meta = new Meta();
-    if (StringUtils.isBlank(scoring)) {
-      log.error("Scoring type is null");
-
-    } else {
-      switch (scoring) {
-        case "Proportion":
-          meta.addProfile(UriConstants.PROPORTION_PROFILE_URI);
-          break;
-        case "Cohort":
-          meta.addProfile(UriConstants.COHORT_PROFILE_URI);
-          break;
-        case "Continuous Variable":
-          meta.addProfile(UriConstants.CV_PROFILE_URI);
-          break;
-        case "Ratio":
-          meta.addProfile(UriConstants.RATIO_PROFILE_URI);
-          break;
-        default:
-          log.error("Cannot find scoring type for scoring: {}", scoring);
-      }
-    }
-    return meta;
   }
 
   public List<ContactDetail> buildContactDetailUrl() {
