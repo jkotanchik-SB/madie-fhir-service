@@ -1,4 +1,4 @@
-## Use whatever base image
+## Use  base image
 FROM adoptopenjdk/openjdk16:jre
 
 ARG JAR_FILE=target/*.jar
