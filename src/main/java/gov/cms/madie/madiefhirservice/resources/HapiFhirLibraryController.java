@@ -33,7 +33,6 @@ public class HapiFhirLibraryController {
               + " typically used by CQL-ELM Translator")
   @GetMapping("/cql")
   public String getLibraryCql(@RequestParam String name, @RequestParam String version) {
-    log.debug("inside the get library cql api");
     return libraryService.getLibraryCql(name, version);
   }
 
