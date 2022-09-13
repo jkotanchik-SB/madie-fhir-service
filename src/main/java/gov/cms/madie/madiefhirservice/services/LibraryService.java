@@ -24,8 +24,9 @@ public class LibraryService {
   private final LibraryTranslatorService libraryTranslatorService;
 
   public String getLibraryCql(String name, String version) {
+    log.debug("inside the get library cql service");
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
-
+    log.debug("fetching the bundle",bundle);
     if (bundle.hasEntry()) {
       return processBundle(name, version, bundle);
     } else {
@@ -35,7 +36,7 @@ public class LibraryService {
 
   public CqlLibrary getLibraryResourceAsCqlLibrary(String name, String version) {
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
-
+    log.debug("inside getLibraryResourceAsCqlLibrary service");
     if (bundle.hasEntry()) {
       Optional<Library> optional =
           hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
@@ -48,6 +49,7 @@ public class LibraryService {
   }
 
   public boolean isLibraryResourcePresent(String name, String version) {
+    log.debug("inside isLibraryResourcePresent service");
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
     if (!bundle.hasEntry()) {
       return false;
@@ -57,26 +59,36 @@ public class LibraryService {
   }
 
   private String processBundle(String name, String version, Bundle bundle) {
+    log.debug("inside the process bundle");
     Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
-
+    log.debug("Getting Optional Library");
     if (optional.isPresent()) {
+      Library library=optional.get();
+      log.debug("Name of Library",library.getName());
+      log.debug("Library Version", library.getVersion());
+      log.debug("Library Id",library.getId());
       return getCqlFromHapiLibrary(optional.get());
+
     } else {
+      log.debug("throwing not found exception");
       throw new HapiLibraryNotFoundException(name, version);
     }
   }
 
   private String getCqlFromHapiLibrary(Library library) {
+    log.debug("inside the get cql from hapi library service");
     List<Attachment> attachments = library.getContent();
 
     if (CollectionUtils.isEmpty(attachments)) {
       throw new LibraryAttachmentNotFoundException(library);
     }
     Attachment cql = findCqlAttachment(library);
+    log.debug("exiting the get Cql from hapi library service");
     return new String(cql.getData());
   }
 
   private Attachment findCqlAttachment(Library library) {
+    log.debug("inside findCqlAttachement service");
     return library.getContent().stream()
         .filter(a -> a.getContentType().equals("text/cql"))
         .findFirst()
@@ -84,6 +96,7 @@ public class LibraryService {
   }
 
   public Library createLibraryResourceForCqlLibrary(CqlLibrary cqlLibrary) {
+    log.debug("inside createLibraryResourceForCqlLibrary service");
     boolean isLibraryPresent =
         isLibraryResourcePresent(
             cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
