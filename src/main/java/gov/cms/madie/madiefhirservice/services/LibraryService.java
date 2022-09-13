@@ -26,9 +26,12 @@ public class LibraryService {
   public String getLibraryCql(String name, String version) {
 
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
+    log.info("inside getLibraryCql ", name, version);
     if (bundle.hasEntry()) {
+      log.info("bundling has entry and process bundle start",name, version);
       return processBundle(name, version, bundle);
     } else {
+      log.info("throwing not found exception",name, version);
       throw new HapiLibraryNotFoundException(name, version);
     }
   }
