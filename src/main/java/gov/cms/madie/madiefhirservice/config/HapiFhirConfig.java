@@ -30,6 +30,7 @@ public class HapiFhirConfig {
       throws IOException {
     NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
+    npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.core-4.1.0.tgz");
 
     return new ValidationSupportChain(
         npmPackageSupport,
