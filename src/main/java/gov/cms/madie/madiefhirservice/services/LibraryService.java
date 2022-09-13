@@ -62,10 +62,10 @@ public class LibraryService {
     Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
     log.info("Getting Optional Library");
     if (optional.isPresent()) {
-      Library library=optional.get();
-      log.info("Name of Library",library.getName());
+      Library library = optional.get();
+      log.info("Name of Library", library.getName());
       log.info("Library Version", library.getVersion());
-      log.info("Library Id",library.getId());
+      log.info("Library Id", library.getId());
       return getCqlFromHapiLibrary(optional.get());
 
     } else {
