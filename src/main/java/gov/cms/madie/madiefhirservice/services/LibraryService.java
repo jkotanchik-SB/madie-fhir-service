@@ -36,7 +36,7 @@ public class LibraryService {
 
   public CqlLibrary getLibraryResourceAsCqlLibrary(String name, String version) {
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
-    System.out.println("hello");
+    log.debug("inside getLibraryResourceAsCqlLibrary service");
     if (bundle.hasEntry()) {
       Optional<Library> optional =
           hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
@@ -49,7 +49,7 @@ public class LibraryService {
   }
 
   public boolean isLibraryResourcePresent(String name, String version) {
-    System.out.println("hello2");
+    log.debug("inside isLibraryResourcePresent service");
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
     if (!bundle.hasEntry()) {
       return false;
@@ -88,7 +88,7 @@ public class LibraryService {
   }
 
   private Attachment findCqlAttachment(Library library) {
-    System.out.println("hello5");
+    log.debug("inside findCqlAttachement service");
     return library.getContent().stream()
         .filter(a -> a.getContentType().equals("text/cql"))
         .findFirst()
@@ -96,7 +96,7 @@ public class LibraryService {
   }
 
   public Library createLibraryResourceForCqlLibrary(CqlLibrary cqlLibrary) {
-    System.out.println("hello4");
+    log.debug("inside createLibraryResourceForCqlLibrary service");
     boolean isLibraryPresent =
         isLibraryResourcePresent(
             cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion().toString());
