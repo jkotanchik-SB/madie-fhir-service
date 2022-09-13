@@ -58,18 +58,11 @@ public class LibraryService {
   }
 
   private String processBundle(String name, String version, Bundle bundle) {
-    log.info("inside the process bundle");
-    Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
-    log.info("Getting Optional Library");
-    if (optional.isPresent()) {
-      Library library = optional.get();
-      log.info("Name of Library", library.getName());
-      log.info("Library Version", library.getVersion());
-      log.info("Library Id", library.getId());
-      return getCqlFromHapiLibrary(optional.get());
 
+    Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
+    if (optional.isPresent()) {
+      return getCqlFromHapiLibrary(optional.get());
     } else {
-      log.info("throwing not found exception");
       throw new HapiLibraryNotFoundException(name, version);
     }
   }
