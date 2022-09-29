@@ -43,6 +43,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   private Measure madieMeasure;
   private Measure madieRatioMeasure;
+  private Measure madieCVMeasure;
 
   @BeforeEach
   public void setUp() throws JsonProcessingException {
@@ -52,6 +53,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     String madieRatioMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_ratio_measure.json");
     madieRatioMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieRatioMeasureJson);
+    String cvMeasureJson =
+        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_cv_measure.json");
+    madieCVMeasure = MeasureTestHelper.createMadieMeasureFromJson(cvMeasureJson);
   }
 
   @Test
@@ -154,29 +158,128 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
     assertThat(group1CodeableConcept.getCoding().get(0).getCode(), is(equalTo("ratio")));
 
-    assertThat(measure.getGroup().get(0).getId(), is(notNullValue()));
-
-    MeasureGroupPopulationComponent groupComponent =
-        measure.getGroup().get(0).getPopulation().get(0);
-    assertThat(groupComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
-    assertThat(groupComponent.getCriteria().getExpression(), is(equalTo("ipp")));
+    MeasureGroupPopulationComponent groupPopComponent = group1.getPopulation().get(0);
+    assertThat(groupPopComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponent.getCriteria().getExpression(), is(equalTo("ipp")));
     assertThat(
-        groupComponent.getCode().getCoding().get(0).getDisplay(),
+        groupPopComponent.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Initial Population")));
     assertThat(
-        groupComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
-    assertThat(groupComponent.getId(), is(notNullValue()));
+        groupPopComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+    assertThat(groupPopComponent.getId(), is(notNullValue()));
 
-    MeasureGroupPopulationComponent groupComponent2 =
-        measure.getGroup().get(0).getPopulation().get(1);
-    assertThat(groupComponent2.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
-    assertThat(groupComponent2.getCriteria().getExpression(), is(equalTo("ipp2")));
+    MeasureGroupPopulationComponent groupPopComponent2 = group1.getPopulation().get(1);
+    assertThat(groupPopComponent2.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponent2.getCriteria().getExpression(), is(equalTo("ipp2")));
     assertThat(
-        groupComponent2.getCode().getCoding().get(0).getDisplay(),
+        groupPopComponent2.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Initial Population")));
     assertThat(
-        groupComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
-    assertThat(groupComponent2.getId(), is(notNullValue()));
+        groupPopComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+    assertThat(groupPopComponent2.getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupPopComponent3 = group1.getPopulation().get(2);
+    assertThat(groupPopComponent3.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponent3.getCriteria().getExpression(), is(equalTo("denom")));
+    assertThat(
+        groupPopComponent3.getCode().getCoding().get(0).getDisplay(),
+        is(equalTo("Denominator")));
+    assertThat(
+        groupPopComponent3.getCode().getCoding().get(0).getCode(), is(equalTo("denominator")));
+    assertThat(groupPopComponent3.getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupPopComponent4 = group1.getPopulation().get(3);
+    assertThat(groupPopComponent4.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponent4.getCriteria().getExpression(), is(equalTo("num")));
+    assertThat(
+        groupPopComponent4.getCode().getCoding().get(0).getDisplay(),
+        is(equalTo("Numerator")));
+    assertThat(
+        groupPopComponent4.getCode().getCoding().get(0).getCode(), is(equalTo("numerator")));
+    assertThat(groupPopComponent4.getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupPopComponentObs = group1.getPopulation().get(4);
+    assertThat(groupPopComponentObs.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponentObs.getCriteria().getExpression(), is(equalTo("fun")));
+    assertThat(
+        groupPopComponentObs.getCode().getCoding().get(0).getDisplay(),
+        is(equalTo("Measure Observation")));
+    assertThat(
+        groupPopComponentObs.getCode().getCoding().get(0).getCode(), is(equalTo("measure-observation")));
+    assertThat(groupPopComponentObs.getId(), is(notNullValue()));
+  }
+
+  @Test
+  public void testCreateFhirMeasureForMadieCVMeasure() {
+    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
+
+    org.hl7.fhir.r4.model.Measure measure =
+        measureTranslatorService.createFhirMeasureForMadieMeasure(madieCVMeasure);
+
+    assertThat(measure.getName(), is(equalTo(madieCVMeasure.getCqlLibraryName())));
+    assertThat(measure.getPublisher(), is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward())));
+    assertThat(
+        measure.getRationale(), is(equalTo(madieCVMeasure.getMeasureMetaData().getRationale())));
+    assertThat(
+        measure.getUrl(), is(equalTo("cms.gov/Measure/" + madieCVMeasure.getCqlLibraryName())));
+    assertThat(
+        DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
+        is(equalTo("01/01/2022")));
+    assertThat(
+        DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
+        is(equalTo("01/01/2023")));
+    assertThat(measure.getMeta().getProfile().size(), is(equalTo(0)));
+    assertThat(measure.getGroup().size(), is(equalTo(madieCVMeasure.getGroups().size())));
+
+    assertThat(measure.getGroup().get(0), is(notNullValue()));
+    MeasureGroupComponent group1 = measure.getGroup().get(0);
+    assertThat(group1.getId(), is(equalTo("63346f711633644d64ac2d83")));
+    Extension group1Ex = group1.getExtension().get(0);
+    assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
+    CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());
+    assertThat(group1CodeableConcept.getCoding(), is(notNullValue()));
+    assertThat(group1CodeableConcept.getCoding().size(), is(equalTo(1)));
+    assertThat(group1CodeableConcept.getCoding().get(0), is(notNullValue()));
+    assertThat(
+        group1CodeableConcept.getCoding().get(0).getSystem(),
+        is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
+    assertThat(group1CodeableConcept.getCoding().get(0).getCode(), is(equalTo("continuous-variable")));
+
+    MeasureGroupPopulationComponent groupPopComponent = group1.getPopulation().get(0);
+    assertThat(groupPopComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponent.getCriteria().getExpression(), is(equalTo("ipp")));
+    assertThat(
+        groupPopComponent.getCode().getCoding().get(0).getDisplay(),
+        is(equalTo("Initial Population")));
+    assertThat(
+        groupPopComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+    assertThat(groupPopComponent.getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupPopComponent2 = group1.getPopulation().get(1);
+    assertThat(groupPopComponent2.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponent2.getCriteria().getExpression(), is(equalTo("mpop")));
+    assertThat(
+        groupPopComponent2.getCode().getCoding().get(0).getDisplay(),
+        is(equalTo("Measure Population")));
+    assertThat(
+        groupPopComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("measure-population")));
+    assertThat(groupPopComponent2.getId(), is(notNullValue()));
+
+    MeasureGroupPopulationComponent groupPopComponentObs = group1.getPopulation().get(group1.getPopulation().size()-1);
+    assertThat(groupPopComponentObs.getId(), is(notNullValue()));
+    assertThat(groupPopComponentObs.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(groupPopComponentObs.getCriteria().getExpression(), is(equalTo("fun")));
+    assertThat(
+        groupPopComponentObs.getCode().getCoding().get(0).getDisplay(),
+        is(equalTo("Measure Observation")));
+    assertThat(
+        groupPopComponentObs.getCode().getCoding().get(0).getCode(), is(equalTo("measure-observation")));
+    assertThat(groupPopComponentObs.getExtension().size(), is(equalTo(2)));
+    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI), is(notNullValue()));
+    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI).getValue().primitiveValue(),
+        is(equalTo("53808b19-54c7-45f7-95c4-dd4ee58f4730")));
+    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI), is(notNullValue()));
+    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI).getValue().primitiveValue(), is(equalTo("Minimum")));
   }
 
   @Test

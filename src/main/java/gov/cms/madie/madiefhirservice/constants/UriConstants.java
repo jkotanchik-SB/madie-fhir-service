@@ -19,7 +19,12 @@ public final class UriConstants {
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cv-measure-cqfm";
     public static final String RATIO_PROFILE_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/ratio-measure-cqfm";
+    public static final String CRITERIA_REFERENCE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference";
+    public static final String AGGREGATE_METHOD_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-aggregateMethod";
   }
+
 
   public static final class QiCore {
     public static final String PATIENT_PROFILE_URI =
