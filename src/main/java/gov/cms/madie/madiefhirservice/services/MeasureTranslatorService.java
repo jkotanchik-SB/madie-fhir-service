@@ -71,6 +71,12 @@ public class MeasureTranslatorService {
     List<MeasureGroupPopulationComponent> measurePopulations = buildPopulations(madieGroup);
     measurePopulations.addAll(buildObservations(madieGroup));
     List<MeasureGroupStratifierComponent> measureStratifications = buildStratifications(madieGroup);
+    // seems FHIR spec and fqm-execution want lowercase 'boolean', while other popBasis have
+    // capitalized first letter
+    final String popBasisValue =
+        StringUtils.equalsIgnoreCase("boolean", madieGroup.getPopulationBasis())
+            ? "boolean"
+            : madieGroup.getPopulationBasis();
     return (MeasureGroupComponent)
         (new MeasureGroupComponent()
             .setPopulation(measurePopulations)
@@ -79,7 +85,10 @@ public class MeasureTranslatorService {
             .addExtension(
                 new Extension(
                     UriConstants.CqfMeasures.SCORING_URI,
-                    buildScoringConcept(madieGroup.getScoring()))));
+                    buildScoringConcept(madieGroup.getScoring())))
+            .addExtension(
+                new Extension(
+                    UriConstants.CqfMeasures.POPULATION_BASIS, new CodeType(popBasisValue))));
   }
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
@@ -91,15 +100,15 @@ public class MeasureTranslatorService {
                   String populationDisplay = population.getName().getDisplay();
                   return (MeasureGroupPopulationComponent)
                       (new MeasureGroupPopulationComponent()
-                          .setCode(
-                              buildCodeableConcept(
-                                  populationCode,
-                                  UriConstants.POPULATION_SYSTEM_URI,
-                                  populationDisplay))
-                          .setCriteria(
-                              buildExpression(
-                                  "text/cql.identifier", population.getDefinition()))
-                          .setId(population.getId()))
+                              .setCode(
+                                  buildCodeableConcept(
+                                      populationCode,
+                                      UriConstants.POPULATION_SYSTEM_URI,
+                                      populationDisplay))
+                              .setCriteria(
+                                  buildExpression(
+                                      "text/cql.identifier", population.getDefinition()))
+                              .setId(population.getId()))
                           .addExtension(buildPopulationTypeExtension(population, madieGroup));
                   // TODO: Add an extension for measure observations
                 })
@@ -108,33 +117,39 @@ public class MeasureTranslatorService {
   }
 
   private List<MeasureGroupPopulationComponent> buildObservations(Group madieGroup) {
-    if (madieGroup.getMeasureObservations() == null || madieGroup.getMeasureObservations().isEmpty()) {
+    if (madieGroup.getMeasureObservations() == null
+        || madieGroup.getMeasureObservations().isEmpty()) {
       return List.of();
     }
-    return madieGroup.getMeasureObservations().stream().map(measureObservation -> {
-      MeasureGroupPopulationComponent observationPopulation = (MeasureGroupPopulationComponent) (
-          new MeasureGroupPopulationComponent()
-              .setCode(
-                  buildCodeableConcept(
-                      PopulationType.MEASURE_OBSERVATION.toCode(),
-                      UriConstants.POPULATION_SYSTEM_URI,
-                      PopulationType.MEASURE_OBSERVATION.getDisplay()))
-              .setCriteria(
-                  buildExpression(
-                      "text/cql.identifier", measureObservation.getDefinition()))
-              .addExtension(
-                  new Extension(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI,
-                      new StringType(measureObservation.getAggregateMethod()))
-              )
-              .setId(measureObservation.getId())
-      );
-      if (measureObservation.getCriteriaReference() != null && StringUtils.isNotBlank(measureObservation.getCriteriaReference())) {
-        observationPopulation.addExtension(
-            new Extension(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI,
-                new StringType(measureObservation.getCriteriaReference())));
-      }
-      return observationPopulation;
-    }).toList();
+    return madieGroup.getMeasureObservations().stream()
+        .map(
+            measureObservation -> {
+              MeasureGroupPopulationComponent observationPopulation =
+                  (MeasureGroupPopulationComponent)
+                      (new MeasureGroupPopulationComponent()
+                          .setCode(
+                              buildCodeableConcept(
+                                  PopulationType.MEASURE_OBSERVATION.toCode(),
+                                  UriConstants.POPULATION_SYSTEM_URI,
+                                  PopulationType.MEASURE_OBSERVATION.getDisplay()))
+                          .setCriteria(
+                              buildExpression(
+                                  "text/cql.identifier", measureObservation.getDefinition()))
+                          .addExtension(
+                              new Extension(
+                                  UriConstants.CqfMeasures.AGGREGATE_METHOD_URI,
+                                  new StringType(measureObservation.getAggregateMethod())))
+                          .setId(measureObservation.getId()));
+              if (measureObservation.getCriteriaReference() != null
+                  && StringUtils.isNotBlank(measureObservation.getCriteriaReference())) {
+                observationPopulation.addExtension(
+                    new Extension(
+                        UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI,
+                        new StringType(measureObservation.getCriteriaReference())));
+              }
+              return observationPopulation;
+            })
+        .toList();
   }
 
   private List<MeasureGroupStratifierComponent> buildStratifications(Group madieGroup) {
@@ -163,10 +178,13 @@ public class MeasureTranslatorService {
                     i.set(Integer.valueOf(i.get().intValue() + 1));
                     return (MeasureGroupStratifierComponent)
                         (new MeasureGroupStratifierComponent()
-                            .setCriteria(
-                                buildExpression(
-                                    "text/cql.identifier", strat.getCqlDefinition())))
-                            .setId(StringUtils.isNotBlank(strat.getId()) ? strat.getId() : i.get().toString())
+                                .setCriteria(
+                                    buildExpression(
+                                        "text/cql.identifier", strat.getCqlDefinition())))
+                            .setId(
+                                StringUtils.isNotBlank(strat.getId())
+                                    ? strat.getId()
+                                    : i.get().toString())
                             .addExtension(extension.get());
                   })
               .collect(Collectors.toList());
@@ -188,17 +206,15 @@ public class MeasureTranslatorService {
                 // and then set the extension
                 if (pop.getName().equals(PopulationType.INITIAL_POPULATION)
                     && (pop.getAssociationType() != null
-                    && pop.getAssociationType()
-                    .toString()
-                    .equalsIgnoreCase(population.getName().toCode()))) {
+                        && pop.getAssociationType()
+                            .toString()
+                            .equalsIgnoreCase(population.getName().toCode()))) {
                   IBaseDatatype theValue = new StringType(pop.getId());
                   // TODO investigate whether these URLS can change;
                   //  if they are codified in HAPI FHIR Libraries..
                   //  we should define a separate property file with this list
                   extension.set(
-                      new Extension(
-                          UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI,
-                          theValue));
+                      new Extension(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI, theValue));
                 }
               });
     }

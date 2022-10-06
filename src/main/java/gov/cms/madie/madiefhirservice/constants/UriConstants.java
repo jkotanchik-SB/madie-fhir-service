@@ -11,6 +11,8 @@ public final class UriConstants {
   public static final class CqfMeasures {
     public static final String SCORING_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring";
+    public static final String POPULATION_BASIS =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-populationBasis";
     public static final String PROPORTION_PROFILE_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/proportion-measure-cqfm";
     public static final String COHORT_PROFILE_URI =
@@ -24,7 +26,6 @@ public final class UriConstants {
     public static final String AGGREGATE_METHOD_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-aggregateMethod";
   }
-
 
   public static final class QiCore {
     public static final String PATIENT_PROFILE_URI =
