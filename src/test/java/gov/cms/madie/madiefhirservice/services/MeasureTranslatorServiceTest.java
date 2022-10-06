@@ -84,6 +84,17 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
     assertThat(group1.getId(), is(equalTo("62f66b2e02b96d3a6ababefb")));
+    assertThat(
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS), is(notNullValue()));
+    assertThat(
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS).getValue(),
+        is(notNullValue()));
+    assertThat(
+        group1
+            .getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS)
+            .getValue()
+            .primitiveValue(),
+        is(equalTo("Account")));
     Extension group1Ex = group1.getExtension().get(0);
     assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
     CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());
@@ -109,6 +120,17 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getGroup().get(1), is(notNullValue()));
     MeasureGroupComponent group2 = measure.getGroup().get(1);
     assertThat(group2.getId(), is(equalTo("62fb788bfb3c765290171e75")));
+    assertThat(
+        group2.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS), is(notNullValue()));
+    assertThat(
+        group2.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS).getValue(),
+        is(notNullValue()));
+    assertThat(
+        group2
+            .getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS)
+            .getValue()
+            .primitiveValue(),
+        is(equalTo("boolean")));
     Extension group2Ex = group2.getExtension().get(0);
     assertThat(group2Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
     CodeableConcept group2CodeableConcept = group2Ex.castToCodeableConcept(group2Ex.getValue());
@@ -147,6 +169,17 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
     assertThat(group1.getId(), is(equalTo("626be4370ca8110d3b22404b")));
+    assertThat(
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS), is(notNullValue()));
+    assertThat(
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS).getValue(),
+        is(notNullValue()));
+    assertThat(
+        group1
+            .getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS)
+            .getValue()
+            .primitiveValue(),
+        is(equalTo("Account")));
     Extension group1Ex = group1.getExtension().get(0);
     assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
     CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());
@@ -165,7 +198,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         groupPopComponent.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Initial Population")));
     assertThat(
-        groupPopComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+        groupPopComponent.getCode().getCoding().get(0).getCode(),
+        is(equalTo("initial-population")));
     assertThat(groupPopComponent.getId(), is(notNullValue()));
 
     MeasureGroupPopulationComponent groupPopComponent2 = group1.getPopulation().get(1);
@@ -175,15 +209,15 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         groupPopComponent2.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Initial Population")));
     assertThat(
-        groupPopComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+        groupPopComponent2.getCode().getCoding().get(0).getCode(),
+        is(equalTo("initial-population")));
     assertThat(groupPopComponent2.getId(), is(notNullValue()));
 
     MeasureGroupPopulationComponent groupPopComponent3 = group1.getPopulation().get(2);
     assertThat(groupPopComponent3.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
     assertThat(groupPopComponent3.getCriteria().getExpression(), is(equalTo("denom")));
     assertThat(
-        groupPopComponent3.getCode().getCoding().get(0).getDisplay(),
-        is(equalTo("Denominator")));
+        groupPopComponent3.getCode().getCoding().get(0).getDisplay(), is(equalTo("Denominator")));
     assertThat(
         groupPopComponent3.getCode().getCoding().get(0).getCode(), is(equalTo("denominator")));
     assertThat(groupPopComponent3.getId(), is(notNullValue()));
@@ -192,20 +226,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(groupPopComponent4.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
     assertThat(groupPopComponent4.getCriteria().getExpression(), is(equalTo("num")));
     assertThat(
-        groupPopComponent4.getCode().getCoding().get(0).getDisplay(),
-        is(equalTo("Numerator")));
-    assertThat(
-        groupPopComponent4.getCode().getCoding().get(0).getCode(), is(equalTo("numerator")));
+        groupPopComponent4.getCode().getCoding().get(0).getDisplay(), is(equalTo("Numerator")));
+    assertThat(groupPopComponent4.getCode().getCoding().get(0).getCode(), is(equalTo("numerator")));
     assertThat(groupPopComponent4.getId(), is(notNullValue()));
 
     MeasureGroupPopulationComponent groupPopComponentObs = group1.getPopulation().get(4);
-    assertThat(groupPopComponentObs.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(
+        groupPopComponentObs.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
     assertThat(groupPopComponentObs.getCriteria().getExpression(), is(equalTo("fun")));
     assertThat(
         groupPopComponentObs.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Measure Observation")));
     assertThat(
-        groupPopComponentObs.getCode().getCoding().get(0).getCode(), is(equalTo("measure-observation")));
+        groupPopComponentObs.getCode().getCoding().get(0).getCode(),
+        is(equalTo("measure-observation")));
     assertThat(groupPopComponentObs.getId(), is(notNullValue()));
   }
 
@@ -217,7 +251,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieCVMeasure);
 
     assertThat(measure.getName(), is(equalTo(madieCVMeasure.getCqlLibraryName())));
-    assertThat(measure.getPublisher(), is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward())));
+    assertThat(
+        measure.getPublisher(), is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward())));
     assertThat(
         measure.getRationale(), is(equalTo(madieCVMeasure.getMeasureMetaData().getRationale())));
     assertThat(
@@ -234,6 +269,17 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
     assertThat(group1.getId(), is(equalTo("63346f711633644d64ac2d83")));
+    assertThat(
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS), is(notNullValue()));
+    assertThat(
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS).getValue(),
+        is(notNullValue()));
+    assertThat(
+        group1
+            .getExtensionByUrl(UriConstants.CqfMeasures.POPULATION_BASIS)
+            .getValue()
+            .primitiveValue(),
+        is(equalTo("Encounter")));
     Extension group1Ex = group1.getExtension().get(0);
     assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
     CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());
@@ -243,7 +289,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         group1CodeableConcept.getCoding().get(0).getSystem(),
         is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
-    assertThat(group1CodeableConcept.getCoding().get(0).getCode(), is(equalTo("continuous-variable")));
+    assertThat(
+        group1CodeableConcept.getCoding().get(0).getCode(), is(equalTo("continuous-variable")));
 
     MeasureGroupPopulationComponent groupPopComponent = group1.getPopulation().get(0);
     assertThat(groupPopComponent.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
@@ -252,7 +299,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         groupPopComponent.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Initial Population")));
     assertThat(
-        groupPopComponent.getCode().getCoding().get(0).getCode(), is(equalTo("initial-population")));
+        groupPopComponent.getCode().getCoding().get(0).getCode(),
+        is(equalTo("initial-population")));
     assertThat(groupPopComponent.getId(), is(notNullValue()));
 
     MeasureGroupPopulationComponent groupPopComponent2 = group1.getPopulation().get(1);
@@ -262,24 +310,41 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         groupPopComponent2.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Measure Population")));
     assertThat(
-        groupPopComponent2.getCode().getCoding().get(0).getCode(), is(equalTo("measure-population")));
+        groupPopComponent2.getCode().getCoding().get(0).getCode(),
+        is(equalTo("measure-population")));
     assertThat(groupPopComponent2.getId(), is(notNullValue()));
 
-    MeasureGroupPopulationComponent groupPopComponentObs = group1.getPopulation().get(group1.getPopulation().size()-1);
+    MeasureGroupPopulationComponent groupPopComponentObs =
+        group1.getPopulation().get(group1.getPopulation().size() - 1);
     assertThat(groupPopComponentObs.getId(), is(notNullValue()));
-    assertThat(groupPopComponentObs.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
+    assertThat(
+        groupPopComponentObs.getCriteria().getLanguage(), is(equalTo("text/cql.identifier")));
     assertThat(groupPopComponentObs.getCriteria().getExpression(), is(equalTo("fun")));
     assertThat(
         groupPopComponentObs.getCode().getCoding().get(0).getDisplay(),
         is(equalTo("Measure Observation")));
     assertThat(
-        groupPopComponentObs.getCode().getCoding().get(0).getCode(), is(equalTo("measure-observation")));
+        groupPopComponentObs.getCode().getCoding().get(0).getCode(),
+        is(equalTo("measure-observation")));
     assertThat(groupPopComponentObs.getExtension().size(), is(equalTo(2)));
-    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI), is(notNullValue()));
-    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI).getValue().primitiveValue(),
+    assertThat(
+        groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI),
+        is(notNullValue()));
+    assertThat(
+        groupPopComponentObs
+            .getExtensionByUrl(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI)
+            .getValue()
+            .primitiveValue(),
         is(equalTo("53808b19-54c7-45f7-95c4-dd4ee58f4730")));
-    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI), is(notNullValue()));
-    assertThat(groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI).getValue().primitiveValue(), is(equalTo("Minimum")));
+    assertThat(
+        groupPopComponentObs.getExtensionByUrl(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI),
+        is(notNullValue()));
+    assertThat(
+        groupPopComponentObs
+            .getExtensionByUrl(UriConstants.CqfMeasures.AGGREGATE_METHOD_URI)
+            .getValue()
+            .primitiveValue(),
+        is(equalTo("Minimum")));
   }
 
   @Test

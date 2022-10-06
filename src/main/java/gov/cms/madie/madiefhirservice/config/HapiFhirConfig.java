@@ -35,22 +35,22 @@ public class HapiFhirConfig {
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.core-3.1.0.tgz");
 
-    UnknownCodeSystemWarningValidationSupport unknownCodeSystemWarningValidationSupport = new UnknownCodeSystemWarningValidationSupport(fhirContext);
-    unknownCodeSystemWarningValidationSupport.setNonExistentCodeSystemSeverity(IValidationSupport.IssueSeverity.WARNING);
+    UnknownCodeSystemWarningValidationSupport unknownCodeSystemWarningValidationSupport =
+        new UnknownCodeSystemWarningValidationSupport(fhirContext);
+    unknownCodeSystemWarningValidationSupport.setNonExistentCodeSystemSeverity(
+        IValidationSupport.IssueSeverity.WARNING);
 
     return new ValidationSupportChain(
         npmPackageSupport,
         unknownCodeSystemWarningValidationSupport,
         new DefaultProfileValidationSupport(fhirContext),
         new CommonCodeSystemsTerminologyService(fhirContext),
-        new InMemoryTerminologyServerValidationSupport(fhirContext)
-    );
+        new InMemoryTerminologyServerValidationSupport(fhirContext));
   }
 
   @Bean
   public FhirValidator npmFhirValidator(
-      @Autowired FhirContext fhirContext,
-      @Autowired IValidationSupport validationSupportChain) {
+      @Autowired FhirContext fhirContext, @Autowired IValidationSupport validationSupportChain) {
     // Ask the context for a validator
     FhirValidator validator = fhirContext.newValidator();
 
