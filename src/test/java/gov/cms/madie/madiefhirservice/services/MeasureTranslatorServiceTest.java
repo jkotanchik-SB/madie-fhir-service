@@ -3,7 +3,6 @@ package gov.cms.madie.madiefhirservice.services;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -96,28 +95,13 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     Extension scoringUnitExt1 = group1.getExtensionByUrl(UriConstants.CqfMeasures.SCORING_UNIT_URI);
     assertThat(scoringUnitExt1, is(notNullValue()));
     assertThat(scoringUnitExt1.getValue(), is(notNullValue()));
-    CodeableConcept scoringUnit1 = scoringUnitExt1.getValue()
-        .castToCodeableConcept(scoringUnitExt1.getValue());
-    assertThat(
-        scoringUnit1.getCoding(),
-        is(notNullValue())
-    );
-    assertThat(
-        scoringUnit1.getCoding().get(0),
-        is(notNullValue())
-    );
-    assertThat(
-        scoringUnit1.getCoding().get(0).getDisplay(),
-        is(equalTo("kg kilogram"))
-    );
-    assertThat(
-        scoringUnit1.getCoding().get(0).getCode(),
-        is(equalTo("kg"))
-    );
-    assertThat(
-        scoringUnit1.getCoding().get(0).getSystem(),
-        is(equalTo("http://thesystem"))
-    );
+    CodeableConcept scoringUnit1 =
+        scoringUnitExt1.getValue().castToCodeableConcept(scoringUnitExt1.getValue());
+    assertThat(scoringUnit1.getCoding(), is(notNullValue()));
+    assertThat(scoringUnit1.getCoding().get(0), is(notNullValue()));
+    assertThat(scoringUnit1.getCoding().get(0).getDisplay(), is(equalTo("kg kilogram")));
+    assertThat(scoringUnit1.getCoding().get(0).getCode(), is(equalTo("kg")));
+    assertThat(scoringUnit1.getCoding().get(0).getSystem(), is(equalTo("http://thesystem")));
     Extension group1Ex = group1.getExtension().get(0);
     assertThat(group1Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
     CodeableConcept group1CodeableConcept = group1Ex.castToCodeableConcept(group1Ex.getValue());

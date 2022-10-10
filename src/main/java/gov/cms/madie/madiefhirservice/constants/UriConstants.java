@@ -27,6 +27,8 @@ public final class UriConstants {
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference";
     public static final String AGGREGATE_METHOD_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-aggregateMethod";
+    public static final String APPLIES_TO_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-appliesTo";
   }
 
   public static final class QiCore {

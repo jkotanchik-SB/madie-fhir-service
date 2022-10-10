@@ -10,9 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.*;
-import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
-import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
-import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
+import org.hl7.fhir.r4.model.Measure.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
@@ -69,18 +67,21 @@ public class MeasureTranslatorService {
   }
 
   private CodeableConcept getScoringUnitCode(Object scoringUnit) {
-    if (scoringUnit == null)
+    if (scoringUnit == null) {
       return null;
-    else if (scoringUnit instanceof String) {
+    } else if (scoringUnit instanceof String) {
       String scoringUnitStr = (String) scoringUnit;
-      return scoringUnitStr.trim().isEmpty() ? null : new CodeableConcept(
-          new Coding(null, scoringUnitStr, scoringUnitStr)
-      );
+      return scoringUnitStr.trim().isEmpty()
+          ? null
+          : new CodeableConcept(new Coding(null, scoringUnitStr, scoringUnitStr));
     } else if (scoringUnit instanceof Map) {
-      Map<String, Object> scoringUnitObj = (Map)scoringUnit;
-      Map<String, Object> valueObj = (Map)scoringUnitObj.get("value");
-      return new CodeableConcept(new Coding((String)valueObj.get("system"),
-          (String)valueObj.get("code"), (String)scoringUnitObj.get("label")));
+      Map<String, Object> scoringUnitObj = (Map) scoringUnit;
+      Map<String, Object> valueObj = (Map) scoringUnitObj.get("value");
+      return new CodeableConcept(
+          new Coding(
+              (String) valueObj.get("system"),
+              (String) valueObj.get("code"),
+              (String) scoringUnitObj.get("label")));
     } else {
       return null;
     }
@@ -98,21 +99,22 @@ public class MeasureTranslatorService {
             : madieGroup.getPopulationBasis();
     final CodeableConcept scoringUnit = getScoringUnitCode(madieGroup.getScoringUnit());
 
-    Element element = new MeasureGroupComponent()
-        .setPopulation(measurePopulations)
-        .setStratifier(measureStratifications)
-        .setId(madieGroup.getId())
-        .addExtension(
-            new Extension(
-                UriConstants.CqfMeasures.SCORING_URI,
-                buildScoringConcept(madieGroup.getScoring())))
-        .addExtension(
-            new Extension(
-                UriConstants.CqfMeasures.POPULATION_BASIS, new CodeType(popBasisValue)));
+    Element element =
+        new MeasureGroupComponent()
+            .setPopulation(measurePopulations)
+            .setStratifier(measureStratifications)
+            .setId(madieGroup.getId())
+            .addExtension(
+                new Extension(
+                    UriConstants.CqfMeasures.SCORING_URI,
+                    buildScoringConcept(madieGroup.getScoring())))
+            .addExtension(
+                new Extension(
+                    UriConstants.CqfMeasures.POPULATION_BASIS, new CodeType(popBasisValue)));
     if (scoringUnit != null) {
       element.addExtension(new Extension(UriConstants.CqfMeasures.SCORING_UNIT_URI, scoringUnit));
     }
-    return (MeasureGroupComponent)element;
+    return (MeasureGroupComponent) element;
   }
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
@@ -192,13 +194,8 @@ public class MeasureTranslatorService {
                             UriConstants.POPULATION_SYSTEM_URI,
                             strat.getDescription());
 
-                    // TODO investigate whether these URLS can change;
-                    //  if they are codified in HAPI FHIR Libraries..
-                    //  we should define a separate property file with this list
                     extension.set(
-                        new Extension(
-                            "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-appliesTo",
-                            extensionCode));
+                        new Extension(UriConstants.CqfMeasures.APPLIES_TO_URI, extensionCode));
                     i.set(Integer.valueOf(i.get().intValue() + 1));
                     return (MeasureGroupStratifierComponent)
                         (new MeasureGroupStratifierComponent()
@@ -234,9 +231,6 @@ public class MeasureTranslatorService {
                             .toString()
                             .equalsIgnoreCase(population.getName().toCode()))) {
                   IBaseDatatype theValue = new StringType(pop.getId());
-                  // TODO investigate whether these URLS can change;
-                  //  if they are codified in HAPI FHIR Libraries..
-                  //  we should define a separate property file with this list
                   extension.set(
                       new Extension(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI, theValue));
                 }
