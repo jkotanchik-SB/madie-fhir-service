@@ -122,7 +122,8 @@
             "value":{
                "code":"kg",
                "name":"kilogram",
-               "guidance":null
+               "guidance":null,
+               "system": "http://thesystem"
             }
          },
          "stratifications":[

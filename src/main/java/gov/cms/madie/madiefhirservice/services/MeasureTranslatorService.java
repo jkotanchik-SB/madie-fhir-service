@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -67,6 +68,24 @@ public class MeasureTranslatorService {
     return madieGroups.stream().map(this::buildGroup).collect(Collectors.toList());
   }
 
+  private CodeableConcept getScoringUnitCode(Object scoringUnit) {
+    if (scoringUnit == null)
+      return null;
+    else if (scoringUnit instanceof String) {
+      String scoringUnitStr = (String) scoringUnit;
+      return scoringUnitStr.trim().isEmpty() ? null : new CodeableConcept(
+          new Coding(null, scoringUnitStr, scoringUnitStr)
+      );
+    } else if (scoringUnit instanceof Map) {
+      Map<String, Object> scoringUnitObj = (Map)scoringUnit;
+      Map<String, Object> valueObj = (Map)scoringUnitObj.get("value");
+      return new CodeableConcept(new Coding((String)valueObj.get("system"),
+          (String)valueObj.get("code"), (String)scoringUnitObj.get("label")));
+    } else {
+      return null;
+    }
+  }
+
   public MeasureGroupComponent buildGroup(Group madieGroup) {
     List<MeasureGroupPopulationComponent> measurePopulations = buildPopulations(madieGroup);
     measurePopulations.addAll(buildObservations(madieGroup));
@@ -77,18 +96,23 @@ public class MeasureTranslatorService {
         StringUtils.equalsIgnoreCase("boolean", madieGroup.getPopulationBasis())
             ? "boolean"
             : madieGroup.getPopulationBasis();
-    return (MeasureGroupComponent)
-        (new MeasureGroupComponent()
-            .setPopulation(measurePopulations)
-            .setStratifier(measureStratifications)
-            .setId(madieGroup.getId())
-            .addExtension(
-                new Extension(
-                    UriConstants.CqfMeasures.SCORING_URI,
-                    buildScoringConcept(madieGroup.getScoring())))
-            .addExtension(
-                new Extension(
-                    UriConstants.CqfMeasures.POPULATION_BASIS, new CodeType(popBasisValue))));
+    final CodeableConcept scoringUnit = getScoringUnitCode(madieGroup.getScoringUnit());
+
+    Element element = new MeasureGroupComponent()
+        .setPopulation(measurePopulations)
+        .setStratifier(measureStratifications)
+        .setId(madieGroup.getId())
+        .addExtension(
+            new Extension(
+                UriConstants.CqfMeasures.SCORING_URI,
+                buildScoringConcept(madieGroup.getScoring())))
+        .addExtension(
+            new Extension(
+                UriConstants.CqfMeasures.POPULATION_BASIS, new CodeType(popBasisValue)));
+    if (scoringUnit != null) {
+      element.addExtension(new Extension(UriConstants.CqfMeasures.SCORING_UNIT_URI, scoringUnit));
+    }
+    return (MeasureGroupComponent)element;
   }
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
