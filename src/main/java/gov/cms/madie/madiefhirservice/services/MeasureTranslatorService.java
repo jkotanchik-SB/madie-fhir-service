@@ -127,15 +127,15 @@ public class MeasureTranslatorService {
                   String populationDisplay = population.getName().getDisplay();
                   return (MeasureGroupPopulationComponent)
                       (new MeasureGroupPopulationComponent()
-                          .setCode(
-                              buildCodeableConcept(
-                                  populationCode,
-                                  UriConstants.POPULATION_SYSTEM_URI,
-                                  populationDisplay))
-                          .setCriteria(
-                              buildExpression(
-                                  "text/cql.identifier", population.getDefinition()))
-                          .setId(population.getId()))
+                              .setCode(
+                                  buildCodeableConcept(
+                                      populationCode,
+                                      UriConstants.POPULATION_SYSTEM_URI,
+                                      populationDisplay))
+                              .setCriteria(
+                                  buildExpression(
+                                      "text/cql.identifier", population.getDefinition()))
+                              .setId(population.getId()))
                           .addExtension(buildPopulationTypeExtension(population, madieGroup));
                   // TODO: Add an extension for measure observations
                 })
@@ -187,18 +187,12 @@ public class MeasureTranslatorService {
       i.set(Integer.valueOf(0));
       measureStratifications =
           madieGroup.getStratifications().stream()
-              .filter(strat -> {
-                try {
-                  return PopulationType.valueOf(strat.getAssociation()) != null;
-                } catch (Exception ex) {
-                  return false;
-                }
-              })
               .map(
                   strat -> {
-                    PopulationType associationPopulation = PopulationType.valueOf(strat.getAssociation());
+                    PopulationType associationPopulation = strat.getAssociation();
                     extension.set(
-                        new Extension(UriConstants.CqfMeasures.APPLIES_TO_URI,
+                        new Extension(
+                            UriConstants.CqfMeasures.APPLIES_TO_URI,
                             buildCodeableConcept(
                                 associationPopulation.toCode(),
                                 UriConstants.POPULATION_SYSTEM_URI,
@@ -206,9 +200,9 @@ public class MeasureTranslatorService {
                     i.set(Integer.valueOf(i.get().intValue() + 1));
                     return (MeasureGroupStratifierComponent)
                         (new MeasureGroupStratifierComponent()
-                            .setCriteria(
-                                buildExpression(
-                                    "text/cql.identifier", strat.getCqlDefinition())))
+                                .setCriteria(
+                                    buildExpression(
+                                        "text/cql.identifier", strat.getCqlDefinition())))
                             .setId(
                                 StringUtils.isNotBlank(strat.getId())
                                     ? strat.getId()
@@ -234,9 +228,9 @@ public class MeasureTranslatorService {
                 // and then set the extension
                 if (pop.getName().equals(PopulationType.INITIAL_POPULATION)
                     && (pop.getAssociationType() != null
-                    && pop.getAssociationType()
-                    .toString()
-                    .equalsIgnoreCase(population.getName().toCode()))) {
+                        && pop.getAssociationType()
+                            .toString()
+                            .equalsIgnoreCase(population.getName().toCode()))) {
                   IBaseDatatype theValue = new StringType(pop.getId());
                   extension.set(
                       new Extension(UriConstants.CqfMeasures.CRITERIA_REFERENCE_URI, theValue));

@@ -453,7 +453,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     List<Stratification> stratifications = new ArrayList<>();
     Stratification strat1 = new Stratification();
     strat1.setDescription(null);
-    strat1.setAssociation(PopulationType.INITIAL_POPULATION.toString());
+    strat1.setAssociation(PopulationType.INITIAL_POPULATION);
     stratifications.add(strat1);
     group.setStratifications(stratifications);
     List<Group> groups = new ArrayList<>();
@@ -472,14 +472,21 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measureGroupStratifierComponent, is(notNullValue()));
     Expression expression = measureGroupStratifierComponent.getCriteria();
     assertThat(expression, is(notNullValue()));
-    assertThat(measureGroupStratifierComponent.getExtensionByUrl(UriConstants.CqfMeasures.APPLIES_TO_URI), is(notNullValue()));
-    Extension appliesToExt = measureGroupStratifierComponent.getExtensionByUrl(UriConstants.CqfMeasures.APPLIES_TO_URI);
+    assertThat(
+        measureGroupStratifierComponent.getExtensionByUrl(UriConstants.CqfMeasures.APPLIES_TO_URI),
+        is(notNullValue()));
+    Extension appliesToExt =
+        measureGroupStratifierComponent.getExtensionByUrl(UriConstants.CqfMeasures.APPLIES_TO_URI);
     Type value = appliesToExt.getValue();
     CodeableConcept codeableConcept = value.castToCodeableConcept(value);
     assertThat(codeableConcept.getCoding(), is(notNullValue()));
     assertThat(codeableConcept.getCoding().size(), is(equalTo(1)));
     assertThat(codeableConcept.getCodingFirstRep(), is(notNullValue()));
-    assertThat(codeableConcept.getCodingFirstRep().getSystem(), is(equalTo(UriConstants.POPULATION_SYSTEM_URI)));
-    assertThat(codeableConcept.getCodingFirstRep().getCode(), is(equalTo(PopulationType.INITIAL_POPULATION.toCode())));
+    assertThat(
+        codeableConcept.getCodingFirstRep().getSystem(),
+        is(equalTo(UriConstants.POPULATION_SYSTEM_URI)));
+    assertThat(
+        codeableConcept.getCodingFirstRep().getCode(),
+        is(equalTo(PopulationType.INITIAL_POPULATION.toCode())));
   }
 }
