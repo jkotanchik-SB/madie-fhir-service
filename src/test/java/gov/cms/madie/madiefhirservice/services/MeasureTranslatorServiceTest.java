@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Expression;
@@ -16,6 +18,7 @@ import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
+import org.hl7.fhir.r4.model.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +37,7 @@ import gov.cms.madie.models.measure.Population;
 import gov.cms.madie.models.measure.PopulationType;
 import gov.cms.madie.models.measure.Stratification;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   @InjectMocks private MeasureTranslatorService measureTranslatorService;
@@ -449,6 +453,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     List<Stratification> stratifications = new ArrayList<>();
     Stratification strat1 = new Stratification();
     strat1.setDescription(null);
+    strat1.setAssociation(PopulationType.INITIAL_POPULATION);
     stratifications.add(strat1);
     group.setStratifications(stratifications);
     List<Group> groups = new ArrayList<>();
@@ -457,20 +462,31 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     List<MeasureGroupComponent> groupComponent = measureTranslatorService.buildGroups(groups);
     assertNotNull(groupComponent);
 
-    groupComponent.forEach(
-        (mgc) -> {
-          List<MeasureGroupStratifierComponent> gscs = mgc.getStratifier();
-          gscs.forEach(
-              (gsc) -> {
-                List<Extension> extensions = gsc.getExtension();
-                assertNotNull(extensions);
-                Expression expression = gsc.getCriteria();
-                assertNotNull(expression);
-                extensions.forEach(
-                    extension -> {
-                      assertNotNull(extension);
-                    });
-              });
-        });
+    assertThat(groupComponent.size(), is(equalTo(1)));
+    MeasureGroupComponent measureGroupComponent = groupComponent.get(0);
+    assertThat(measureGroupComponent, is(notNullValue()));
+    List<MeasureGroupStratifierComponent> stratifier = measureGroupComponent.getStratifier();
+    assertThat(stratifier, is(notNullValue()));
+    assertThat(stratifier.size(), is(equalTo(1)));
+    MeasureGroupStratifierComponent measureGroupStratifierComponent = stratifier.get(0);
+    assertThat(measureGroupStratifierComponent, is(notNullValue()));
+    Expression expression = measureGroupStratifierComponent.getCriteria();
+    assertThat(expression, is(notNullValue()));
+    assertThat(
+        measureGroupStratifierComponent.getExtensionByUrl(UriConstants.CqfMeasures.APPLIES_TO_URI),
+        is(notNullValue()));
+    Extension appliesToExt =
+        measureGroupStratifierComponent.getExtensionByUrl(UriConstants.CqfMeasures.APPLIES_TO_URI);
+    Type value = appliesToExt.getValue();
+    CodeableConcept codeableConcept = value.castToCodeableConcept(value);
+    assertThat(codeableConcept.getCoding(), is(notNullValue()));
+    assertThat(codeableConcept.getCoding().size(), is(equalTo(1)));
+    assertThat(codeableConcept.getCodingFirstRep(), is(notNullValue()));
+    assertThat(
+        codeableConcept.getCodingFirstRep().getSystem(),
+        is(equalTo(UriConstants.POPULATION_SYSTEM_URI)));
+    assertThat(
+        codeableConcept.getCodingFirstRep().getCode(),
+        is(equalTo(PopulationType.INITIAL_POPULATION.toCode())));
   }
 }

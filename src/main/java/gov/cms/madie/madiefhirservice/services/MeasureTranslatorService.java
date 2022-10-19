@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.*;
@@ -181,21 +182,21 @@ public class MeasureTranslatorService {
   private List<MeasureGroupStratifierComponent> buildStratifications(Group madieGroup) {
     AtomicReference<Extension> extension = new AtomicReference<Extension>();
     List<MeasureGroupStratifierComponent> measureStratifications = null;
-    if (madieGroup.getStratifications() != null) {
+    if (madieGroup.getStratifications() != null && !madieGroup.getStratifications().isEmpty()) {
       AtomicReference<Integer> i = new AtomicReference<>();
       i.set(Integer.valueOf(0));
       measureStratifications =
           madieGroup.getStratifications().stream()
               .map(
                   strat -> {
-                    CodeableConcept extensionCode =
-                        buildCodeableConcept(
-                            strat.getAssociation(),
-                            UriConstants.POPULATION_SYSTEM_URI,
-                            strat.getDescription());
-
+                    PopulationType associationPopulation = strat.getAssociation();
                     extension.set(
-                        new Extension(UriConstants.CqfMeasures.APPLIES_TO_URI, extensionCode));
+                        new Extension(
+                            UriConstants.CqfMeasures.APPLIES_TO_URI,
+                            buildCodeableConcept(
+                                associationPopulation.toCode(),
+                                UriConstants.POPULATION_SYSTEM_URI,
+                                associationPopulation.getDisplay())));
                     i.set(Integer.valueOf(i.get().intValue() + 1));
                     return (MeasureGroupStratifierComponent)
                         (new MeasureGroupStratifierComponent()
