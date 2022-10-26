@@ -75,6 +75,15 @@ public class ValidationController {
           "Some resources in the bundle are missing required profile declarations.",
           requiredProfilesOutcome);
     }
+    OperationOutcome uniqueIdsOutcome = validationService.validateBundleResourcesIdUniqueness(bundle);
+    if (uniqueIdsOutcome.hasIssue()) {
+      return encodeOutcome(
+          parser,
+          HttpStatus.BAD_REQUEST.value(),
+          false,
+          "Some resources in the bundle have duplicate resource IDs.",
+          uniqueIdsOutcome);
+    }
 
     ValidationResult result = validator.validateWithResult(bundle);
     try {

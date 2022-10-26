@@ -78,6 +78,8 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
+    when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
+        .thenReturn(new OperationOutcome());
 
     mockMvc
         .perform(
@@ -119,6 +121,8 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
   void testUnsuccessfulOutcomeReturnedForValidTestCaseJson() throws Exception {
     String tc1Json = getStringFromTestResource("/testCaseBundles/validTestCase.json");
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
+        .thenReturn(new OperationOutcome());
+    when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
 
     mockMvc
