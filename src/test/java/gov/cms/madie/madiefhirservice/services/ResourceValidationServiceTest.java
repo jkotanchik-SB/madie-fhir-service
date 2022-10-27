@@ -106,4 +106,66 @@ class ResourceValidationServiceTest {
       assertThat(output.hasIssue(), is(false));
     }
   }
+
+  @Test
+  void testValidateBundleResourcesIdUniquenessCatchesDuplicateIds() {
+    Patient p = new Patient();
+    p.setId("1111");
+    Encounter e1 = new Encounter();
+    e1.setId("1234");
+    Encounter e2 = new Encounter();
+    e2.setId("1234");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertThat(output.getIssueFirstRep().getDiagnostics().contains("1234"), is(true));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesIdUniquenessLooksAcrossResourceTypes() {
+    Patient p = new Patient();
+    p.setId("1234");
+    Encounter e1 = new Encounter();
+    e1.setId("1234");
+    Encounter e2 = new Encounter();
+    e2.setId("3456");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertThat(output.getIssueFirstRep().getDiagnostics().contains("1234"), is(true));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesIdUniquenessReturnsNoErrorsForAllUniqueIds() {
+    Patient p = new Patient();
+    p.setId("1111");
+    Encounter e1 = new Encounter();
+    e1.setId("2222");
+    Encounter e2 = new Encounter();
+    e2.setId("3333");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(false));
+    }
+  }
 }

@@ -12,8 +12,10 @@ import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -46,9 +48,39 @@ public class ResourceValidationService {
     return operationOutcome;
   }
 
+  public OperationOutcome validateBundleResourcesIdUniqueness(IBaseBundle bundleResource) {
+    List<IBaseResource> resources = BundleUtil.toListOfResources(fhirContext, bundleResource);
+    log.info("validating bundle with [{}] resources", resources.size());
+    Set<String> existingIds = new HashSet<>();
+    OperationOutcome operationOutcome = new OperationOutcome();
+    for (IBaseResource resource : resources) {
+      final String resourceId = resource.getIdElement().getIdPart();
+//      final String resourceId = resource.getIdElement().getValueAsString();
+      log.info("checking ID: [{}]", resourceId);
+      if (existingIds.contains(resourceId)) {
+        OperationOutcomeUtil.addIssue(
+            fhirContext,
+            operationOutcome,
+            OperationOutcome.IssueSeverity.ERROR.toCode(),
+            formatUniqueIdViolationMessage(resourceId),
+            null,
+            OperationOutcome.IssueType.INVALID.toCode());
+      } else {
+        existingIds.add(resourceId);
+      }
+    }
+    return operationOutcome;
+  }
+
   private String formatMissingProfileMessage(IBaseResource resource, final String profile) {
     return String.format(
         "Resource of type [%s] must declare conformance to profile [%s].",
         resource.fhirType(), profile);
+  }
+
+  private String formatUniqueIdViolationMessage(final String resourceId) {
+    return String.format(
+        "All resources in bundle must have unique ID regardless of type. Multiple resources detected with ID [%s]",
+        resourceId);
   }
 }
