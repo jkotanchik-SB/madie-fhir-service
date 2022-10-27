@@ -55,7 +55,6 @@ public class ResourceValidationService {
     OperationOutcome operationOutcome = new OperationOutcome();
     for (IBaseResource resource : resources) {
       final String resourceId = resource.getIdElement().getIdPart();
-//      final String resourceId = resource.getIdElement().getValueAsString();
       log.info("checking ID: [{}]", resourceId);
       if (existingIds.contains(resourceId)) {
         OperationOutcomeUtil.addIssue(

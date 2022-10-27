@@ -213,7 +213,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     OperationOutcome errorOutcome = new OperationOutcome();
     errorOutcome
         .addIssue()
-        .setDiagnostics("All resources in bundle must have unique ID regardless of type. Multiple resources detected with ID 1234")
+        .setDiagnostics(
+            "All resources in bundle must have unique ID regardless of type. Multiple resources detected with ID 1234")
         .setSeverity(OperationOutcome.IssueSeverity.ERROR);
     when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
         .thenReturn(errorOutcome);
