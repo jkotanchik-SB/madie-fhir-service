@@ -182,7 +182,7 @@
          "stratifications":[
 
          ],
-         "populationBasis":"Boolean"
+         "populationBasis":"boolean"
       }
    ],
    "createdAt":1660316292.981000000,

@@ -75,7 +75,8 @@ public class ValidationController {
           "Some resources in the bundle are missing required profile declarations.",
           requiredProfilesOutcome);
     }
-    OperationOutcome uniqueIdsOutcome = validationService.validateBundleResourcesIdUniqueness(bundle);
+    OperationOutcome uniqueIdsOutcome =
+        validationService.validateBundleResourcesIdUniqueness(bundle);
     if (uniqueIdsOutcome.hasIssue()) {
       return encodeOutcome(
           parser,
