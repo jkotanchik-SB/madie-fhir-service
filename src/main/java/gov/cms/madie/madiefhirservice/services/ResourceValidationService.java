@@ -50,13 +50,12 @@ public class ResourceValidationService {
 
   public OperationOutcome validateBundleResourcesIdUniqueness(IBaseBundle bundleResource) {
     List<IBaseResource> resources = BundleUtil.toListOfResources(fhirContext, bundleResource);
-    log.info("validating bundle with [{}] resources", resources.size());
     Set<String> existingIds = new HashSet<>();
+    Set<String> duplicateIds = new HashSet<>();
     OperationOutcome operationOutcome = new OperationOutcome();
     for (IBaseResource resource : resources) {
       final String resourceId = resource.getIdElement().getIdPart();
-      log.info("checking ID: [{}]", resourceId);
-      if (existingIds.contains(resourceId)) {
+      if (existingIds.contains(resourceId) && !duplicateIds.contains(resourceId)) {
         OperationOutcomeUtil.addIssue(
             fhirContext,
             operationOutcome,
@@ -64,6 +63,7 @@ public class ResourceValidationService {
             formatUniqueIdViolationMessage(resourceId),
             null,
             OperationOutcome.IssueType.INVALID.toCode());
+        duplicateIds.add(resourceId);
       } else {
         existingIds.add(resourceId);
       }
