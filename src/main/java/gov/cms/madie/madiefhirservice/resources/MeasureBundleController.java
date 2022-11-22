@@ -30,20 +30,22 @@ public class MeasureBundleController {
 
   @Autowired private FhirContext fhirContext;
 
-  @PutMapping(value = "/bundles", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  @PutMapping(
+      value = "/bundles",
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+      consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<String> getMeasureBundle(
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure,
-      @RequestHeader(value=HttpHeaders.ACCEPT, required=false) String accept) {
+      @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
 
-    if (accept != null && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())){
-      return ResponseEntity
-          .ok()
+    if (accept != null
+        && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
+      return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_XML)
           .body(fhirContext.newXmlParser().setPrettyPrint(true).encodeResourceToString(bundle));
     }
-    return ResponseEntity
-        .ok()
+    return ResponseEntity.ok()
         .contentType(MediaType.APPLICATION_JSON)
         .body(fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
   }
