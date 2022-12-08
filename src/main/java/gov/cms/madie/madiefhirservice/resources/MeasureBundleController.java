@@ -7,13 +7,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.function.ServerRequest;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.stream.Stream;
 
 @Slf4j
 @Controller
@@ -24,12 +30,23 @@ public class MeasureBundleController {
 
   @Autowired private FhirContext fhirContext;
 
-  @PutMapping(value = "/bundles", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(
+      value = "/bundles",
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+      consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<String> getMeasureBundle(
-      @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
+      @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure,
+      @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
     Bundle bundle = measureBundleService.createMeasureBundle(measure);
-    String serialized =
-        fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
-    return ResponseEntity.ok().body(serialized);
+
+    if (accept != null
+        && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
+      return ResponseEntity.ok()
+          .contentType(MediaType.APPLICATION_XML)
+          .body(fhirContext.newXmlParser().setPrettyPrint(true).encodeResourceToString(bundle));
+    }
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
   }
 }
