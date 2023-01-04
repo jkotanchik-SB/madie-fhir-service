@@ -29,6 +29,15 @@ public final class UriConstants {
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-aggregateMethod";
     public static final String APPLIES_TO_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-appliesTo";
+
+    public static final String COMPUTABLE_MEASURE_PROFILE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/computable-measure-cqfm";
+
+    public static final String PUBLISHABLE_MEASURE_PROFILE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/publishable-measure-cqfm";
+
+    public static final String EXECUTABLE_MEASURE_PROFILE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/executable-measure-cqfm";
   }
 
   public static final class QiCore {

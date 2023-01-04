@@ -3,10 +3,17 @@ package gov.cms.madie.madiefhirservice.services;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.sql.Date;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +25,7 @@ import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
+import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,7 +87,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
-    assertThat(measure.getMeta().getProfile().size(), is(equalTo(0)));
+    assertThat(measure.getMeta().getVersionId(), is(equalTo("abcdef-123abc")));
+    assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().getLastUpdated().toInstant(),
+        is(equalTo(ZonedDateTime.parse("2022-08-18T15:49:13.247Z").toInstant())));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -174,7 +195,19 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
-    assertThat(measure.getMeta().getProfile().size(), is(equalTo(0)));
+    assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().getLastUpdated().toInstant(),
+        is(equalTo(ZonedDateTime.parse("2022-05-05T16:47:15.461Z").toInstant())));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -255,7 +288,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  public void testCreateFhirMeasureForMadieCVMeasure() {
+  public void testCreateFhirMeasureForMadieCVMeasure() throws ParseException {
     ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
 
     org.hl7.fhir.r4.model.Measure measure =
@@ -274,7 +307,21 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("01/01/2023")));
-    assertThat(measure.getMeta().getProfile().size(), is(equalTo(0)));
+    assertThat(
+        measure.getMeta().getVersionId(), is(equalTo("492e7385-7d16-4e33-878b-17d97101a12f")));
+    assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
+        is(true));
+    assertThat(
+        measure.getMeta().getLastUpdated().toInstant(),
+        is(equalTo(ZonedDateTime.parse("2022-09-28T16:00:09.984Z").toInstant())));
     assertThat(measure.getGroup().size(), is(equalTo(madieCVMeasure.getGroups().size())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -488,5 +535,36 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         codeableConcept.getCodingFirstRep().getCode(),
         is(equalTo(PopulationType.INITIAL_POPULATION.toCode())));
+  }
+
+  @Test
+  void testBuildMeasureMetaHandlesNullLastModifiedAt() {
+    Measure measure = new Measure();
+    measure.setLastModifiedAt(null);
+    final Meta output = measureTranslatorService.buildMeasureMeta(measure);
+    assertThat(output, is(notNullValue()));
+    assertThat(output.hasProfile(), is(true));
+    assertThat(output.getProfile().size(), is(equalTo(3)));
+    assertThat(output.getVersionId(), is(nullValue()));
+    assertThat(output.getLastUpdated(), is(nullValue()));
+  }
+
+  @Test
+  void testBuildMeasureMetaHandlesValidInput() {
+    Measure measure = new Measure();
+    final Instant lastModifiedAt = Instant.now().minus(19, ChronoUnit.HOURS);
+    measure.setLastModifiedAt(lastModifiedAt);
+    measure.setVersionId("VERSION_ID_110101");
+    final Meta output = measureTranslatorService.buildMeasureMeta(measure);
+    assertThat(output, is(notNullValue()));
+    assertThat(output.hasProfile(), is(true));
+    assertThat(
+        output.hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI), is(true));
+    assertThat(
+        output.hasProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI), is(true));
+    assertThat(
+        output.hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI), is(true));
+    assertThat(output.getVersionId(), is(equalTo("VERSION_ID_110101")));
+    assertThat(output.getLastUpdated(), is(equalTo(Date.from(lastModifiedAt))));
   }
 }
