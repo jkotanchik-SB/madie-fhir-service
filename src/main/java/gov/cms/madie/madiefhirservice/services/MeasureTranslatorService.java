@@ -57,9 +57,22 @@ public class MeasureTranslatorService {
                 new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetailUrl())
-        .setGroup(buildGroups(madieMeasure.getGroups()));
+        .setGroup(buildGroups(madieMeasure.getGroups()))
+        .setMeta(buildMeasureMeta(madieMeasure));
 
     return measure;
+  }
+
+  public Meta buildMeasureMeta(Measure madieMeasure) {
+    final Meta meta = new Meta();
+    meta.setVersionId(madieMeasure.getVersionId());
+    if (madieMeasure.getLastModifiedAt() != null) {
+      meta.setLastUpdated(Date.from(madieMeasure.getLastModifiedAt()));
+    }
+    meta.addProfile(UriConstants.CqfMeasures.COMPUTABLE_MEASURE_PROFILE_URI);
+    meta.addProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI);
+    meta.addProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI);
+    return meta;
   }
 
   public List<MeasureGroupComponent> buildGroups(List<Group> madieGroups) {
