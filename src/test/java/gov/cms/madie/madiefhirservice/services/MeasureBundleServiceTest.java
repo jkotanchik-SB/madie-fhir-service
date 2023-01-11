@@ -66,7 +66,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   @Test
   public void testCreateMeasureBundle() {
     String includedLibrary =
-        "library FHIRHelpers version '0.1.000'\n" + "\n" + "using FHIR version '4.0.1'";
+        "library FHIRHelpers version '0.1.000'\nusing FHIR version '4.0.1'";
 
     Attachment attachment =
         new Attachment().setContentType("text/cql").setData(includedLibrary.getBytes());
