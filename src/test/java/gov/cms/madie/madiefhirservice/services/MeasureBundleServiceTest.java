@@ -8,6 +8,7 @@ import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.Assertions;
@@ -39,6 +40,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   @Mock private LibraryCqlVisitorFactory libCqlVisitorFactory;
 
   @Mock private HapiFhirServer hapiFhirServer;
+  @Mock private LibraryService libraryService;
 
   private Measure madieMeasure;
   private Library library;
@@ -63,13 +65,20 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
 
   @Test
   public void testCreateMeasureBundle() {
+    String includeLibrary =
+        "library FHIRHelpers version '0.1.000'\n" + "\n" + "using FHIR version '4.0.1'";
+
+    Attachment attachment =
+        new Attachment().setContentType("text/cql").setData(includeLibrary.getBytes());
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
     when(hapiFhirServer.fetchHapiLibrary(anyString(), anyString()))
         .thenReturn(Optional.of((new Library())));
     when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
-    var visitor = new LibraryCqlVisitorFactory().visit(madieMeasure.getCql());
-    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
+    var visitor1 = new LibraryCqlVisitorFactory().visit(madieMeasure.getCql());
+    var visitor2 = new LibraryCqlVisitorFactory().visit(includeLibrary);
+    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor1).thenReturn(visitor2);
+    when(libraryService.findCqlAttachment(any(Library.class))).thenReturn(attachment);
 
     Bundle bundle = measureBundleService.createMeasureBundle(madieMeasure);
 

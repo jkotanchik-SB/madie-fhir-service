@@ -78,7 +78,7 @@ public class LibraryService {
     return new String(cql.getData());
   }
 
-  private Attachment findCqlAttachment(Library library) {
+  public Attachment findCqlAttachment(Library library) {
     return library.getContent().stream()
         .filter(a -> a.getContentType().equals("text/cql"))
         .findFirst()

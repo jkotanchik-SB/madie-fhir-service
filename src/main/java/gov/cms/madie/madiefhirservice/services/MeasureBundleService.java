@@ -9,11 +9,14 @@ import gov.cms.madie.models.library.Version;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +29,7 @@ public class MeasureBundleService {
   private final MeasureTranslatorService measureTranslatorService;
   private final LibraryTranslatorService libraryTranslatorService;
   private final HapiFhirServer hapiFhirServer;
+  private final LibraryService libraryService;
 
   /**
    * Creates measure bundle that contains measure, main library, and included libraries resources
@@ -54,25 +58,31 @@ public class MeasureBundleService {
       Measure madieMeasure) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
-    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(madieMeasure.getCql());
+    List<Library> includedLibraries = new ArrayList<>();
+    getIncludedLibraries(madieMeasure.getCql(), includedLibraries);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
-        visitor.getIncludedLibraries().stream()
-            .map(
-                libraryNameValuePair -> {
-                  Optional<Library> optionalLibrary =
-                      hapiFhirServer.fetchHapiLibrary(
-                          libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
-                  return optionalLibrary
-                      .map(this::getBundleEntryComponent)
-                      .orElseThrow(
-                          () ->
-                              new HapiLibraryNotFoundException(
-                                  libraryNameValuePair.getLeft(), libraryNameValuePair.getRight()));
-                })
-            .collect(Collectors.toList());
+        includedLibraries.stream().map(this::getBundleEntryComponent).collect(Collectors.toList());
     // add main library first in the list
     libraryBundleComponents.add(0, mainLibraryBundleComponent);
     return libraryBundleComponents;
+  }
+
+  public void getIncludedLibraries(String cql, List<Library> libraries) {
+    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
+    for (Pair<String, String> libraryNameValuePair : visitor.getIncludedLibraries()) {
+      Optional<Library> optionalLibrary =
+          hapiFhirServer.fetchHapiLibrary(
+              libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      if (optionalLibrary.isPresent()) {
+        Library library = optionalLibrary.get();
+        libraries.add(library);
+        Attachment attachment = libraryService.findCqlAttachment(library);
+        getIncludedLibraries(new String(attachment.getData()), libraries);
+      } else {
+        throw new HapiLibraryNotFoundException(
+            libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      }
+    }
   }
 
   /** Creates BundleEntryComponent for given resource */
