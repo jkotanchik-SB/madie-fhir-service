@@ -1,17 +1,21 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitor;
+import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.DuplicateLibraryException;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.LibraryAttachmentNotFoundException;
+import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +26,7 @@ import java.util.Optional;
 public class LibraryService {
   private final HapiFhirServer hapiFhirServer;
   private final LibraryTranslatorService libraryTranslatorService;
+  private final LibraryCqlVisitorFactory libCqlVisitorFactory;
 
   public String getLibraryCql(String name, String version) {
 
@@ -78,7 +83,7 @@ public class LibraryService {
     return new String(cql.getData());
   }
 
-  public Attachment findCqlAttachment(Library library) {
+  private Attachment findCqlAttachment(Library library) {
     return library.getContent().stream()
         .filter(a -> a.getContentType().equals("text/cql"))
         .findFirst()
@@ -98,5 +103,27 @@ public class LibraryService {
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
     hapiFhirServer.createResource(library);
     return library;
+  }
+
+  public void getIncludedLibraries(String cql, List<Library> libraries) {
+    if (StringUtils.isBlank(cql)) {
+      return;
+    }
+
+    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
+    for (Pair<String, String> libraryNameValuePair : visitor.getIncludedLibraries()) {
+      Optional<Library> optionalLibrary =
+          hapiFhirServer.fetchHapiLibrary(
+              libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      if (optionalLibrary.isPresent()) {
+        Library library = optionalLibrary.get();
+        libraries.add(library);
+        Attachment attachment = findCqlAttachment(library);
+        getIncludedLibraries(new String(attachment.getData()), libraries);
+      } else {
+        throw new HapiLibraryNotFoundException(
+            libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      }
+    }
   }
 }

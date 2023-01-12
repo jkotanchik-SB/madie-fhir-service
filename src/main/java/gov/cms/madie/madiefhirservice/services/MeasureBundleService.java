@@ -1,16 +1,10 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitor;
-import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
-import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.library.Version;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
-import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
@@ -18,17 +12,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MeasureBundleService {
-  private final LibraryCqlVisitorFactory libCqlVisitorFactory;
   private final MeasureTranslatorService measureTranslatorService;
   private final LibraryTranslatorService libraryTranslatorService;
-  private final HapiFhirServer hapiFhirServer;
   private final LibraryService libraryService;
 
   /**
@@ -59,7 +50,7 @@ public class MeasureBundleService {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
     List<Library> includedLibraries = new ArrayList<>();
-    getIncludedLibraries(madieMeasure.getCql(), includedLibraries);
+    libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraries);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
         includedLibraries.stream().map(this::getBundleEntryComponent).collect(Collectors.toList());
     // add main library first in the list
@@ -100,23 +91,5 @@ public class MeasureBundleService {
         .elmJson(madieMeasure.getElmJson())
         .elmXml(madieMeasure.getElmXml())
         .build();
-  }
-
-  private void getIncludedLibraries(String cql, List<Library> libraries) {
-    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
-    for (Pair<String, String> libraryNameValuePair : visitor.getIncludedLibraries()) {
-      Optional<Library> optionalLibrary =
-        hapiFhirServer.fetchHapiLibrary(
-          libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
-      if (optionalLibrary.isPresent()) {
-        Library library = optionalLibrary.get();
-        libraries.add(library);
-        Attachment attachment = libraryService.findCqlAttachment(library);
-        getIncludedLibraries(new String(attachment.getData()), libraries);
-      } else {
-        throw new HapiLibraryNotFoundException(
-          libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
-      }
-    }
   }
 }
