@@ -11,7 +11,9 @@ import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,10 +51,12 @@ public class MeasureBundleService {
       Measure madieMeasure) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
-    List<Library> includedLibraries = new ArrayList<>();
-    libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraries);
+    Map<String, Library> includedLibraryMap = new HashMap();
+    libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraryMap);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
-        includedLibraries.stream().map(this::getBundleEntryComponent).collect(Collectors.toList());
+        includedLibraryMap.values().stream()
+            .map(this::getBundleEntryComponent)
+            .collect(Collectors.toList());
     // add main library first in the list
     libraryBundleComponents.add(0, mainLibraryBundleComponent);
     return libraryBundleComponents;

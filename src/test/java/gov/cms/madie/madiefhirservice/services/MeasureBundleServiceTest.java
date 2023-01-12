@@ -16,13 +16,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -68,12 +69,12 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     doAnswer(
             invocation -> {
               Object[] args = invocation.getArguments();
-              List<Library> includedLibraries = (List<Library>) args[1];
-              includedLibraries.add(new Library());
+              Map<String, Library> includedLibraries = (Map<String, Library>) args[1];
+              includedLibraries.put("test", new Library());
               return null;
             })
         .when(libraryService)
-        .getIncludedLibraries(anyString(), any(List.class));
+        .getIncludedLibraries(anyString(), anyMap());
 
     Bundle bundle = measureBundleService.createMeasureBundle(madieMeasure);
 
@@ -99,7 +100,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
     doThrow(new HapiLibraryNotFoundException("FHIRHelpers", "4.0.001"))
         .when(libraryService)
-        .getIncludedLibraries(anyString(), any(List.class));
+        .getIncludedLibraries(anyString(), anyMap());
     Exception exception =
         Assertions.assertThrows(
             HapiLibraryNotFoundException.class,

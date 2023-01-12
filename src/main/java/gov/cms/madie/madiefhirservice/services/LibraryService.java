@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -105,8 +106,8 @@ public class LibraryService {
     return library;
   }
 
-  public void getIncludedLibraries(String cql, List<Library> libraries) {
-    if (StringUtils.isBlank(cql) || libraries == null) {
+  public void getIncludedLibraries(String cql, Map<String, Library> libraryMap) {
+    if (StringUtils.isBlank(cql) || libraryMap == null) {
       return;
     }
 
@@ -117,9 +118,12 @@ public class LibraryService {
               libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
       if (optionalLibrary.isPresent()) {
         Library library = optionalLibrary.get();
-        libraries.add(library);
+        String key = library.getName() + library.getVersion();
+        if (!libraryMap.containsKey(key)) {
+          libraryMap.put(key, library);
+        }
         Attachment attachment = findCqlAttachment(library);
-        getIncludedLibraries(new String(attachment.getData()), libraries);
+        getIncludedLibraries(new String(attachment.getData()), libraryMap);
       } else {
         throw new HapiLibraryNotFoundException(
             libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
