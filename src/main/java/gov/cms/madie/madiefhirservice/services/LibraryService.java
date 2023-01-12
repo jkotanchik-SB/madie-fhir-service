@@ -106,7 +106,7 @@ public class LibraryService {
   }
 
   public void getIncludedLibraries(String cql, List<Library> libraries) {
-    if (StringUtils.isBlank(cql)) {
+    if (StringUtils.isBlank(cql) || libraries == null) {
       return;
     }
 

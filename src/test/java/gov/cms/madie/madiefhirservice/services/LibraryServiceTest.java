@@ -214,14 +214,12 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
   @Test
   public void testGetIncludedLibraries() {
     String mainLibrary =
-        "library MainLibrary version '1.1.000'\n"
-            + "\n"
-            + "using FHIR version '4.0.1'\n"
-            + "\n"
-            + "include IncludedLibrary version '0.1.000' called IncludedLib";
+        "   library MainLibrary version '1.1.000'\n"
+            + "   using FHIR version '4.0.1'\n"
+            + "   include IncludedLibrary version '0.1.000' called IncludedLib\n";
 
     String includedLibrary =
-        "library IncludedLibrary version '0.1.000'\n" + "\nusing FHIR version '4.0.1'";
+        "library IncludedLibrary version '0.1.000'\nusing FHIR version '4.0.1'";
 
     var visitor1 = new LibraryCqlVisitorFactory().visit(mainLibrary);
     var visitor2 = new LibraryCqlVisitorFactory().visit(includedLibrary);
@@ -252,14 +250,12 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
   @Test
   public void testGetIncludedLibrariesWhenIncludedLibraryNotInHapi() {
     String mainLibrary =
-        "library MainLibrary version '1.1.000'\n"
-            + "\n"
-            + "using FHIR version '4.0.1'\n"
-            + "\n"
-            + "include IncludedLibrary version '0.1.000' called IncludedLib";
+        "  library MainLibrary version '1.1.000'\n"
+            + "  using FHIR version '4.0.1'\n"
+            + "  include IncludedLibrary version '0.1.000' called IncludedLib\n";
 
     String includedLibrary =
-        "library IncludedLibrary version '0.1.000'\n" + "\nusing FHIR version '4.0.1'";
+        "library IncludedLibrary version '0.1.000'\nusing FHIR version '4.0.1'";
 
     var visitor1 = new LibraryCqlVisitorFactory().visit(mainLibrary);
     var visitor2 = new LibraryCqlVisitorFactory().visit(includedLibrary);
