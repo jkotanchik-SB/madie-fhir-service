@@ -67,24 +67,6 @@ public class MeasureBundleService {
     return libraryBundleComponents;
   }
 
-  public void getIncludedLibraries(String cql, List<Library> libraries) {
-    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
-    for (Pair<String, String> libraryNameValuePair : visitor.getIncludedLibraries()) {
-      Optional<Library> optionalLibrary =
-          hapiFhirServer.fetchHapiLibrary(
-              libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
-      if (optionalLibrary.isPresent()) {
-        Library library = optionalLibrary.get();
-        libraries.add(library);
-        Attachment attachment = libraryService.findCqlAttachment(library);
-        getIncludedLibraries(new String(attachment.getData()), libraries);
-      } else {
-        throw new HapiLibraryNotFoundException(
-            libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
-      }
-    }
-  }
-
   /** Creates BundleEntryComponent for given resource */
   public Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
     return new Bundle.BundleEntryComponent().setResource(resource);
@@ -118,5 +100,23 @@ public class MeasureBundleService {
         .elmJson(madieMeasure.getElmJson())
         .elmXml(madieMeasure.getElmXml())
         .build();
+  }
+
+  private void getIncludedLibraries(String cql, List<Library> libraries) {
+    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
+    for (Pair<String, String> libraryNameValuePair : visitor.getIncludedLibraries()) {
+      Optional<Library> optionalLibrary =
+        hapiFhirServer.fetchHapiLibrary(
+          libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      if (optionalLibrary.isPresent()) {
+        Library library = optionalLibrary.get();
+        libraries.add(library);
+        Attachment attachment = libraryService.findCqlAttachment(library);
+        getIncludedLibraries(new String(attachment.getData()), libraries);
+      } else {
+        throw new HapiLibraryNotFoundException(
+          libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      }
+    }
   }
 }
