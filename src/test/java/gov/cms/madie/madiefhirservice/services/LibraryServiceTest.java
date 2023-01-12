@@ -248,8 +248,13 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
   public void testGetIncludedLibrariesWhenBlankCql() {
     String mainLibrary = "";
     Map<String, Library> libraries = new HashMap<>();
-    libraryService.getIncludedLibraries(mainLibrary, libraries);
-    assertThat(libraries.size(), is(equalTo(0)));
+
+    Exception exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> libraryService.getIncludedLibraries(mainLibrary, libraries));
+
+    assertThat(exception.getMessage(), is(equalTo("Please provide valid arguments.")));
   }
 
   @Test

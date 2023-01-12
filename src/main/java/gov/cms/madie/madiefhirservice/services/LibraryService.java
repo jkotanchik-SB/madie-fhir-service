@@ -108,7 +108,8 @@ public class LibraryService {
 
   public void getIncludedLibraries(String cql, Map<String, Library> libraryMap) {
     if (StringUtils.isBlank(cql) || libraryMap == null) {
-      return;
+      log.error("Invalid method arguments provided to getIncludedLibraries");
+      throw new IllegalArgumentException("Please provide valid arguments.");
     }
 
     LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
