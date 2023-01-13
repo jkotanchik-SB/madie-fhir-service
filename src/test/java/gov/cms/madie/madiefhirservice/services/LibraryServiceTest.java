@@ -1,6 +1,7 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.DuplicateLibraryException;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.LibraryAttachmentNotFoundException;
@@ -8,6 +9,7 @@ import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,14 +19,24 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
@@ -33,6 +45,7 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
 
   @Mock private HapiFhirServer hapiFhirServer;
   @Mock private LibraryTranslatorService libraryTranslatorService;
+  @Mock private LibraryCqlVisitorFactory libCqlVisitorFactory;
 
   private Library fhirHelpersLibrary;
 
@@ -198,5 +211,78 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
             "Library resource with name: %s, version: %s already exists.",
             cqlLibrary.getCqlLibraryName(), cqlLibrary.getVersion());
     assertEquals(exceptionMessage, exception.getMessage());
+  }
+
+  @Test
+  public void testGetIncludedLibraries() {
+    String mainLibrary =
+        "   library MainLibrary version '1.1.000'\n"
+            + "   using FHIR version '4.0.1'\n"
+            + "   include IncludedLibrary version '0.1.000' called IncludedLib\n";
+
+    String includedLibrary =
+        "library IncludedLibrary version '0.1.000'\nusing FHIR version '4.0.1'";
+
+    var visitor1 = new LibraryCqlVisitorFactory().visit(mainLibrary);
+    var visitor2 = new LibraryCqlVisitorFactory().visit(includedLibrary);
+
+    Attachment attachment =
+        new Attachment().setContentType("text/cql").setData(includedLibrary.getBytes());
+    Library library =
+        new Library()
+            .setName("IncludedLibrary")
+            .setVersion("0.1.0")
+            .setContent(List.of(attachment));
+
+    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor1).thenReturn(visitor2);
+    when(hapiFhirServer.fetchHapiLibrary(anyString(), anyString()))
+        .thenReturn(Optional.of(library));
+
+    Map<String, Library> includedLibraryMap = new HashMap<>();
+    libraryService.getIncludedLibraries(mainLibrary, includedLibraryMap);
+    assertThat(includedLibraryMap.size(), is(equalTo(1)));
+    assertNotNull(includedLibraryMap.get("IncludedLibrary0.1.0"));
+  }
+
+  @Test
+  public void testGetIncludedLibrariesWhenBlankCql() {
+    String mainLibrary = "";
+    Map<String, Library> libraries = new HashMap<>();
+
+    Exception exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> libraryService.getIncludedLibraries(mainLibrary, libraries));
+
+    assertThat(exception.getMessage(), is(equalTo("Please provide valid arguments.")));
+  }
+
+  @Test
+  public void testGetIncludedLibrariesWhenIncludedLibraryNotInHapi() {
+    String mainLibrary =
+        "  library MainLibrary version '1.1.000'\n"
+            + "  using FHIR version '4.0.1'\n"
+            + "  include IncludedLibrary version '0.1.000' called IncludedLib\n";
+
+    String includedLibrary =
+        "library IncludedLibrary version '0.1.000'\nusing FHIR version '4.0.1'";
+
+    var visitor1 = new LibraryCqlVisitorFactory().visit(mainLibrary);
+    var visitor2 = new LibraryCqlVisitorFactory().visit(includedLibrary);
+
+    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor1).thenReturn(visitor2);
+    when(hapiFhirServer.fetchHapiLibrary(anyString(), anyString())).thenReturn(Optional.empty());
+
+    Map<String, Library> libraries = new HashMap<>();
+    Exception exception =
+        assertThrows(
+            HapiLibraryNotFoundException.class,
+            () -> libraryService.getIncludedLibraries(mainLibrary, libraries));
+
+    assertThat(
+        exception.getMessage(),
+        is(
+            equalTo(
+                "Cannot find a Hapi Fhir Library with name: IncludedLibrary, version: 0.1.000")));
   }
 }

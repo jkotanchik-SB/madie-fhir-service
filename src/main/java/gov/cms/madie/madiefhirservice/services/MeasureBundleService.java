@@ -1,9 +1,5 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitor;
-import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
-import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.library.Version;
 import gov.cms.madie.models.measure.Measure;
@@ -14,18 +10,19 @@ import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MeasureBundleService {
-  private final LibraryCqlVisitorFactory libCqlVisitorFactory;
   private final MeasureTranslatorService measureTranslatorService;
   private final LibraryTranslatorService libraryTranslatorService;
-  private final HapiFhirServer hapiFhirServer;
+  private final LibraryService libraryService;
 
   /**
    * Creates measure bundle that contains measure, main library, and included libraries resources
@@ -54,21 +51,11 @@ public class MeasureBundleService {
       Measure madieMeasure) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
-    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(madieMeasure.getCql());
+    Map<String, Library> includedLibraryMap = new HashMap();
+    libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraryMap);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
-        visitor.getIncludedLibraries().stream()
-            .map(
-                libraryNameValuePair -> {
-                  Optional<Library> optionalLibrary =
-                      hapiFhirServer.fetchHapiLibrary(
-                          libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
-                  return optionalLibrary
-                      .map(this::getBundleEntryComponent)
-                      .orElseThrow(
-                          () ->
-                              new HapiLibraryNotFoundException(
-                                  libraryNameValuePair.getLeft(), libraryNameValuePair.getRight()));
-                })
+        includedLibraryMap.values().stream()
+            .map(this::getBundleEntryComponent)
             .collect(Collectors.toList());
     // add main library first in the list
     libraryBundleComponents.add(0, mainLibraryBundleComponent);

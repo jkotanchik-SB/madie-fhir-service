@@ -1,9 +1,7 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
@@ -18,14 +16,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,9 +37,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
 
   @Mock private LibraryTranslatorService libraryTranslatorService;
 
-  @Mock private LibraryCqlVisitorFactory libCqlVisitorFactory;
-
-  @Mock private HapiFhirServer hapiFhirServer;
+  @Mock private LibraryService libraryService;
 
   private Measure madieMeasure;
   private Library library;
@@ -65,11 +64,17 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   public void testCreateMeasureBundle() {
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
-    when(hapiFhirServer.fetchHapiLibrary(anyString(), anyString()))
-        .thenReturn(Optional.of((new Library())));
     when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
-    var visitor = new LibraryCqlVisitorFactory().visit(madieMeasure.getCql());
-    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
+
+    doAnswer(
+            invocation -> {
+              Object[] args = invocation.getArguments();
+              Map<String, Library> includedLibraries = (Map<String, Library>) args[1];
+              includedLibraries.put("test", new Library());
+              return null;
+            })
+        .when(libraryService)
+        .getIncludedLibraries(anyString(), anyMap());
 
     Bundle bundle = measureBundleService.createMeasureBundle(madieMeasure);
 
@@ -93,9 +98,9 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
     when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
-    var visitor = new LibraryCqlVisitorFactory().visit(madieMeasure.getCql());
-    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
-
+    doThrow(new HapiLibraryNotFoundException("FHIRHelpers", "4.0.001"))
+        .when(libraryService)
+        .getIncludedLibraries(anyString(), anyMap());
     Exception exception =
         Assertions.assertThrows(
             HapiLibraryNotFoundException.class,
