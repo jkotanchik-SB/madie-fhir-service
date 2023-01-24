@@ -5,7 +5,6 @@ import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
-import gov.cms.madie.models.library.Version;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +12,8 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
+
+import ca.uhn.fhir.rest.api.MethodOutcome;
 
 import java.util.List;
 import java.util.Optional;
@@ -102,11 +103,15 @@ public class MeasureBundleService {
     return CqlLibrary.builder()
         .id(madieMeasure.getCqlLibraryName())
         .cqlLibraryName(madieMeasure.getCqlLibraryName())
-        .version(Version.parse(madieMeasure.getVersion()))
+        .version(madieMeasure.getVersion())
         .description(madieMeasure.getCqlLibraryName())
         .cql(madieMeasure.getCql())
         .elmJson(madieMeasure.getElmJson())
         .elmXml(madieMeasure.getElmXml())
         .build();
+  }
+
+  public MethodOutcome saveMeasureBundle(String measureBundle) {
+    return hapiFhirServer.createResourceAsString(measureBundle);
   }
 }

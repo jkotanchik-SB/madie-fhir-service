@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.CanonicalType;
@@ -18,7 +20,6 @@ import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
-import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.StringType;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +54,7 @@ public class MeasureTranslatorService {
         .setTitle(madieMeasure.getMeasureName())
         .setExperimental(true)
         .setUrl(fhirBaseUrl + "/Measure/" + madieMeasure.getCqlLibraryName())
-        .setVersion(madieMeasure.getVersion())
+        .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
             getPeriodFromDates(
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
@@ -72,8 +73,11 @@ public class MeasureTranslatorService {
   }
 
   public List<MeasureGroupComponent> buildGroups(List<Group> madieGroups) {
-
-    return madieGroups.stream().map(this::buildGroup).collect(Collectors.toList());
+    if (CollectionUtils.isNotEmpty(madieGroups)) {
+      return madieGroups.stream().map(this::buildGroup).collect(Collectors.toList());
+    } else {
+      return null;
+    }
   }
 
   public MeasureGroupComponent buildGroup(Group madieGroup) {
@@ -127,7 +131,7 @@ public class MeasureTranslatorService {
                   strat -> {
                     CodeableConcept extensionCode =
                         buildCodeableConcept(
-                            strat.getAssociation(),
+                            strat.getAssociation().toCode(),
                             UriConstants.POPULATION_SYSTEM_URI,
                             strat.getDescription());
 

@@ -1,6 +1,8 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
@@ -8,6 +10,8 @@ import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
+
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.Assertions;
@@ -24,6 +28,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -39,6 +45,10 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   @Mock private LibraryCqlVisitorFactory libCqlVisitorFactory;
 
   @Mock private HapiFhirServer hapiFhirServer;
+
+  @Mock MethodOutcome methodOutcome;
+
+  @Mock IIdType iidType;
 
   private Measure madieMeasure;
   private Library library;
@@ -104,5 +114,18 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     assertThat(
         exception.getMessage(),
         is(equalTo("Cannot find a Hapi Fhir Library with name: FHIRHelpers, version: 4.0.001")));
+  }
+
+  @Test
+  public void testSaveMeasure() {
+    when(methodOutcome.getCreated()).thenReturn(true);
+    when(methodOutcome.getId()).thenReturn(iidType);
+    when(iidType.toString()).thenReturn("testId");
+    when(hapiFhirServer.createResourceAsString(anyString())).thenReturn(methodOutcome);
+
+    MethodOutcome outcome = measureBundleService.saveMeasureBundle("test");
+
+    assertTrue(outcome.getCreated());
+    assertEquals("testId", outcome.getId().toString());
   }
 }

@@ -4,7 +4,7 @@ import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
-import gov.cms.madie.models.library.Version;
+import gov.cms.madie.models.common.Version;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Library;
 import org.junit.jupiter.api.BeforeEach;
