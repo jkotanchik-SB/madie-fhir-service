@@ -179,6 +179,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   public void testCreateFhirMeasureForMadieRatioMeasure() {
     ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
 
+    madieRatioMeasure.getMeasureMetaData().setSteward("testSteward");
+    madieRatioMeasure.getMeasureMetaData().setCopyright("testCopyright");
+    madieRatioMeasure.getMeasureMetaData().setDisclaimer("testDisclaimer");
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieRatioMeasure);
 
@@ -186,7 +189,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getGuidance(), is(equalTo(madieMeasure.getMeasureMetaData().getSteward())));
     assertThat(
         measure.getRationale(), is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
-    assertThat(measure.getPublisher(), is(equalTo("UNKNOWN")));
+    assertThat(measure.getPublisher(), is(equalTo("testSteward")));
+    assertThat(measure.getCopyright(), is(equalTo("testCopyright")));
+    assertThat(measure.getDisclaimer(), is(equalTo("testDisclaimer")));
     assertThat(
         measure.getUrl(), is(equalTo("cms.gov/Measure/" + madieRatioMeasure.getCqlLibraryName())));
     assertThat(
@@ -566,5 +571,26 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         output.hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI), is(true));
     assertThat(output.getVersionId(), is(equalTo("VERSION_ID_110101")));
     assertThat(output.getLastUpdated(), is(equalTo(Date.from(lastModifiedAt))));
+  }
+
+  @Test
+  public void testBuildGroupsWithNull() {
+    List<MeasureGroupComponent> listOfComponent =
+        measureTranslatorService.buildGroups(new ArrayList<Group>());
+    assertNull(listOfComponent);
+  }
+
+  @Test
+  public void testBuildScoringConceptNullScoring() {
+    CodeableConcept codeConcept = measureTranslatorService.buildScoringConcept(null);
+    assertNull(codeConcept);
+  }
+
+  @Test
+  public void testBuildScoringConceptContinuousVariable() {
+    CodeableConcept codeConcept =
+        measureTranslatorService.buildScoringConcept("Continuous Variable");
+    assertNotNull(codeConcept);
+    assertEquals("continuous-variable", codeConcept.getCoding().get(0).getCode());
   }
 }

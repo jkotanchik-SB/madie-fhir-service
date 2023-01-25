@@ -8,10 +8,23 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
+import org.hl7.fhir.r4.model.CanonicalType;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.ContactDetail;
+import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.Expression;
+import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
+import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
+import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
+import org.hl7.fhir.r4.model.Period;
+import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.*;
-import org.hl7.fhir.r4.model.Measure.*;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
@@ -44,7 +57,7 @@ public class MeasureTranslatorService {
         .setTitle(madieMeasure.getMeasureName())
         .setExperimental(true)
         .setUrl(fhirBaseUrl + "/Measure/" + madieMeasure.getCqlLibraryName())
-        .setVersion(madieMeasure.getVersion())
+        .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
             getPeriodFromDates(
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
@@ -76,8 +89,11 @@ public class MeasureTranslatorService {
   }
 
   public List<MeasureGroupComponent> buildGroups(List<Group> madieGroups) {
-
-    return madieGroups.stream().map(this::buildGroup).collect(Collectors.toList());
+    if (CollectionUtils.isNotEmpty(madieGroups)) {
+      return madieGroups.stream().map(this::buildGroup).collect(Collectors.toList());
+    } else {
+      return null;
+    }
   }
 
   private CodeableConcept getScoringUnitCode(Object scoringUnit) {

@@ -109,4 +109,11 @@ public class HapiFhirServer {
     log.debug("Resource created successfully in HAPI. Resource id {}", resource.getId());
     return outcome;
   }
+
+  public MethodOutcome createResourceAsString(String resource) {
+    log.debug("Creating resource in HAPI");
+    MethodOutcome outcome = hapiClient.create().resource(resource).execute();
+    log.debug("Resource created successfully in HAPI. Resource id {}", outcome.getId().toString());
+    return outcome;
+  }
 }

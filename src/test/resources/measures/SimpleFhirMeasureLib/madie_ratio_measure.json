@@ -1,5 +1,6 @@
 {
   "id": "626be3ca0ca8110d3b22404a",
+  "version":{"major":1, "minor":2, "revisionNumber":3},
   "cqlLibraryName": "SimpleFhirMeasureLib",
   "measureName": "SimpleFhirMeasure",
   "cql": "library SimpleFhirMeasureLib version '0.0.004'\n\nusing FHIR version '4.0.1'\n\ninclude FHIRHelpers version '4.0.001' called FHIRHelpers\n\nparameter \"Measurement Period\" Interval<DateTime>\n\ncontext Patient\n\ndefine \"ipp\":\n  exists [\"Encounter\"] E where E.period.start during \"Measurement Period\"\n\ndefine \"denom\":\n  \"ipp\"\n\ndefine \"num\":\n  exists [\"Encounter\"] E where E.status ~ 'finished'",
@@ -63,8 +64,8 @@
   "createdBy": "ashok.dongare@semanticbits.com",
   "lastModifiedAt": "2022-05-05T16:47:15.461Z",
   "lastModifiedBy": "ashok.dongare@semanticbits.com",
-  "measurementPeriodStart": "2023-01-01T05:00:00.000Z",
-  "measurementPeriodEnd": "2023-12-31T05:00:00.000Z",
+  "measurementPeriodStart": "2023-01-01T08:00:00.000Z",
+  "measurementPeriodEnd": "2023-12-31T08:00:00.000Z",
   "model": "QI-Core",
   "measureMetaData": {}
 }

@@ -1,8 +1,9 @@
 {
    "id":"62f66a8402b96d3a6ababefa",
    "measureHumanReadableId":null,
-   "measureSetId":null,
-   "version":null,
+   "measureSetId":"testMeasureSetId",
+   "version":{"major":1, "minor":2, "revisionNumber":3},
+   "versionId":"testVersionId",
    "revisionNumber":null,
    "state":null,
    "cqlLibraryName":"SimpleFhirMeasureLib",
@@ -189,8 +190,8 @@
    "createdBy":"cecilia.liu@semanticbits.com",
    "lastModifiedAt":1660837753.247000000,
    "lastModifiedBy":"cecilia.liu@semanticbits.com",
-   "measurementPeriodStart": "2023-01-01T05:00:00.000Z",
-   "measurementPeriodEnd": "2023-12-31T05:00:00.000Z",
+   "measurementPeriodStart": "2023-01-01T08:00:00.000Z",
+   "measurementPeriodEnd": "2023-12-31T08:00:00.000Z",
    "model":"QI-Core v4.1.1",
    "measureMetaData":{
       "steward":null,
@@ -198,6 +199,7 @@
       "copyright":null,
       "disclaimer":null,
       "rationale":null,
+      "developers":null,
       "guidance":null
    }
 }

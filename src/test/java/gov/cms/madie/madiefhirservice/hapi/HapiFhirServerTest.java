@@ -5,6 +5,8 @@ import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Measure;
@@ -30,6 +32,8 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
   @InjectMocks private HapiFhirServer hapiFhirServer;
 
   @Mock private FhirContext fhirContext;
+  @Mock MethodOutcome methodOutcome;
+  @Mock IIdType iidType;
 
   IGenericClient hapiClient;
 
@@ -110,5 +114,19 @@ class HapiFhirServerTest implements LibraryHelper, ResourceFileUtil {
 
     MethodOutcome methodOutcome = hapiFhirServer.createResource(new Library());
     assertSame(outcome, methodOutcome);
+  }
+
+  @Test
+  void createResourceAsString() {
+
+    when(methodOutcome.getId()).thenReturn(iidType);
+    when(iidType.toString()).thenReturn("testId");
+
+    Object when = hapiClient.create().resource(any(String.class)).execute();
+
+    when((Object) when).thenReturn(methodOutcome);
+
+    MethodOutcome methodOutcome = hapiFhirServer.createResourceAsString(new Bundle().toString());
+    assertSame(methodOutcome, methodOutcome);
   }
 }

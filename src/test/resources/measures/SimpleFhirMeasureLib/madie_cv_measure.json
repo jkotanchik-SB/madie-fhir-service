@@ -3,7 +3,7 @@
   "id": "63286afcc3f8be0e583f1eec",
   "measureHumanReadableId": null,
   "measureSetId": null,
-  "version": null,
+  "version":{"major":1, "minor":2, "revisionNumber":3},
   "revisionNumber": null,
   "state": null,
   "cqlLibraryName": "Sep19Lib",
@@ -61,8 +61,8 @@
   "createdBy": "fakeuser@fake.com",
   "lastModifiedAt": "2022-09-28T16:00:09.984Z",
   "lastModifiedBy": "fakeuser@fake.com",
-  "measurementPeriodStart": "2022-01-01T05:00:00.000+00:00",
-  "measurementPeriodEnd": "2023-01-01T05:00:00.000+00:00",
+  "measurementPeriodStart": "2022-01-01T08:00:00.000+00:00",
+  "measurementPeriodEnd": "2023-01-01T08:00:00.000+00:00",
   "model": "QI-Core v4.1.1",
   "measureMetaData": {
     "steward": "SB"
