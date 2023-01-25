@@ -1,19 +1,24 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitor;
+import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.DuplicateLibraryException;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.LibraryAttachmentNotFoundException;
+import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -22,10 +27,11 @@ import java.util.Optional;
 public class LibraryService {
   private final HapiFhirServer hapiFhirServer;
   private final LibraryTranslatorService libraryTranslatorService;
+  private final LibraryCqlVisitorFactory libCqlVisitorFactory;
 
   public String getLibraryCql(String name, String version) {
-    Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
 
+    Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
     if (bundle.hasEntry()) {
       return processBundle(name, version, bundle);
     } else {
@@ -48,6 +54,7 @@ public class LibraryService {
   }
 
   public boolean isLibraryResourcePresent(String name, String version) {
+
     Bundle bundle = hapiFhirServer.fetchLibraryBundleByNameAndVersion(name, version);
     if (!bundle.hasEntry()) {
       return false;
@@ -57,8 +64,8 @@ public class LibraryService {
   }
 
   private String processBundle(String name, String version, Bundle bundle) {
-    Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
 
+    Optional<Library> optional = hapiFhirServer.findLibraryResourceInBundle(bundle, Library.class);
     if (optional.isPresent()) {
       return getCqlFromHapiLibrary(optional.get());
     } else {
@@ -67,6 +74,7 @@ public class LibraryService {
   }
 
   private String getCqlFromHapiLibrary(Library library) {
+
     List<Attachment> attachments = library.getContent();
 
     if (CollectionUtils.isEmpty(attachments)) {
@@ -96,5 +104,31 @@ public class LibraryService {
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
     hapiFhirServer.createResource(library);
     return library;
+  }
+
+  public void getIncludedLibraries(String cql, Map<String, Library> libraryMap) {
+    if (StringUtils.isBlank(cql) || libraryMap == null) {
+      log.error("Invalid method arguments provided to getIncludedLibraries");
+      throw new IllegalArgumentException("Please provide valid arguments.");
+    }
+
+    LibraryCqlVisitor visitor = libCqlVisitorFactory.visit(cql);
+    for (Pair<String, String> libraryNameValuePair : visitor.getIncludedLibraries()) {
+      Optional<Library> optionalLibrary =
+          hapiFhirServer.fetchHapiLibrary(
+              libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      if (optionalLibrary.isPresent()) {
+        Library library = optionalLibrary.get();
+        String key = library.getName() + library.getVersion();
+        if (!libraryMap.containsKey(key)) {
+          libraryMap.put(key, library);
+        }
+        Attachment attachment = findCqlAttachment(library);
+        getIncludedLibraries(new String(attachment.getData()), libraryMap);
+      } else {
+        throw new HapiLibraryNotFoundException(
+            libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
+      }
+    }
   }
 }

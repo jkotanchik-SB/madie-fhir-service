@@ -9,6 +9,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Encounter;
 import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Procedure;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -102,6 +103,71 @@ class ResourceValidationServiceTest {
 
       Bundle bundle = new Bundle();
       OperationOutcome output = validationService.validateBundleResourcesProfiles(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(false));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesIdUniquenessCatchesDuplicateIds() {
+    Patient p = new Patient();
+    p.setId("1111");
+    Encounter e1 = new Encounter();
+    e1.setId("1234");
+    Encounter e2 = new Encounter();
+    e2.setId("1234");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertThat(output.getIssueFirstRep().getDiagnostics().contains("1234"), is(true));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesIdUniquenessLooksAcrossResourceTypes() {
+    Patient p = new Patient();
+    p.setId("1234");
+    Encounter e1 = new Encounter();
+    e1.setId("1234");
+    Procedure p1 = new Procedure();
+    p1.setId("1234");
+    Encounter e2 = new Encounter();
+    e2.setId("3456");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, p1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertThat(output.getIssueFirstRep().getDiagnostics().contains("1234"), is(true));
+      assertThat(output.getIssue().size(), is(equalTo(1)));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesIdUniquenessReturnsNoErrorsForAllUniqueIds() {
+    Patient p = new Patient();
+    p.setId("1111");
+    Encounter e1 = new Encounter();
+    e1.setId("2222");
+    Encounter e2 = new Encounter();
+    e2.setId("3333");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
       assertThat(output, is(notNullValue()));
       assertThat(output.hasIssue(), is(false));
     }

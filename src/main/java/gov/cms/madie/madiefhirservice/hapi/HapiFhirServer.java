@@ -61,7 +61,7 @@ public class HapiFhirServer {
         .search()
         .forResource(Library.class)
         .where(Library.VERSION.exactly().code(version))
-        .and(Library.NAME.matches().value(name))
+        .and(Library.NAME.matchesExactly().value(name))
         .returnBundle(Bundle.class)
         .withAdditionalHeader(CACHE_HEADER_NAME, CACHE_HEADER_VALUE)
         .execute();

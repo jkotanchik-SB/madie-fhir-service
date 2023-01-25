@@ -14,14 +14,14 @@
           "id": "id1",
           "name": "initialPopulation",
           "definition": "ipp",
-          "associationType":"Denominator"          
+          "associationType": "Denominator"
         },
         {
           "id": "id4",
           "name": "initialPopulation",
           "definition": "ipp2",
-          "associationType":"Numerator"
-       	},
+          "associationType": "Numerator"
+        },
         {
           "id": "id2",
           "name": "denominator",
@@ -33,23 +33,31 @@
           "definition": "num"
         }
       ],
-      "measureGroupTypes": ["Outcome"],
-         "measureObservations":null,
-         "groupDescription":"test 4495 group 1",
-         "improvementNotation":"",
-         "rateAggregation":"",         
-         "scoringUnit":{
-            "label":"kg kilogram",
-            "value":{
-               "code":"kg",
-               "name":"kilogram",
-               "guidance":null
-            }
-         },
-         "stratifications":[
-            
-         ],
-         "populationBasis":"Account"
+      "measureGroupTypes": [
+        "Outcome"
+      ],
+      "measureObservations": [
+        {
+          "id": "6c7c52bd-0060-45d8-9c42-cfedbd40d148",
+          "definition": "fun",
+          "criteriaReference": "id2",
+          "aggregateMethod": "Minimum"
+        }
+      ],
+      "groupDescription": "test 4495 group 1",
+      "improvementNotation": "",
+      "rateAggregation": "",
+      "scoringUnit": {
+        "label": "kg kilogram",
+        "value": {
+          "code": "kg",
+          "name": "kilogram",
+          "guidance": null
+        }
+      },
+      "stratifications": [
+      ],
+      "populationBasis": "Account"
     }
   ],
   "createdAt": "2022-04-29T13:10:34.412Z",

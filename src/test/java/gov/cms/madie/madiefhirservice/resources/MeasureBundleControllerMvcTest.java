@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,6 +68,28 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
   }
 
   @Test
+  public void testGetMeasureBundleXml() throws Exception {
+    String madieMeasureJson =
+        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
+
+    when(measureBundleService.createMeasureBundle(any(Measure.class))).thenReturn(testBundle);
+    when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/measures/bundles")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .accept(MediaType.APPLICATION_XML)
+                .content(madieMeasureJson)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_XML));
+    verify(measureBundleService, times(1)).createMeasureBundle(any(Measure.class));
+  }
+
+  @Test
   public void testSaveMeasureSuccess() throws Exception {
     String madieMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
@@ -79,7 +102,6 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     when(methodOutcome.getId()).thenReturn(iidType);
     when(iidType.toString()).thenReturn("testId");
 
-    // outcome.setId(new IPrimitiveType());
     when(measureBundleService.saveMeasureBundle(anyString())).thenReturn(methodOutcome);
 
     mockMvc
