@@ -3,7 +3,6 @@ package gov.cms.madie.madiefhirservice.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
@@ -90,7 +89,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
         .when(libraryService)
         .getIncludedLibraries(anyString(), anyMap());
 
-    Bundle bundle = measureBundleService.createMeasureBundle(madieMeasure);
+    Bundle bundle = measureBundleService.createMeasureBundle(madieMeasure, null);
 
     assertThat(bundle.getEntry().size(), is(3));
     assertThat(bundle.getType(), is(equalTo(Bundle.BundleType.TRANSACTION)));
@@ -118,7 +117,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     Exception exception =
         Assertions.assertThrows(
             HapiLibraryNotFoundException.class,
-            () -> measureBundleService.createMeasureBundle(madieMeasure));
+            () -> measureBundleService.createMeasureBundle(madieMeasure, null));
 
     assertThat(
         exception.getMessage(),

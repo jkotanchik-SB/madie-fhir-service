@@ -3,6 +3,8 @@ package gov.cms.madie.madiefhirservice.services;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
+import gov.cms.mat.cql.CqlFormatter;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
@@ -29,7 +31,9 @@ public class MeasureBundleService {
   /**
    * Creates measure bundle that contains measure, main library, and included libraries resources
    */
-  public Bundle createMeasureBundle(Measure madieMeasure) {
+  public Bundle createMeasureBundle(Measure madieMeasure, Principal principal) {
+    madieMeasure.setCql(CqlFormatter.formatCql(madieMeasure.getCql(), principal));
+
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
     // Bundle entry for Measure resource
