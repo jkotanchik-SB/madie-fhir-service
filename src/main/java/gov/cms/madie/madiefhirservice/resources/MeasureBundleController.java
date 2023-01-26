@@ -5,6 +5,7 @@ import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
 import gov.cms.madie.models.measure.Measure;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,11 @@ public class MeasureBundleController {
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
       consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<String> getMeasureBundle(
+      HttpServletRequest request,
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure,
       @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
-    Bundle bundle = measureBundleService.createMeasureBundle(measure);
+
+    Bundle bundle = measureBundleService.createMeasureBundle(measure, request.getUserPrincipal());
 
     if (accept != null
         && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
@@ -51,10 +54,11 @@ public class MeasureBundleController {
 
   @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> saveMeasure(
+      HttpServletRequest request,
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
     log.debug("Entering saveMeasure()");
 
-    Bundle bundle = measureBundleService.createMeasureBundle(measure);
+    Bundle bundle = measureBundleService.createMeasureBundle(measure, request.getUserPrincipal());
     bundle.setType(Bundle.BundleType.DOCUMENT);
     String serialized =
         fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
