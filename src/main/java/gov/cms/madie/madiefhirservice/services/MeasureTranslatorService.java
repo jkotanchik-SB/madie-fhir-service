@@ -338,9 +338,7 @@ public class MeasureTranslatorService {
               measureSupplementalDataComponent.setId(
                   supplementalData.getDefinition().toLowerCase().replace(" ", "-"));
               measureSupplementalDataComponent.setCriteria(
-                  new Expression()
-                      .setExpression(supplementalData.getDefinition())
-                      .setLanguage("text/cql-identifier"));
+                  buildExpression("text/cql-identifier", supplementalData.getDefinition()));
               measureSupplementalDataComponent.setDescription(supplementalData.getDescription());
               measureSupplementalDataComponent.setCode(
                   buildCodeableConcept(
@@ -363,9 +361,7 @@ public class MeasureTranslatorService {
               measureSupplementalDataComponent.setId(
                   riskAdjustment.getDefinition().toLowerCase().replace(" ", "-"));
               measureSupplementalDataComponent.setCriteria(
-                  new Expression()
-                      .setExpression(riskAdjustment.getDefinition())
-                      .setLanguage("text/cql-identifier"));
+                  buildExpression("text/cql-identifier", riskAdjustment.getDefinition()));
               measureSupplementalDataComponent.setCode(
                   buildCodeableConcept(
                       "risk-adjustment-factor",
