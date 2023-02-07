@@ -43,7 +43,7 @@ public class MeasureBundleService {
     // Bundle entries for all the library resources of a MADiE Measure
     List<Bundle.BundleEntryComponent> libraryEntryComponents =
         createBundleComponentsForLibrariesOfMadieMeasure(madieMeasure);
-    libraryEntryComponents.forEach(entryComponent -> bundle.addEntry(entryComponent));
+    libraryEntryComponents.forEach(bundle::addEntry);
     return bundle;
   }
 
