@@ -3,7 +3,6 @@
    "measureHumanReadableId":null,
    "measureSetId":"testMeasureSetId",
    "version":{"major":1, "minor":2, "revisionNumber":3},
-   "versionId":"testVersionId",
    "revisionNumber":null,
    "state":null,
    "cqlLibraryName":"SimpleFhirMeasureLib",
@@ -201,5 +200,25 @@
       "rationale":null,
       "developers":null,
       "guidance":null
-   }
+   },
+   "supplementalData": [
+      {
+         "definition":  "SDE Race",
+         "description":  "SDE Race description"
+      },
+      {
+         "definition":  "SDE Payor",
+         "description":  "SDE Payor description"
+      }
+   ],
+   "riskAdjustments": [
+      {
+         "definition":  "Risk Adjustments example",
+         "description":  "Risk Adjustments example description"
+      },
+      {
+         "definition":  "Risk Adjustments example 2",
+         "description":  "Risk Adjustments example 2 description"
+      }
+   ]
 }

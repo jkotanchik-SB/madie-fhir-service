@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
+import org.hl7.fhir.r4.model.Measure.MeasureSupplementalDataComponent;
 import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.*;
@@ -71,6 +72,7 @@ public class MeasureTranslatorService {
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetailUrl())
         .setGroup(buildGroups(madieMeasure.getGroups()))
+        .setSupplementalData(buildSupplementalData(madieMeasure))
         .setMeta(buildMeasureMeta(madieMeasure));
 
     return measure;
@@ -148,28 +150,25 @@ public class MeasureTranslatorService {
   }
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
-    List<MeasureGroupPopulationComponent> measurePopulations =
-        madieGroup.getPopulations().stream()
-            .map(
-                population -> {
-                  String populationCode = population.getName().toCode();
-                  String populationDisplay = population.getName().getDisplay();
-                  return (MeasureGroupPopulationComponent)
-                      (new MeasureGroupPopulationComponent()
-                              .setCode(
-                                  buildCodeableConcept(
-                                      populationCode,
-                                      UriConstants.POPULATION_SYSTEM_URI,
-                                      populationDisplay))
-                              .setCriteria(
-                                  buildExpression(
-                                      "text/cql.identifier", population.getDefinition()))
-                              .setId(population.getId()))
-                          .addExtension(buildPopulationTypeExtension(population, madieGroup));
-                  // TODO: Add an extension for measure observations
-                })
-            .collect(Collectors.toList());
-    return measurePopulations;
+    return madieGroup.getPopulations().stream()
+        .map(
+            population -> {
+              String populationCode = population.getName().toCode();
+              String populationDisplay = population.getName().getDisplay();
+              return (MeasureGroupPopulationComponent)
+                  (new MeasureGroupPopulationComponent()
+                          .setCode(
+                              buildCodeableConcept(
+                                  populationCode,
+                                  UriConstants.POPULATION_SYSTEM_URI,
+                                  populationDisplay))
+                          .setCriteria(
+                              buildExpression("text/cql.identifier", population.getDefinition()))
+                          .setId(population.getId()))
+                      .addExtension(buildPopulationTypeExtension(population, madieGroup));
+              // TODO: Add an extension for measure observations
+            })
+        .collect(Collectors.toList());
   }
 
   private List<MeasureGroupPopulationComponent> buildObservations(Group madieGroup) {
@@ -271,11 +270,11 @@ public class MeasureTranslatorService {
     return extension.get();
   }
 
-  public Expression buildExpression(String language, String expression) {
+  private Expression buildExpression(String language, String expression) {
     return new Expression().setLanguage(language).setExpression(expression);
   }
 
-  public Period getPeriodFromDates(Date startDate, Date endDate) {
+  private Period getPeriodFromDates(Date startDate, Date endDate) {
     return new Period()
         .setStart(startDate, TemporalPrecisionEnum.DAY)
         .setEnd(endDate, TemporalPrecisionEnum.DAY);
@@ -292,18 +291,18 @@ public class MeasureTranslatorService {
     return buildCodeableConcept(code, UriConstants.SCORING_SYSTEM_URI, scoring);
   }
 
-  public CodeableConcept buildCodeableConcept(String code, String system, String display) {
+  private CodeableConcept buildCodeableConcept(String code, String system, String display) {
     CodeableConcept codeableConcept = new CodeableConcept();
     codeableConcept.setCoding(new ArrayList<>());
     codeableConcept.getCoding().add(buildCoding(code, system, display));
     return codeableConcept;
   }
 
-  public Coding buildCoding(String code, String system, String display) {
+  private Coding buildCoding(String code, String system, String display) {
     return new Coding().setCode(code).setSystem(system).setDisplay(display);
   }
 
-  public List<ContactDetail> buildContactDetailUrl() {
+  private List<ContactDetail> buildContactDetailUrl() {
     ContactDetail contactDetail = new ContactDetail();
     contactDetail.setTelecom(new ArrayList<>());
     contactDetail.getTelecom().add(buildContactPoint());
@@ -314,9 +313,63 @@ public class MeasureTranslatorService {
     return contactDetails;
   }
 
-  public ContactPoint buildContactPoint() {
+  private ContactPoint buildContactPoint() {
     return new ContactPoint()
         .setValue("https://cms.gov")
         .setSystem(ContactPoint.ContactPointSystem.URL);
+  }
+
+  private List<MeasureSupplementalDataComponent> buildSupplementalData(Measure madieMeasure) {
+    List<MeasureSupplementalDataComponent> measureSupplementalDataComponents = new ArrayList<>();
+    measureSupplementalDataComponents.addAll(buildSupplementalDataElements(madieMeasure));
+    measureSupplementalDataComponents.addAll(buildRiskAdjustmentFactors(madieMeasure));
+    return measureSupplementalDataComponents;
+  }
+
+  private List<MeasureSupplementalDataComponent> buildSupplementalDataElements(
+      Measure madieMeasure) {
+    if (madieMeasure.getSupplementalData() == null) {
+      return Collections.emptyList();
+    }
+    return madieMeasure.getSupplementalData().stream()
+        .map(
+            supplementalData -> {
+              var measureSupplementalDataComponent = new MeasureSupplementalDataComponent();
+              measureSupplementalDataComponent.setId(
+                  supplementalData.getDefinition().toLowerCase().replace(" ", "-"));
+              measureSupplementalDataComponent.setCriteria(
+                  buildExpression("text/cql-identifier", supplementalData.getDefinition()));
+              measureSupplementalDataComponent.setDescription(supplementalData.getDescription());
+              measureSupplementalDataComponent.setCode(
+                  buildCodeableConcept(
+                      "supplemental-data",
+                      "http://terminology.hl7.org/CodeSystem/measure-data-usage",
+                      null));
+              return measureSupplementalDataComponent;
+            })
+        .collect(Collectors.toList());
+  }
+
+  private List<MeasureSupplementalDataComponent> buildRiskAdjustmentFactors(Measure madieMeasure) {
+    if (madieMeasure.getRiskAdjustments() == null) {
+      return Collections.emptyList();
+    }
+    return madieMeasure.getRiskAdjustments().stream()
+        .map(
+            riskAdjustment -> {
+              var measureSupplementalDataComponent = new MeasureSupplementalDataComponent();
+              measureSupplementalDataComponent.setId(
+                  riskAdjustment.getDefinition().toLowerCase().replace(" ", "-"));
+              measureSupplementalDataComponent.setCriteria(
+                  buildExpression("text/cql-identifier", riskAdjustment.getDefinition()));
+              measureSupplementalDataComponent.setCode(
+                  buildCodeableConcept(
+                      "risk-adjustment-factor",
+                      "http://terminology.hl7.org/CodeSystem/measure-data-usage",
+                      null));
+              measureSupplementalDataComponent.setDescription(riskAdjustment.getDescription());
+              return measureSupplementalDataComponent;
+            })
+        .collect(Collectors.toList());
   }
 }

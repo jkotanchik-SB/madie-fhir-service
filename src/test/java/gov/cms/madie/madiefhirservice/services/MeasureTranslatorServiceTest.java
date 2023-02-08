@@ -5,12 +5,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Date;
-import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -173,6 +170,22 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         group2CodeableConcept.getCoding().get(0).getSystem(),
         is(equalTo(UriConstants.SCORING_SYSTEM_URI)));
     assertThat(group2CodeableConcept.getCoding().get(0).getCode(), is(equalTo("ratio")));
+
+    // verifies if SupplemenntalData is populated, it includes both SDE and RiskAdjustmentFators
+    assertEquals(4, measure.getSupplementalData().size());
+    assertEquals("sde-race", measure.getSupplementalData().get(0).getId());
+    assertEquals("SDE Race", measure.getSupplementalData().get(0).getCriteria().getExpression());
+    assertEquals("SDE Race description", measure.getSupplementalData().get(0).getDescription());
+    assertFalse(measure.getSupplementalData().get(0).getCode().getCoding().isEmpty());
+
+    assertEquals("risk-adjustments-example", measure.getSupplementalData().get(2).getId());
+    assertEquals(
+        "Risk Adjustments example",
+        measure.getSupplementalData().get(2).getCriteria().getExpression());
+    assertEquals(
+        "Risk Adjustments example description",
+        measure.getSupplementalData().get(2).getDescription());
+    assertFalse(measure.getSupplementalData().get(2).getCode().getCoding().isEmpty());
   }
 
   @Test
@@ -293,7 +306,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  public void testCreateFhirMeasureForMadieCVMeasure() throws ParseException {
+  public void testCreateFhirMeasureForMadieCVMeasure() {
     ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
 
     org.hl7.fhir.r4.model.Measure measure =
@@ -576,7 +589,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   @Test
   public void testBuildGroupsWithNull() {
     List<MeasureGroupComponent> listOfComponent =
-        measureTranslatorService.buildGroups(new ArrayList<Group>());
+        measureTranslatorService.buildGroups(new ArrayList<>());
     assertNull(listOfComponent);
   }
 
