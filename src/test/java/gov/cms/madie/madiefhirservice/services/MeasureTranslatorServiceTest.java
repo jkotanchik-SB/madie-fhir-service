@@ -176,7 +176,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertEquals("sde-race", measure.getSupplementalData().get(0).getId());
     assertEquals("SDE Race", measure.getSupplementalData().get(0).getCriteria().getExpression());
     assertEquals("SDE Race description", measure.getSupplementalData().get(0).getDescription());
-    assertFalse(measure.getSupplementalData().get(0).getCode().getCoding().isEmpty());
+    assertFalse(measure.getSupplementalData().get(0).getUsage().get(0).getCoding().isEmpty());
 
     assertEquals("risk-adjustments-example", measure.getSupplementalData().get(2).getId());
     assertEquals(
@@ -185,7 +185,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertEquals(
         "Risk Adjustments example description",
         measure.getSupplementalData().get(2).getDescription());
-    assertFalse(measure.getSupplementalData().get(2).getCode().getCoding().isEmpty());
+    assertFalse(measure.getSupplementalData().get(2).getUsage().get(0).getCoding().isEmpty());
   }
 
   @Test
