@@ -340,11 +340,12 @@ public class MeasureTranslatorService {
               measureSupplementalDataComponent.setCriteria(
                   buildExpression("text/cql-identifier", supplementalData.getDefinition()));
               measureSupplementalDataComponent.setDescription(supplementalData.getDescription());
-              measureSupplementalDataComponent.setCode(
-                  buildCodeableConcept(
-                      "supplemental-data",
-                      "http://terminology.hl7.org/CodeSystem/measure-data-usage",
-                      null));
+              measureSupplementalDataComponent.setUsage(
+                  List.of(
+                      buildCodeableConcept(
+                          "supplemental-data",
+                          "http://terminology.hl7.org/CodeSystem/measure-data-usage",
+                          null)));
               return measureSupplementalDataComponent;
             })
         .collect(Collectors.toList());
@@ -362,11 +363,12 @@ public class MeasureTranslatorService {
                   riskAdjustment.getDefinition().toLowerCase().replace(" ", "-"));
               measureSupplementalDataComponent.setCriteria(
                   buildExpression("text/cql-identifier", riskAdjustment.getDefinition()));
-              measureSupplementalDataComponent.setCode(
-                  buildCodeableConcept(
-                      "risk-adjustment-factor",
-                      "http://terminology.hl7.org/CodeSystem/measure-data-usage",
-                      null));
+              measureSupplementalDataComponent.setUsage(
+                  List.of(
+                      buildCodeableConcept(
+                          "risk-adjustment-factor",
+                          "http://terminology.hl7.org/CodeSystem/measure-data-usage",
+                          null)));
               measureSupplementalDataComponent.setDescription(riskAdjustment.getDescription());
               return measureSupplementalDataComponent;
             })
