@@ -35,8 +35,6 @@ public class MeasureBundleController {
 
   @Autowired private FhirContext fhirContext;
 
-  private static final String CONTENT_DISPOSITION = "Content-Disposition";
-
   @PutMapping(
       value = "/bundles",
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
@@ -88,7 +86,11 @@ public class MeasureBundleController {
 
   @PutMapping(
       value = "/export",
-      produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+      produces = {
+        MediaType.APPLICATION_OCTET_STREAM_VALUE,
+        MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE
+      },
       consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<StreamingResponseBody> getMeasureBundleExport(
       HttpServletRequest request,
@@ -101,7 +103,7 @@ public class MeasureBundleController {
         && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
       return ResponseEntity.ok()
           .header(
-              CONTENT_DISPOSITION,
+              HttpHeaders.CONTENT_DISPOSITION,
               "attachment;filename=\"" + ExportFileNamesUtil.getExportFileName(measure) + ".zip\"")
           .contentType(MediaType.APPLICATION_OCTET_STREAM)
           .body(
@@ -109,7 +111,7 @@ public class MeasureBundleController {
     }
     return ResponseEntity.ok()
         .header(
-            CONTENT_DISPOSITION,
+            HttpHeaders.CONTENT_DISPOSITION,
             "attachment;filename=\"" + ExportFileNamesUtil.getExportFileName(measure) + ".zip\"")
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
         .body(out -> exportService.createExport(measure, bundle, out, fhirContext.newJsonParser()));
