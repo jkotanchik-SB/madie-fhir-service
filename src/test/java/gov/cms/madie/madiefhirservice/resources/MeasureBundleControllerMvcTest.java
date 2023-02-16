@@ -1,12 +1,26 @@
 package gov.cms.madie.madiefhirservice.resources;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import gov.cms.madie.madiefhirservice.services.ExportService;
 import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.measure.Measure;
-
+import java.io.OutputStream;
 import java.security.Principal;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.Bundle;
@@ -20,22 +34,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest({MeasureBundleController.class})
 public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
   private static final String TEST_USER_ID = "john_doe";
 
   @MockBean private MeasureBundleService measureBundleService;
+
+  @MockBean private ExportService exportService;
 
   @MockBean private FhirContext fhirContext;
 
@@ -168,5 +173,33 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().is5xxServerError());
     verify(measureBundleService, times(1)).saveMeasureBundle(anyString());
+  }
+
+  @Test
+  public void testExportMeasureBundle() throws Exception {
+    String madieMeasureJson =
+        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
+
+    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+        .thenReturn(testBundle);
+    when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/measures/export")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(madieMeasureJson)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk())
+        .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
+        .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE));
+    verify(measureBundleService, times(1))
+        .createMeasureBundle(any(Measure.class), any(Principal.class));
+    verify(exportService, times(1))
+        .createExport(
+            any(Measure.class), any(Bundle.class), any(OutputStream.class), any(IParser.class));
   }
 }
