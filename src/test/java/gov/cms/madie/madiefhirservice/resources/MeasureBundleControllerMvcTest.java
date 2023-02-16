@@ -202,33 +202,4 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .createExport(
             any(Measure.class), any(Bundle.class), any(OutputStream.class), any(IParser.class));
   }
-
-  @Test
-  public void testExportMeasureBundleXml() throws Exception {
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
-    Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
-
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
-        .thenReturn(testBundle);
-    when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
-
-    mockMvc
-        .perform(
-            MockMvcRequestBuilders.put("/fhir/measures/export")
-                .with(user(TEST_USER_ID))
-                .with(csrf())
-                .header("Authorization", "test-okta")
-                .accept(MediaType.APPLICATION_XML)
-                .content(madieMeasureJson)
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isOk())
-        .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
-        .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE));
-    verify(measureBundleService, times(1))
-        .createMeasureBundle(any(Measure.class), any(Principal.class));
-    verify(exportService, times(1))
-        .createExport(
-            any(Measure.class), any(Bundle.class), any(OutputStream.class), any(IParser.class));
-  }
 }

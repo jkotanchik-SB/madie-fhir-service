@@ -99,16 +99,6 @@ public class MeasureBundleController {
 
     Bundle bundle = measureBundleService.createMeasureBundle(measure, request.getUserPrincipal());
 
-    if (accept != null
-        && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
-      return ResponseEntity.ok()
-          .header(
-              HttpHeaders.CONTENT_DISPOSITION,
-              "attachment;filename=\"" + ExportFileNamesUtil.getExportFileName(measure) + ".zip\"")
-          .contentType(MediaType.APPLICATION_OCTET_STREAM)
-          .body(
-              out -> exportService.createExport(measure, bundle, out, fhirContext.newXmlParser()));
-    }
     return ResponseEntity.ok()
         .header(
             HttpHeaders.CONTENT_DISPOSITION,
