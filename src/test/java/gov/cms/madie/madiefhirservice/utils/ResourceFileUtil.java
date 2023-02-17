@@ -17,4 +17,14 @@ public interface ResourceFileUtil {
       throw new UncheckedIOException(e);
     }
   }
+
+  default String getData(String resource) {
+    File inputXmlFile = new File(this.getClass().getResource(resource).getFile());
+
+    try {
+      return new String(Files.readAllBytes(inputXmlFile.toPath()));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
 }

@@ -48,9 +48,12 @@ class ExportServiceTest implements ResourceFileUtil {
 
   private Measure measure;
   private Bundle measureBundle;
+  private String humanReadable;
 
   @BeforeEach
   public void setUp() {
+    humanReadable = getData("/humanReadable/humanReadable_test");
+
     lenient().when(elmTranslatorClientConfig.getCqlElmServiceBaseUrl()).thenReturn("http://test");
     lenient().when(elmTranslatorClientConfig.getHumanReadableUri()).thenReturn("/human-readable");
 
@@ -81,7 +84,7 @@ class ExportServiceTest implements ResourceFileUtil {
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
     when(elmTranslatorRestTemplate.exchange(
             any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), any(Class.class)))
-        .thenReturn(ResponseEntity.ok("humanreadable"));
+        .thenReturn(ResponseEntity.ok(humanReadable));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
