@@ -200,6 +200,6 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .createMeasureBundle(any(Measure.class), any(Principal.class));
     verify(exportService, times(1))
         .createExport(
-            any(Measure.class), any(Bundle.class), any(OutputStream.class), any(IParser.class));
+            any(Measure.class), any(Bundle.class), any(OutputStream.class), any(String.class));
   }
 }
