@@ -94,6 +94,7 @@ class ExportServiceTest implements ResourceFileUtil {
     List<String> expectedFilesInZip =
         List.of(
             "ExportTest-v1.0.000-QI-Core v4.1.1.json",
+            "ExportTest-v1.0.000-QI-Core v4.1.1.xml",
             "/cql/ExportTest.cql",
             "/cql/FHIRHelpers.cql",
             "/resources/library-ExportTest.json",
