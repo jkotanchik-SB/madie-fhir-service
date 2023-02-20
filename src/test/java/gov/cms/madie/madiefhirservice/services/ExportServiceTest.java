@@ -52,7 +52,7 @@ class ExportServiceTest implements ResourceFileUtil {
 
   @BeforeEach
   public void setUp() {
-    humanReadable = getData("/humanReadable/humanReadable_test");
+    humanReadable = getStringFromTestResource("/humanReadable/humanReadable_test");
 
     lenient().when(elmTranslatorClientConfig.getCqlElmServiceBaseUrl()).thenReturn("http://test");
     lenient().when(elmTranslatorClientConfig.getHumanReadableUri()).thenReturn("/human-readable");
