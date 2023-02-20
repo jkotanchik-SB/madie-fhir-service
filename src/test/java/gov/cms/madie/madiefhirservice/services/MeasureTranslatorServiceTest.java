@@ -543,23 +543,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  void testBuildMeasureMetaHandlesNullLastModifiedAt() {
-    Measure measure = new Measure();
-    measure.setLastModifiedAt(null);
-    final Meta output = measureTranslatorService.buildMeasureMeta();
-    assertThat(output, is(notNullValue()));
-    assertThat(output.hasProfile(), is(true));
-    assertThat(output.getProfile().size(), is(equalTo(3)));
-    assertThat(output.getVersionId(), is(nullValue()));
-    assertThat(output.getLastUpdated(), is(nullValue()));
-  }
-
-  @Test
   void testBuildMeasureMetaHandlesValidInput() {
     Measure measure = new Measure();
-    final Instant lastModifiedAt = Instant.now().minus(19, ChronoUnit.HOURS);
-    measure.setLastModifiedAt(lastModifiedAt);
-    measure.setVersionId("VERSION_ID_110101");
     final Meta output = measureTranslatorService.buildMeasureMeta();
     assertThat(output, is(notNullValue()));
     assertThat(output.hasProfile(), is(true));
