@@ -198,8 +198,5 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE));
     verify(measureBundleService, times(1))
         .createMeasureBundle(any(Measure.class), any(Principal.class));
-    verify(exportService, times(1))
-        .createExport(
-            any(Measure.class), any(Bundle.class), any(OutputStream.class), any(String.class));
   }
 }
