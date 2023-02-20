@@ -104,6 +104,6 @@ public class MeasureBundleController {
             HttpHeaders.CONTENT_DISPOSITION,
             "attachment;filename=\"" + ExportFileNamesUtil.getExportFileName(measure) + ".zip\"")
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .body(out -> exportService.createExport(measure, bundle, out, fhirContext.newJsonParser()));
+        .body(out -> exportService.createExport(measure, bundle, out));
   }
 }

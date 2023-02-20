@@ -71,12 +71,13 @@ class ExportServiceTest implements ResourceFileUtil {
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    exportService.createExport(measure, measureBundle, out, fhirContext.newJsonParser());
+    exportService.createExport(measure, measureBundle, out);
 
     // expected files in export zip
     List<String> expectedFilesInZip =
         List.of(
             "ExportTest-v1.0.000-QI-Core v4.1.1.json",
+            "ExportTest-v1.0.000-QI-Core v4.1.1.xml",
             "/cql/ExportTest.cql",
             "/cql/FHIRHelpers.cql",
             "/resources/library-ExportTest.json",
@@ -100,10 +101,7 @@ class ExportServiceTest implements ResourceFileUtil {
             RuntimeException.class,
             () ->
                 exportService.createExport(
-                    measure,
-                    measureBundle,
-                    OutputStream.nullOutputStream(),
-                    fhirContext.newJsonParser()));
+                    measure, measureBundle, OutputStream.nullOutputStream()));
     assertThat(
         ex.getMessage(),
         is(equalTo("Unexpected error while generating exports for measureID: xyz-p13r-13ert")));

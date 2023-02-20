@@ -30,13 +30,19 @@ public class ExportService {
   private static final String CQL_DIRECTORY = "/cql/";
   private static final String RESOURCES_DIRECTORY = "/resources/";
 
-  public void createExport(
-      Measure measure, Bundle bundle, OutputStream outputStream, IParser parser) {
+  public void createExport(Measure measure, Bundle bundle, OutputStream outputStream) {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
     log.info("Generating exports for " + exportFileName);
 
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-      addMeasureBundleToExport(zos, exportFileName, convertFhirResourceToString(bundle, parser));
+      addMeasureBundleToExport(
+          zos,
+          exportFileName + ".json",
+          convertFhirResourceToString(bundle, fhirContext.newJsonParser()));
+      addMeasureBundleToExport(
+          zos,
+          exportFileName + ".xml",
+          convertFhirResourceToString(bundle, fhirContext.newXmlParser()));
       addLibraryCqlFilesToExport(zos, bundle);
       addLibraryResourcesToExport(zos, bundle);
     } catch (Exception ex) {
@@ -48,7 +54,7 @@ public class ExportService {
 
   private void addMeasureBundleToExport(ZipOutputStream zos, String fileName, String measureBundle)
       throws IOException {
-    String measureBundleFile = fileName + ".json";
+    String measureBundleFile = fileName;
     addBytesToZip(measureBundleFile, measureBundle.getBytes(), zos);
   }
 
