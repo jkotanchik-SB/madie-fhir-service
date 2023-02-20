@@ -44,17 +44,16 @@ public class ExportService {
       Measure measure, Bundle bundle, OutputStream outputStream, String accessToken) {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
     String humanReadableFile = getHumanReadable(measure, accessToken);
-    String fhirResource = convertFhirResourceToString(bundle, fhirContext.newJsonParser());
     log.info("Generating exports for " + exportFileName);
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-      addMeasureBundleToExport(
-          zos,
+      addBytesToZip(
           exportFileName + ".json",
-          convertFhirResourceToString(bundle, fhirContext.newJsonParser()));
-      addMeasureBundleToExport(
-          zos,
+          convertFhirResourceToString(bundle, fhirContext.newJsonParser()).getBytes(),
+          zos);
+      addBytesToZip(
           exportFileName + ".xml",
-          convertFhirResourceToString(bundle, fhirContext.newXmlParser()));
+          convertFhirResourceToString(bundle, fhirContext.newJsonParser()).getBytes(),
+          zos);
       addLibraryCqlFilesToExport(zos, bundle);
       addLibraryResourcesToExport(zos, bundle);
       addHumanReadableFile(zos, measure, humanReadableFile);
@@ -92,12 +91,6 @@ public class ExportService {
     String humanReadableFileName =
         measure.getEcqmTitle() + "-" + measure.getVersion() + "-FHIR.html";
     addBytesToZip(humanReadableFileName, humanReadableFile.getBytes(), zos);
-  }
-
-  private void addMeasureBundleToExport(ZipOutputStream zos, String fileName, String measureBundle)
-      throws IOException {
-    String measureBundleFile = fileName;
-    addBytesToZip(measureBundleFile, measureBundle.getBytes(), zos);
   }
 
   private void addLibraryCqlFilesToExport(ZipOutputStream zos, Bundle measureBundle)
