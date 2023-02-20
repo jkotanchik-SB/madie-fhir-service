@@ -57,7 +57,7 @@ public class MeasureBundleService {
       Measure madieMeasure) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
-    Map<String, Library> includedLibraryMap = new HashMap();
+    Map<String, Library> includedLibraryMap = new HashMap<>();
     libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraryMap);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
         includedLibraryMap.values().stream()
