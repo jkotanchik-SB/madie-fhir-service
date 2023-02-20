@@ -5,12 +5,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 import ca.uhn.fhir.context.FhirContext;
+import gov.cms.madie.madiefhirservice.config.ElmTranslatorClientConfig;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.measure.Measure;
@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,19 +32,31 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class ExportServiceTest implements ResourceFileUtil {
 
   @Mock private FhirContext fhirContext;
+  @Mock private RestTemplate elmTranslatorRestTemplate;
+  @Mock private ElmTranslatorClientConfig elmTranslatorClientConfig;
 
   @Spy @InjectMocks private ExportService exportService;
 
   private Measure measure;
   private Bundle measureBundle;
+  private String humanReadable;
 
   @BeforeEach
   public void setUp() {
+    humanReadable = getStringFromTestResource("/humanReadable/humanReadable_test");
+
+    lenient().when(elmTranslatorClientConfig.getCqlElmServiceBaseUrl()).thenReturn("http://test");
+    lenient().when(elmTranslatorClientConfig.getHumanReadableUri()).thenReturn("/human-readable");
+
     measure =
         Measure.builder()
             .active(true)
@@ -69,9 +82,13 @@ class ExportServiceTest implements ResourceFileUtil {
   void testCreateExportsForMeasure() throws IOException {
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
+    when(elmTranslatorRestTemplate.exchange(
+            any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), any(Class.class)))
+        .thenReturn(ResponseEntity.ok(humanReadable));
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    exportService.createExport(measure, measureBundle, out, fhirContext.newJsonParser());
+    exportService.createExport(measure, measureBundle, out, "Bearer TOKEN");
 
     // expected files in export zip
     List<String> expectedFilesInZip =
@@ -82,7 +99,8 @@ class ExportServiceTest implements ResourceFileUtil {
             "/resources/library-ExportTest.json",
             "/resources/library-ExportTest.xml",
             "/resources/library-FHIRHelpers.json",
-            "/resources/library-FHIRHelpers.xml");
+            "/resources/library-FHIRHelpers.xml",
+            "ExportTest-1.0.000-FHIR.html");
 
     ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(out.toByteArray()));
     List<String> actualFilesInZip = getFilesInZip(zipInputStream);
@@ -94,16 +112,16 @@ class ExportServiceTest implements ResourceFileUtil {
   void testGenerateExportsWhenWritingFileToZipFailed() throws IOException {
     doThrow(new IOException()).when(exportService).addBytesToZip(anyString(), any(), any());
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
+    when(elmTranslatorRestTemplate.exchange(
+            any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), any(Class.class)))
+        .thenReturn(ResponseEntity.ok("humanreadable"));
 
     Exception ex =
         assertThrows(
             RuntimeException.class,
             () ->
                 exportService.createExport(
-                    measure,
-                    measureBundle,
-                    OutputStream.nullOutputStream(),
-                    fhirContext.newJsonParser()));
+                    measure, measureBundle, OutputStream.nullOutputStream(), "Bearer TOKEN"));
     assertThat(
         ex.getMessage(),
         is(equalTo("Unexpected error while generating exports for measureID: xyz-p13r-13ert")));

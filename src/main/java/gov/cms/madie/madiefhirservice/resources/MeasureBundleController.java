@@ -95,7 +95,7 @@ public class MeasureBundleController {
   public ResponseEntity<StreamingResponseBody> getMeasureBundleExport(
       HttpServletRequest request,
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure,
-      @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
+      @RequestHeader("Authorization") String accessToken) {
 
     Bundle bundle = measureBundleService.createMeasureBundle(measure, request.getUserPrincipal());
 
@@ -104,6 +104,6 @@ public class MeasureBundleController {
             HttpHeaders.CONTENT_DISPOSITION,
             "attachment;filename=\"" + ExportFileNamesUtil.getExportFileName(measure) + ".zip\"")
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .body(out -> exportService.createExport(measure, bundle, out, fhirContext.newJsonParser()));
+        .body(out -> exportService.createExport(measure, bundle, out, accessToken));
   }
 }
