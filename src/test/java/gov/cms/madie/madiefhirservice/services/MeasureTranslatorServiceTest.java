@@ -17,6 +17,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r4.model.Expression;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
@@ -95,6 +96,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
+    assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(measure.getDate(), is(equalTo(Date.from(madieMeasure.getLastModifiedAt()))));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -219,6 +222,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
+    assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(measure.getDate(), is(equalTo(Date.from(madieRatioMeasure.getLastModifiedAt()))));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -328,6 +333,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
     assertThat(measure.getGroup().size(), is(equalTo(madieCVMeasure.getGroups().size())));
+
+    assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(measure.getDate(), is(equalTo(Date.from(madieCVMeasure.getLastModifiedAt()))));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
