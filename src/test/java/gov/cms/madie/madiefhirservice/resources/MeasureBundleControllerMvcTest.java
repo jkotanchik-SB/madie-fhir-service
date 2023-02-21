@@ -13,14 +13,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.services.ExportService;
 import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.measure.Measure;
-import java.io.OutputStream;
 import java.security.Principal;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.Bundle;
@@ -55,7 +53,8 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+    when(measureBundleService.createMeasureBundle(
+            any(Measure.class), any(Principal.class), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -73,7 +72,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .andExpect(jsonPath("$.entry[0].resource.name").value("TestCMS0001"))
         .andExpect(jsonPath("$.entry[0].resource.version").value("0.0.001"));
     verify(measureBundleService, times(1))
-        .createMeasureBundle(any(Measure.class), any(Principal.class));
+        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString());
   }
 
   @Test
@@ -82,7 +81,8 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+    when(measureBundleService.createMeasureBundle(
+            any(Measure.class), any(Principal.class), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
 
@@ -98,7 +98,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_XML));
     verify(measureBundleService, times(1))
-        .createMeasureBundle(any(Measure.class), any(Principal.class));
+        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString());
   }
 
   @Test
@@ -107,7 +107,8 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+    when(measureBundleService.createMeasureBundle(
+            any(Measure.class), any(Principal.class), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -134,7 +135,8 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+    when(measureBundleService.createMeasureBundle(
+            any(Measure.class), any(Principal.class), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -157,7 +159,8 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+    when(measureBundleService.createMeasureBundle(
+            any(Measure.class), any(Principal.class), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -181,7 +184,8 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
-    when(measureBundleService.createMeasureBundle(any(Measure.class), any(Principal.class)))
+    when(measureBundleService.createMeasureBundle(
+            any(Measure.class), any(Principal.class), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -197,6 +201,6 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
         .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE));
     verify(measureBundleService, times(1))
-        .createMeasureBundle(any(Measure.class), any(Principal.class));
+        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString());
   }
 }
