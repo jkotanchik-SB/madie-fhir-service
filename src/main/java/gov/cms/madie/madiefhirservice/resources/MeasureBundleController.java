@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.services.ExportService;
 import gov.cms.madie.madiefhirservice.services.MeasureBundleService;
+import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.models.measure.Measure;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -69,9 +70,7 @@ public class MeasureBundleController {
 
     Bundle bundle =
         measureBundleService.createMeasureBundle(
-            measure,
-            request.getUserPrincipal(),
-            ExportFileNamesUtil.MEASURE_BUNDLE_TYPE_CALCULATION);
+            measure, request.getUserPrincipal(), BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION);
     bundle.setType(Bundle.BundleType.DOCUMENT);
     String serialized =
         fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
@@ -107,7 +106,7 @@ public class MeasureBundleController {
 
     Bundle bundle =
         measureBundleService.createMeasureBundle(
-            measure, request.getUserPrincipal(), ExportFileNamesUtil.MEASURE_BUNDLE_TYPE_EXPORT);
+            measure, request.getUserPrincipal(), BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT);
 
     return ResponseEntity.ok()
         .header(
