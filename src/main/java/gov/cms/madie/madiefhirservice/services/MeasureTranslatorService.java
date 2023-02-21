@@ -16,6 +16,7 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.ContactDetail;
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r4.model.Expression;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
@@ -73,6 +74,11 @@ public class MeasureTranslatorService {
         .setContact(buildContactDetailUrl())
         .setGroup(buildGroups(madieMeasure.getGroups()))
         .setSupplementalData(buildSupplementalData(madieMeasure))
+        .setStatus(
+            madieMeasure.getMeasureMetaData().isDraft()
+                ? PublicationStatus.DRAFT
+                : PublicationStatus.ACTIVE)
+        .setDate(Date.from(madieMeasure.getLastModifiedAt()))
         .setMeta(buildMeasureMeta());
 
     return measure;
