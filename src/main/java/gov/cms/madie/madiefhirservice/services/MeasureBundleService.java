@@ -31,7 +31,7 @@ public class MeasureBundleService {
   /**
    * Creates measure bundle that contains measure, main library, and included libraries resources
    */
-  public Bundle createMeasureBundle(Measure madieMeasure, Principal principal) {
+  public Bundle createMeasureBundle(Measure madieMeasure, Principal principal, String bundleType) {
     madieMeasure.setCql(CqlFormatter.formatCql(madieMeasure.getCql(), principal));
 
     org.hl7.fhir.r4.model.Measure measure =
