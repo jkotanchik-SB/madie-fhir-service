@@ -52,7 +52,7 @@ public class ExportService {
           zos);
       addBytesToZip(
           exportFileName + ".xml",
-          convertFhirResourceToString(bundle, fhirContext.newJsonParser()).getBytes(),
+          convertFhirResourceToString(bundle, fhirContext.newXmlParser()).getBytes(),
           zos);
       addLibraryCqlFilesToExport(zos, bundle);
       addLibraryResourcesToExport(zos, bundle);
