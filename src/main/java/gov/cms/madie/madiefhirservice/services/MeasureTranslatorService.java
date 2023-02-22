@@ -16,6 +16,7 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.ContactDetail;
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r4.model.Expression;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
@@ -73,17 +74,18 @@ public class MeasureTranslatorService {
         .setContact(buildContactDetailUrl())
         .setGroup(buildGroups(madieMeasure.getGroups()))
         .setSupplementalData(buildSupplementalData(madieMeasure))
-        .setMeta(buildMeasureMeta(madieMeasure));
+        .setStatus(
+            madieMeasure.getMeasureMetaData().isDraft()
+                ? PublicationStatus.DRAFT
+                : PublicationStatus.ACTIVE)
+        .setDate(Date.from(madieMeasure.getLastModifiedAt()))
+        .setMeta(buildMeasureMeta());
 
     return measure;
   }
 
-  public Meta buildMeasureMeta(Measure madieMeasure) {
+  public Meta buildMeasureMeta() {
     final Meta meta = new Meta();
-    meta.setVersionId(madieMeasure.getVersionId());
-    if (madieMeasure.getLastModifiedAt() != null) {
-      meta.setLastUpdated(Date.from(madieMeasure.getLastModifiedAt()));
-    }
     meta.addProfile(UriConstants.CqfMeasures.COMPUTABLE_MEASURE_PROFILE_URI);
     meta.addProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI);
     meta.addProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI);
@@ -208,7 +210,7 @@ public class MeasureTranslatorService {
   }
 
   private List<MeasureGroupStratifierComponent> buildStratifications(Group madieGroup) {
-    AtomicReference<Extension> extension = new AtomicReference<Extension>();
+    AtomicReference<Extension> extension = new AtomicReference<>();
     List<MeasureGroupStratifierComponent> measureStratifications = null;
     if (madieGroup.getStratifications() != null && !madieGroup.getStratifications().isEmpty()) {
       AtomicReference<Integer> i = new AtomicReference<>();

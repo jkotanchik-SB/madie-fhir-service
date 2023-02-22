@@ -8,11 +8,10 @@ import java.util.Objects;
 
 public interface ResourceFileUtil {
   default String getStringFromTestResource(String resource) {
-    File inputXmlFile =
-        new File(Objects.requireNonNull(this.getClass().getResource(resource)).getFile());
+    File file = new File(Objects.requireNonNull(this.getClass().getResource(resource)).getFile());
 
     try {
-      return new String(Files.readAllBytes(inputXmlFile.toPath()));
+      return new String(Files.readAllBytes(file.toPath()));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

@@ -31,7 +31,7 @@ public class MeasureBundleService {
   /**
    * Creates measure bundle that contains measure, main library, and included libraries resources
    */
-  public Bundle createMeasureBundle(Measure madieMeasure, Principal principal) {
+  public Bundle createMeasureBundle(Measure madieMeasure, Principal principal, String bundleType) {
     madieMeasure.setCql(CqlFormatter.formatCql(madieMeasure.getCql(), principal));
 
     org.hl7.fhir.r4.model.Measure measure =
@@ -57,7 +57,7 @@ public class MeasureBundleService {
       Measure madieMeasure) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
-    Map<String, Library> includedLibraryMap = new HashMap();
+    Map<String, Library> includedLibraryMap = new HashMap<>();
     libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraryMap);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
         includedLibraryMap.values().stream()

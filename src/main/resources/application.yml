@@ -9,6 +9,11 @@ hapi:
 
 fhir-base-url: ${FHIR_BASE_URL:http://ecqi.healthit.gov/ecqms}
 
+madie:
+  cql-elm:
+    service:
+      base-url: ${ELM_TRANSLATOR_SERVICE_URL:http://localhost:8084/api}
+      human-readable-uri: /human-readable
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}

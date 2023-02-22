@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
+import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
@@ -91,7 +92,9 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
         .when(libraryService)
         .getIncludedLibraries(anyString(), anyMap());
 
-    Bundle bundle = measureBundleService.createMeasureBundle(madieMeasure, mock(Principal.class));
+    Bundle bundle =
+        measureBundleService.createMeasureBundle(
+            madieMeasure, mock(Principal.class), BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION);
 
     assertThat(bundle.getEntry().size(), is(3));
     assertThat(bundle.getType(), is(equalTo(Bundle.BundleType.TRANSACTION)));
@@ -119,7 +122,11 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     Exception exception =
         Assertions.assertThrows(
             HapiLibraryNotFoundException.class,
-            () -> measureBundleService.createMeasureBundle(madieMeasure, mock(Principal.class)));
+            () ->
+                measureBundleService.createMeasureBundle(
+                    madieMeasure,
+                    mock(Principal.class),
+                    BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION));
 
     assertThat(
         exception.getMessage(),
