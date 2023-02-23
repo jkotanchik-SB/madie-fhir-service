@@ -65,7 +65,14 @@
   "measurementPeriodEnd": "2023-01-01T08:00:00.000+00:00",
   "model": "QI-Core v4.1.1",
   "measureMetaData": {
-    "steward": "SB"
+    "steward": "SB",
+    "description":"test description",
+    "copyright":null,
+    "disclaimer":null,
+    "rationale":null,
+    "developers":["testDeveloper"],
+    "guidance":"test guidance",
+    "clinicalRecommendation": "testClinical"
   },
   "versionId": "492e7385-7d16-4e33-878b-17d97101a12f",
   "cmsId": null

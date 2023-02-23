@@ -3,17 +3,26 @@ package gov.cms.madie.madiefhirservice.services;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
+import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.measure.AssociationType;
+import gov.cms.madie.models.measure.Group;
+import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.MeasureScoring;
+import gov.cms.madie.models.measure.Population;
+import gov.cms.madie.models.measure.PopulationType;
+import gov.cms.madie.models.measure.Stratification;
 import java.sql.Date;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -31,17 +40,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
-import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madie.models.measure.AssociationType;
-import gov.cms.madie.models.measure.Group;
-import gov.cms.madie.models.measure.Measure;
-import gov.cms.madie.models.measure.MeasureScoring;
-import gov.cms.madie.models.measure.Population;
-import gov.cms.madie.models.measure.PopulationType;
-import gov.cms.madie.models.measure.Stratification;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -97,6 +95,15 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         is(true));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(
+        measure.getDescription(), is(equalTo(madieMeasure.getMeasureMetaData().getDescription())));
+    assertThat(measure.getUsage(), is(equalTo(madieMeasure.getMeasureMetaData().getGuidance())));
+    assertThat(
+        measure.getAuthor().size(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().size())));
+    assertThat(
+        measure.getClinicalRecommendationStatement(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieMeasure.getLastModifiedAt()))));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -223,6 +230,17 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(
+        measure.getDescription(),
+        is(equalTo(madieRatioMeasure.getMeasureMetaData().getDescription())));
+    assertThat(
+        measure.getUsage(), is(equalTo(madieRatioMeasure.getMeasureMetaData().getGuidance())));
+    assertThat(
+        measure.getAuthor().size(),
+        is(equalTo(madieRatioMeasure.getMeasureMetaData().getDevelopers().size())));
+    assertThat(
+        measure.getClinicalRecommendationStatement(),
+        is(equalTo(madieRatioMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieRatioMeasure.getLastModifiedAt()))));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -336,6 +354,16 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieCVMeasure.getLastModifiedAt()))));
+    assertThat(
+        measure.getDescription(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getDescription())));
+    assertThat(measure.getUsage(), is(equalTo(madieCVMeasure.getMeasureMetaData().getGuidance())));
+    assertThat(
+        measure.getAuthor().size(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getDevelopers().size())));
+    assertThat(
+        measure.getClinicalRecommendationStatement(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getClinicalRecommendation())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);

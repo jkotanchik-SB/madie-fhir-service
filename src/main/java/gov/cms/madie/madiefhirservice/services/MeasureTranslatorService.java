@@ -78,10 +78,28 @@ public class MeasureTranslatorService {
             madieMeasure.getMeasureMetaData().isDraft()
                 ? PublicationStatus.DRAFT
                 : PublicationStatus.ACTIVE)
+        .setDescription(madieMeasure.getMeasureMetaData().getDescription())
+        .setUsage(madieMeasure.getMeasureMetaData().getGuidance())
+        .setAuthor(buildAuthors(madieMeasure.getMeasureMetaData().getDevelopers()))
+        .setClinicalRecommendationStatement(
+            madieMeasure.getMeasureMetaData().getClinicalRecommendation())
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
         .setMeta(buildMeasureMeta());
 
     return measure;
+  }
+
+  public List<ContactDetail> buildAuthors(List<String> developers) {
+    if (CollectionUtils.isNotEmpty(developers)) {
+      return developers.stream()
+          .map(
+              developer -> {
+                return new ContactDetail().setName(developer);
+              })
+          .toList();
+    } else {
+      return null;
+    }
   }
 
   public Meta buildMeasureMeta() {
