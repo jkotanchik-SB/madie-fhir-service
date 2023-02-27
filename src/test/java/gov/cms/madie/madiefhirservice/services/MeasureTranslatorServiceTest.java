@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -452,15 +453,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     ip1.setName(PopulationType.INITIAL_POPULATION);
     ip1.setAssociationType(AssociationType.DENOMINATOR);
     ip1.setId("initial-population-1");
+    ip1.setDescription("initial-population-description-1");
     Population ip2 = new Population();
     ip2.setName(PopulationType.INITIAL_POPULATION);
     ip2.setAssociationType(AssociationType.NUMERATOR);
     ip2.setId("initial-population-2");
+    ip2.setDescription("initial-population-description-2");
     Population denom = new Population();
     denom.setName(PopulationType.DENOMINATOR);
+    denom.setDescription("denom-description");
     Population numer = new Population();
     numer.setName(PopulationType.NUMERATOR);
+    numer.setDescription("numer-description");
     Group group = new Group();
+    group.setGroupDescription("group-description");
     group.setScoring(MeasureScoring.RATIO.toString());
     List<Population> pops = new ArrayList<>();
     pops.add(numer);
@@ -476,6 +482,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
     groupComponent.forEach(
         (mgc) -> {
+          assertThat(mgc.getDescription(), is(equalTo("group-description")));
           List<MeasureGroupPopulationComponent> gpcs = mgc.getPopulation();
           gpcs.forEach(
               (gpc) -> {
@@ -491,6 +498,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                                       "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference");
                               assertNotNull(ext2);
                               assertEquals("initial-population-1", ext2.getValue().toString());
+                              assertEquals("denom-description", gpc.getDescription());
                               break;
                             case "numerator":
                               // this needs to be associated with numerator IP
@@ -499,6 +507,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                                       "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference");
                               assertNotNull(ext1);
                               assertEquals("initial-population-2", ext1.getValue().toString());
+                              assertEquals("numer-description", gpc.getDescription());
                               break;
                             case "initial-population":
                               // get associationType
@@ -506,6 +515,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                                   gpc.getExtensionByUrl(
                                       "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference");
                               assertNull(ext3);
+                              assertThat(
+                                  gpc.getDescription(),
+                                  containsString("initial-population-description"));
                               break;
                             default:
                               System.out.println(coding.getCode());
@@ -540,7 +552,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     group.setPopulations(pops);
     List<Stratification> stratifications = new ArrayList<>();
     Stratification strat1 = new Stratification();
-    strat1.setDescription(null);
+    strat1.setDescription("strat-description");
     strat1.setAssociation(PopulationType.INITIAL_POPULATION);
     stratifications.add(strat1);
     group.setStratifications(stratifications);
@@ -558,6 +570,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(stratifier.size(), is(equalTo(1)));
     MeasureGroupStratifierComponent measureGroupStratifierComponent = stratifier.get(0);
     assertThat(measureGroupStratifierComponent, is(notNullValue()));
+    assertThat(measureGroupStratifierComponent.getDescription(), is(equalTo("strat-description")));
     Expression expression = measureGroupStratifierComponent.getCriteria();
     assertThat(expression, is(notNullValue()));
     assertThat(
