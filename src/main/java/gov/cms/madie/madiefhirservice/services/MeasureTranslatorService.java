@@ -153,6 +153,7 @@ public class MeasureTranslatorService {
 
     Element element =
         new MeasureGroupComponent()
+            .setDescription(madieGroup.getGroupDescription())
             .setPopulation(measurePopulations)
             .setStratifier(measureStratifications)
             .setId(madieGroup.getId())
@@ -177,6 +178,7 @@ public class MeasureTranslatorService {
               String populationDisplay = population.getName().getDisplay();
               return (MeasureGroupPopulationComponent)
                   (new MeasureGroupPopulationComponent()
+                          .setDescription(population.getDescription())
                           .setCode(
                               buildCodeableConcept(
                                   populationCode,
@@ -202,6 +204,7 @@ public class MeasureTranslatorService {
               MeasureGroupPopulationComponent observationPopulation =
                   (MeasureGroupPopulationComponent)
                       (new MeasureGroupPopulationComponent()
+                          .setDescription(measureObservation.getDescription())
                           .setCode(
                               buildCodeableConcept(
                                   PopulationType.MEASURE_OBSERVATION.toCode(),
@@ -248,6 +251,7 @@ public class MeasureTranslatorService {
                     i.set(Integer.valueOf(i.get().intValue() + 1));
                     return (MeasureGroupStratifierComponent)
                         (new MeasureGroupStratifierComponent()
+                                .setDescription(strat.getDescription())
                                 .setCriteria(
                                     buildExpression(
                                         "text/cql.identifier", strat.getCqlDefinition())))
