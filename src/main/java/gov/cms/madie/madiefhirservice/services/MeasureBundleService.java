@@ -7,6 +7,7 @@ import gov.cms.mat.cql.CqlFormatter;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
@@ -36,6 +37,7 @@ public class MeasureBundleService {
 
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
+
     // Bundle entry for Measure resource
     Bundle.BundleEntryComponent measureEntryComponent = getBundleEntryComponent(measure);
     Bundle bundle =
@@ -44,6 +46,7 @@ public class MeasureBundleService {
     List<Bundle.BundleEntryComponent> libraryEntryComponents =
         createBundleComponentsForLibrariesOfMadieMeasure(madieMeasure);
     libraryEntryComponents.forEach(bundle::addEntry);
+
     return bundle;
   }
 

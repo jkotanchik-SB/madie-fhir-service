@@ -7,10 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 import ca.uhn.fhir.context.FhirContext;
-import gov.cms.madie.madiefhirservice.config.ElmTranslatorClientConfig;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.measure.Measure;
@@ -18,7 +16,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,17 +29,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class ExportServiceTest implements ResourceFileUtil {
 
   @Mock private FhirContext fhirContext;
-  @Mock private RestTemplate elmTranslatorRestTemplate;
-  @Mock private ElmTranslatorClientConfig elmTranslatorClientConfig;
+
+  @Mock private HumanReadableService humanReadableService;
 
   @Spy @InjectMocks private ExportService exportService;
 
@@ -53,9 +46,6 @@ class ExportServiceTest implements ResourceFileUtil {
   @BeforeEach
   public void setUp() {
     humanReadable = getStringFromTestResource("/humanReadable/humanReadable_test");
-
-    lenient().when(elmTranslatorClientConfig.getCqlElmServiceBaseUrl()).thenReturn("http://test");
-    lenient().when(elmTranslatorClientConfig.getHumanReadableUri()).thenReturn("/human-readable");
 
     measure =
         Measure.builder()
@@ -82,9 +72,10 @@ class ExportServiceTest implements ResourceFileUtil {
   void testCreateExportsForMeasure() throws IOException {
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
-    when(elmTranslatorRestTemplate.exchange(
-            any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), any(Class.class)))
-        .thenReturn(ResponseEntity.ok(humanReadable));
+
+    when(humanReadableService.generateHumanReadable(
+            any(Measure.class), anyString(), any(Bundle.class)))
+        .thenReturn(humanReadable);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -113,9 +104,10 @@ class ExportServiceTest implements ResourceFileUtil {
   void testGenerateExportsWhenWritingFileToZipFailed() throws IOException {
     doThrow(new IOException()).when(exportService).addBytesToZip(anyString(), any(), any());
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
-    when(elmTranslatorRestTemplate.exchange(
-            any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), any(Class.class)))
-        .thenReturn(ResponseEntity.ok("humanreadable"));
+
+    when(humanReadableService.generateHumanReadable(
+            any(Measure.class), anyString(), any(Bundle.class)))
+        .thenReturn(humanReadable);
 
     Exception ex =
         assertThrows(
