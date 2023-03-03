@@ -1,29 +1,26 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import gov.cms.madie.models.measure.Measure;
+import ca.uhn.fhir.context.FhirContext;
 import gov.cms.madie.madiefhirservice.exceptions.HumanReadableGenerationException;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
+import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
 import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r5.context.SimpleWorkerContext;
 import org.hl7.fhir.r5.model.Extension;
-import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.springframework.stereotype.Service;
 
-import ca.uhn.fhir.context.FhirContext;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -54,13 +51,6 @@ public class HumanReadableService extends ResourceUtils {
         }
         Resource measureResource = measureEntry.get().getResource();
 
-        Optional<Bundle.BundleEntryComponent> measureLibraryEntry =
-            getMeasureLibraryEntry(bundleResource, madieMeasure);
-        if (measureLibraryEntry.isEmpty()) {
-          log.error("Unable to find library entry for measure {}", madieMeasure.getId());
-          throw new ResourceNotFoundException("library entry", madieMeasure.getId());
-        }
-
         // converting measure resource from R4 to R5
         var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
         org.hl7.fhir.r5.model.Measure r5Measure =
@@ -78,6 +68,8 @@ public class HumanReadableService extends ResourceUtils {
                 .newJsonParser()
                 .parseResource(org.hl7.fhir.r5.model.Library.class, effectiveDataRequirementsStr);
 
+        // effectiveDataRequirements needs to have fixed id: effective-data-requirements
+        effectiveDataRequirements.setId("effective-data-requirements");
         r5Measure.addContained(effectiveDataRequirements);
         r5Measure.getExtension().add(createExtension());
 
@@ -85,6 +77,7 @@ public class HumanReadableService extends ResourceUtils {
         LiquidEngine engine = getLiquidEngine(madieMeasure);
         LiquidEngine.LiquidDocument doc = engine.parse(measureTemplate, "hr-script");
         String measureHr = engine.evaluate(doc, r5Measure, null);
+        // Wrapper template for Measure.liquid o/p
         String humanReadable = getData("/templates/HumanReadable.liquid");
         return humanReadable.replace("human_readable_content_holder", measureHr);
       } catch (FHIRException fhirException) {
