@@ -194,12 +194,13 @@
    "model":"QI-Core v4.1.1",
    "measureMetaData":{
       "steward":null,
-      "description":null,
+      "description":"test description",
       "copyright":null,
       "disclaimer":null,
       "rationale":null,
-      "developers":null,
-      "guidance":null
+      "developers":["testDeveloper"],
+      "guidance":"test guidance",
+      "clinicalRecommendation": "testClinical"
    },
    "supplementalData": [
       {

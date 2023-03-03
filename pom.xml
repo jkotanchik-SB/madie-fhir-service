@@ -133,7 +133,7 @@
 		<dependency>
 			<groupId>gov.cms.madie</groupId>
 			<artifactId>madie-java-models</artifactId>
-			<version>0.2.33-SNAPSHOT</version>
+			<version>0.2.36-SNAPSHOT</version>
 		</dependency>
 		
     <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
