@@ -93,7 +93,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
     library =
         new Library()
             .addContent(new Attachment().setData(cqlData.getBytes()).setContentType("text/cql"));
-    
+
     library.setId(madieMeasure.getCqlLibraryName());
 
     effectiveDataElementsStr =

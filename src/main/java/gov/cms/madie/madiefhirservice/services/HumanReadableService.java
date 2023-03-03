@@ -120,7 +120,7 @@ public class HumanReadableService extends ResourceUtils {
    */
   private Optional<Bundle.BundleEntryComponent> getMeasureLibraryEntry(
       Bundle bundleResource, Measure madieMeasure) {
-    
+
     //    return bundleResource.getEntry().stream()
     //        .filter(
     //            entry ->
@@ -149,7 +149,9 @@ public class HumanReadableService extends ResourceUtils {
 
   protected LiquidEngine getLiquidEngine(Measure madieMeasure) {
     try {
-      LiquidEngine engine = new LiquidEngine(new SimpleWorkerContext(), null);
+      //      LiquidEngine engine = new LiquidEngine(new SimpleWorkerContext(), null);
+      LiquidEngine engine =
+          new LiquidEngine(new SimpleWorkerContext.SimpleWorkerContextBuilder().build(), null);
       return engine;
     } catch (FileNotFoundException e) {
       log.error(
