@@ -212,4 +212,15 @@ class HumanReadableServiceTest implements ResourceFileUtil {
           () -> humanReadableService.getLiquidEngine(madieMeasure));
     }
   }
+
+  @Test
+  public void testGetHumanReadableForLibrary() {
+    String hr = humanReadableService.generateHrForLibrary(library);
+    assertEquals(hr.contains("test_cql_library_name"), true);
+  }
+
+  @Test
+  public void testGetHumanReadableForLibraryWhenLibraryIsnull() {
+    assertNull(humanReadableService.generateHrForLibrary(null));
+  }
 }

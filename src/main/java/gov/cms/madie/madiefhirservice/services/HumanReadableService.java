@@ -13,6 +13,7 @@ import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
 import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r5.context.SimpleWorkerContext;
 import org.hl7.fhir.r5.model.Extension;
@@ -91,6 +92,26 @@ public class HumanReadableService extends ResourceUtils {
       log.error("Unable to find a bundleResource for measure {}", madieMeasure.getId());
       throw new ResourceNotFoundException("bundle", madieMeasure.getId());
     }
+  }
+
+  /**
+   * Generate human-readable for a library
+   *
+   * @param library
+   * @return human-readable string
+   */
+  public String generateHrForLibrary(Library library) {
+    if (library == null) {
+      return null;
+    }
+    // convert r4 libray to R5 library
+    var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
+    org.hl7.fhir.r5.model.Library r5Library =
+        (org.hl7.fhir.r5.model.Library) versionConvertor_40_50.convertResource(library);
+    String template = getData("/templates/Library.liquid");
+    LiquidEngine engine = getLiquidEngine(null);
+    LiquidEngine.LiquidDocument doc = engine.parse(template, "libray-hr");
+    return engine.evaluate(doc, r5Library, "madie");
   }
 
   /**
