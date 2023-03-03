@@ -89,7 +89,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
             .setCopyright(madieMeasure.getMeasureMetaData().getCopyright())
             .setDisclaimer(madieMeasure.getMeasureMetaData().getDisclaimer());
 
-    String cqlData = ResourceUtils.getData("/cv_populations.cql");
+    String cqlData = ResourceUtils.getData("/test-cql/cv_populations.cql");
     library =
         new Library()
             .addContent(new Attachment().setData(cqlData.getBytes()).setContentType("text/cql"));
