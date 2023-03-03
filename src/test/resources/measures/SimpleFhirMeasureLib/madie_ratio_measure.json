@@ -67,6 +67,15 @@
   "measurementPeriodStart": "2023-01-01T08:00:00.000Z",
   "measurementPeriodEnd": "2023-12-31T08:00:00.000Z",
   "model": "QI-Core",
-  "measureMetaData": {},
+  "measureMetaData": {
+    "steward":null,
+    "description":"test description",
+    "copyright":null,
+    "disclaimer":null,
+    "rationale":null,
+    "developers":["testDeveloper"],
+    "guidance":"test guidance",
+    "clinicalRecommendation": "testClinical"
+  },
   "supplementalData": []
 }

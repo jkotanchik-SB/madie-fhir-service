@@ -1,19 +1,29 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
+import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.measure.AssociationType;
+import gov.cms.madie.models.measure.Group;
+import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.MeasureScoring;
+import gov.cms.madie.models.measure.Population;
+import gov.cms.madie.models.measure.PopulationType;
+import gov.cms.madie.models.measure.Stratification;
 import java.sql.Date;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -31,17 +41,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
-import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madie.models.measure.AssociationType;
-import gov.cms.madie.models.measure.Group;
-import gov.cms.madie.models.measure.Measure;
-import gov.cms.madie.models.measure.MeasureScoring;
-import gov.cms.madie.models.measure.Population;
-import gov.cms.madie.models.measure.PopulationType;
-import gov.cms.madie.models.measure.Stratification;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -97,6 +96,15 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         is(true));
     assertThat(measure.getGroup().size(), is(equalTo(madieMeasure.getGroups().size())));
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(
+        measure.getDescription(), is(equalTo(madieMeasure.getMeasureMetaData().getDescription())));
+    assertThat(measure.getUsage(), is(equalTo(madieMeasure.getMeasureMetaData().getGuidance())));
+    assertThat(
+        measure.getAuthor().size(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().size())));
+    assertThat(
+        measure.getClinicalRecommendationStatement(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieMeasure.getLastModifiedAt()))));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -223,6 +231,17 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
+    assertThat(
+        measure.getDescription(),
+        is(equalTo(madieRatioMeasure.getMeasureMetaData().getDescription())));
+    assertThat(
+        measure.getUsage(), is(equalTo(madieRatioMeasure.getMeasureMetaData().getGuidance())));
+    assertThat(
+        measure.getAuthor().size(),
+        is(equalTo(madieRatioMeasure.getMeasureMetaData().getDevelopers().size())));
+    assertThat(
+        measure.getClinicalRecommendationStatement(),
+        is(equalTo(madieRatioMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieRatioMeasure.getLastModifiedAt()))));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
     assertThat(measure.getGroup().get(0), is(notNullValue()));
@@ -336,6 +355,16 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieCVMeasure.getLastModifiedAt()))));
+    assertThat(
+        measure.getDescription(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getDescription())));
+    assertThat(measure.getUsage(), is(equalTo(madieCVMeasure.getMeasureMetaData().getGuidance())));
+    assertThat(
+        measure.getAuthor().size(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getDevelopers().size())));
+    assertThat(
+        measure.getClinicalRecommendationStatement(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getClinicalRecommendation())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -424,15 +453,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     ip1.setName(PopulationType.INITIAL_POPULATION);
     ip1.setAssociationType(AssociationType.DENOMINATOR);
     ip1.setId("initial-population-1");
+    ip1.setDescription("initial-population-description-1");
     Population ip2 = new Population();
     ip2.setName(PopulationType.INITIAL_POPULATION);
     ip2.setAssociationType(AssociationType.NUMERATOR);
     ip2.setId("initial-population-2");
+    ip2.setDescription("initial-population-description-2");
     Population denom = new Population();
     denom.setName(PopulationType.DENOMINATOR);
+    denom.setDescription("denom-description");
     Population numer = new Population();
     numer.setName(PopulationType.NUMERATOR);
+    numer.setDescription("numer-description");
     Group group = new Group();
+    group.setGroupDescription("group-description");
     group.setScoring(MeasureScoring.RATIO.toString());
     List<Population> pops = new ArrayList<>();
     pops.add(numer);
@@ -448,6 +482,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
     groupComponent.forEach(
         (mgc) -> {
+          assertThat(mgc.getDescription(), is(equalTo("group-description")));
           List<MeasureGroupPopulationComponent> gpcs = mgc.getPopulation();
           gpcs.forEach(
               (gpc) -> {
@@ -463,6 +498,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                                       "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference");
                               assertNotNull(ext2);
                               assertEquals("initial-population-1", ext2.getValue().toString());
+                              assertEquals("denom-description", gpc.getDescription());
                               break;
                             case "numerator":
                               // this needs to be associated with numerator IP
@@ -471,6 +507,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                                       "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference");
                               assertNotNull(ext1);
                               assertEquals("initial-population-2", ext1.getValue().toString());
+                              assertEquals("numer-description", gpc.getDescription());
                               break;
                             case "initial-population":
                               // get associationType
@@ -478,6 +515,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                                   gpc.getExtensionByUrl(
                                       "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-criteriaReference");
                               assertNull(ext3);
+                              assertThat(
+                                  gpc.getDescription(),
+                                  containsString("initial-population-description"));
                               break;
                             default:
                               System.out.println(coding.getCode());
@@ -512,7 +552,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     group.setPopulations(pops);
     List<Stratification> stratifications = new ArrayList<>();
     Stratification strat1 = new Stratification();
-    strat1.setDescription(null);
+    strat1.setDescription("strat-description");
     strat1.setAssociation(PopulationType.INITIAL_POPULATION);
     stratifications.add(strat1);
     group.setStratifications(stratifications);
@@ -530,6 +570,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(stratifier.size(), is(equalTo(1)));
     MeasureGroupStratifierComponent measureGroupStratifierComponent = stratifier.get(0);
     assertThat(measureGroupStratifierComponent, is(notNullValue()));
+    assertThat(measureGroupStratifierComponent.getDescription(), is(equalTo("strat-description")));
     Expression expression = measureGroupStratifierComponent.getCriteria();
     assertThat(expression, is(notNullValue()));
     assertThat(
