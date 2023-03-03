@@ -106,33 +106,6 @@ public class HumanReadableService extends ResourceUtils {
         .findFirst();
   }
 
-  /**
-   * @param bundleResource Bundle resource
-   * @param madieMeasure madie measure
-   * @return BundleEntry which is a Measure library
-   */
-  private Optional<Bundle.BundleEntryComponent> getMeasureLibraryEntry(
-      Bundle bundleResource, Measure madieMeasure) {
-
-    //    return bundleResource.getEntry().stream()
-    //        .filter(
-    //            entry ->
-    //                StringUtils.equalsIgnoreCase(
-    //                        "Library", entry.getResource().getResourceType().toString())
-    //                    && StringUtils.equalsIgnoreCase(
-    //                        "Library/" + madieMeasure.getCqlLibraryName(),
-    // entry.getResource().getId()))
-    //        .findFirst();
-    return bundleResource.getEntry().stream()
-        .filter(
-            entry ->
-                StringUtils.equalsIgnoreCase(
-                        "Library", entry.getResource().getResourceType().toString())
-                    && StringUtils.equalsIgnoreCase(
-                        madieMeasure.getCqlLibraryName(), entry.getResource().getId()))
-        .findFirst();
-  }
-
   private Extension createExtension() {
     var extension = new Extension();
     extension.setUrl(EFFECTIVE_DATA_REQUIREMENT_URL);
@@ -142,7 +115,6 @@ public class HumanReadableService extends ResourceUtils {
 
   protected LiquidEngine getLiquidEngine(Measure madieMeasure) {
     try {
-      //      LiquidEngine engine = new LiquidEngine(new SimpleWorkerContext(), null);
       LiquidEngine engine =
           new LiquidEngine(new SimpleWorkerContext.SimpleWorkerContextBuilder().build(), null);
       return engine;

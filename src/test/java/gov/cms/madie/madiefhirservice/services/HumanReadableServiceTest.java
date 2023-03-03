@@ -161,35 +161,6 @@ class HumanReadableServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  void generateHumanReadableThrowsResourceNotFoundExceptionForNoMeasureLibraryResource() {
-    Bundle.BundleEntryComponent measureBundleEntryComponent = getBundleEntryComponent(measure);
-    Bundle bundle =
-        new Bundle().setType(Bundle.BundleType.TRANSACTION).addEntry(measureBundleEntryComponent);
-
-    assertThrows(
-        ResourceNotFoundException.class,
-        () -> humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, bundle));
-  }
-
-  @Test
-  void generateHumanReadableThrowsResourceNotFoundExceptionWhenCqlAttachmentIsNull() {
-    library.getContent().replaceAll(attachment -> attachment.setContentType(null));
-    library.setId("Library/" + madieMeasure.getCqlLibraryName());
-
-    Bundle.BundleEntryComponent measureBundleEntryComponent = getBundleEntryComponent(measure);
-    Bundle.BundleEntryComponent libraryBundleEntryComponent = getBundleEntryComponent(library);
-    Bundle bundle =
-        new Bundle()
-            .setType(Bundle.BundleType.TRANSACTION)
-            .addEntry(measureBundleEntryComponent)
-            .addEntry(libraryBundleEntryComponent);
-
-    assertThrows(
-        ResourceNotFoundException.class,
-        () -> humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, bundle));
-  }
-
-  @Test
   public void generateHumanReadableThrowsFHIRException() {
     Bundle.BundleEntryComponent measureBundleEntryComponent = getBundleEntryComponent(measure);
     Bundle.BundleEntryComponent libraryBundleEntryComponent = getBundleEntryComponent(library);
