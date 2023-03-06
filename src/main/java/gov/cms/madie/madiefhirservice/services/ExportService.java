@@ -2,6 +2,7 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import gov.cms.madie.madiefhirservice.exceptions.HumanReadableInvalidException;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.models.measure.Measure;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import lombok.AllArgsConstructor;
@@ -16,8 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Library;
+import org.hl7.fhir.r4.model.Narrative;
+import org.hl7.fhir.r4.model.Narrative.NarrativeStatus;
 import org.hl7.fhir.r4.model.Resource;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -37,8 +44,10 @@ public class ExportService {
       Measure measure, Bundle bundle, OutputStream outputStream, String accessToken) {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
 
-    String humanReadableFile =
+    String humanReadableStr =
         humanReadableService.generateHumanReadable(measure, accessToken, bundle);
+
+    setMeasureTextInBundle(bundle, measure.getId(), humanReadableStr);
 
     log.info("Generating exports for " + exportFileName);
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
@@ -52,7 +61,7 @@ public class ExportService {
           zos);
       addLibraryCqlFilesToExport(zos, bundle);
       addLibraryResourcesToExport(zos, bundle);
-      addHumanReadableFile(zos, measure, humanReadableFile);
+      addHumanReadableFile(zos, measure, humanReadableStr);
     } catch (Exception ex) {
       log.error(ex.getMessage());
       throw new RuntimeException(
@@ -60,11 +69,11 @@ public class ExportService {
     }
   }
 
-  private void addHumanReadableFile(ZipOutputStream zos, Measure measure, String humanReadableFile)
+  private void addHumanReadableFile(ZipOutputStream zos, Measure measure, String humanReadableStr)
       throws IOException {
     String humanReadableFileName =
         measure.getEcqmTitle() + "-" + measure.getVersion() + "-FHIR.html";
-    addBytesToZip(humanReadableFileName, humanReadableFile.getBytes(), zos);
+    addBytesToZip(humanReadableFileName, humanReadableStr.getBytes(), zos);
   }
 
   private void addLibraryCqlFilesToExport(ZipOutputStream zos, Bundle measureBundle)
@@ -134,5 +143,41 @@ public class ExportService {
 
   private String convertFhirResourceToString(Resource resource, IParser parser) {
     return parser.setPrettyPrint(true).encodeResourceToString(resource);
+  }
+
+  protected DomainResource setMeasureTextInBundle(
+      Bundle bundle, String measureId, String humanReadableStr) {
+
+    Optional<Bundle.BundleEntryComponent> measureEntryOpt =
+        bundle.getEntry().stream()
+            .filter(
+                entry ->
+                    StringUtils.equalsIgnoreCase(
+                        "Measure", entry.getResource().getResourceType().toString()))
+            .findFirst();
+
+    if (measureEntryOpt.isPresent()) {
+      DomainResource dr = (DomainResource) measureEntryOpt.get().getResource();
+      dr.setText(createNarrative(measureId, humanReadableStr));
+      dr.getText().setStatus(NarrativeStatus.GENERATED);
+      return dr;
+    }
+    return null;
+  }
+
+  protected Narrative createNarrative(String id, String humanReadableStr) {
+
+    try {
+      Document doc = Jsoup.parse(humanReadableStr);
+      doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+      doc.outputSettings().escapeMode(org.jsoup.nodes.Entities.EscapeMode.xhtml);
+      String divContent = "<div>" + doc.select("body").html() + "</div>";
+      Narrative narrative = new Narrative();
+      narrative.setStatusAsString("generated");
+      narrative.setDivAsString(divContent);
+      return narrative;
+    } catch (Exception e) {
+      throw new HumanReadableInvalidException(id, humanReadableStr, e);
+    }
   }
 }

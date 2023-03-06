@@ -4,11 +4,14 @@ import static gov.cms.madie.madiefhirservice.utils.MeasureTestHelper.createFhirR
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import ca.uhn.fhir.context.FhirContext;
+import gov.cms.madie.madiefhirservice.exceptions.HumanReadableInvalidException;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.measure.Measure;
@@ -22,6 +25,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.DomainResource;
+import org.hl7.fhir.r4.model.Narrative;
+import org.hl7.fhir.r4.model.Narrative.NarrativeStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -127,5 +133,25 @@ class ExportServiceTest implements ResourceFileUtil {
       actualFilesInZip.add(entry.getName());
     }
     return actualFilesInZip;
+  }
+
+  @Test
+  public void testSetMeasureTextNoMeasureEntry() {
+    Bundle bundle = new Bundle();
+    DomainResource result = exportService.setMeasureTextInBundle(bundle, "test", "test");
+    assertNull(result);
+  }
+
+  @Test
+  public void testCreateNarrativeSuccess() {
+    Narrative narrative = exportService.createNarrative("testId", humanReadable);
+    assertEquals(narrative.getStatus(), NarrativeStatus.GENERATED);
+  }
+
+  @Test
+  public void testCreateNarrativeThrowsException() {
+
+    assertThrows(
+        HumanReadableInvalidException.class, () -> exportService.createNarrative("testId", null));
   }
 }
