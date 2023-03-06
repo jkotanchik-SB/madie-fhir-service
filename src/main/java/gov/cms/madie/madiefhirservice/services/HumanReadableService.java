@@ -106,7 +106,7 @@ public class HumanReadableService extends ResourceUtils {
         .findFirst();
   }
 
-  private Extension createExtension() {
+  private Extension createEffectiveDataRequirementExtension() {
     var extension = new Extension();
     extension.setUrl(EFFECTIVE_DATA_REQUIREMENT_URL);
     extension.getValueReference().setReference("#effective-data-requirements");
