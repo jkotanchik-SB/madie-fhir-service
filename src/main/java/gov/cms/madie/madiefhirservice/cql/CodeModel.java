@@ -22,13 +22,21 @@ public class CodeModel {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     CodeModel that = (CodeModel) o;
 
-    if (!oid.equals(that.oid)) return false;
-    if (!codesystemName.equals(that.codesystemName)) return false;
+    if (!oid.equals(that.oid)) {
+      return false;
+    }
+    if (!codesystemName.equals(that.codesystemName)) {
+      return false;
+    }
     return codesystemVersion != null
         ? codesystemVersion.equals(that.codesystemVersion)
         : that.codesystemVersion == null;

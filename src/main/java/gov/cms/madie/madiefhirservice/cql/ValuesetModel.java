@@ -17,12 +17,19 @@ public class ValuesetModel {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     ValuesetModel that = (ValuesetModel) o;
 
-    if (oid != null ? !oid.equals(that.oid) : that.oid != null) return false;
+    if (oid != null ? !oid.equals(that.oid) : that.oid != null) {
+      return false;
+    }
     return version != null ? version.equals(that.version) : that.version == null;
   }
 
