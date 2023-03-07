@@ -145,8 +145,8 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
         .thenReturn(new Bundle());
     when(libraryTranslatorService.convertToFhirLibrary(cqlLibrary)).thenReturn(library);
     when(hapiFhirServer.createResource(any(Library.class))).thenReturn(new MethodOutcome());
-    when(humanReadableService.generateHrForLibrary(any(Library.class)))
-        .thenReturn("<div>Narrative Test</div>");
+    when(humanReadableService.generateLibraryHumanReadable(any(Library.class)))
+        .thenReturn("<div>Narrative Text</div>");
 
     Library libraryResource = libraryService.createLibraryResourceForCqlLibrary(cqlLibrary);
 
@@ -154,28 +154,7 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
     assertEquals(libraryResource.getVersion(), cqlLibrary.getVersion().toString());
     assertEquals(
         libraryResource.getText().getDivAsString(),
-        "<div xmlns=\"http://www.w3.org/1999/xhtml\">Narrative Test</div>");
-  }
-
-  @Test
-  void createLibraryResourceForCqlLibraryWithNarrativeEmpty() {
-    String cql = getStringFromTestResource("/test-cql/EXM124v7QICore4.cql");
-    CqlLibrary cqlLibrary = createCqlLibrary(cql);
-    Library library = createLibrary(cql);
-
-    when(hapiFhirServer.fetchLibraryBundleByNameAndVersion(anyString(), anyString()))
-        .thenReturn(new Bundle());
-    when(libraryTranslatorService.convertToFhirLibrary(cqlLibrary)).thenReturn(library);
-    when(hapiFhirServer.createResource(any(Library.class))).thenReturn(new MethodOutcome());
-    when(humanReadableService.generateHrForLibrary(any(Library.class))).thenReturn(null);
-
-    Library libraryResource = libraryService.createLibraryResourceForCqlLibrary(cqlLibrary);
-
-    assertEquals(libraryResource.getName(), cqlLibrary.getCqlLibraryName());
-    assertEquals(libraryResource.getVersion(), cqlLibrary.getVersion().toString());
-    assertEquals(
-        libraryResource.getText().getDivAsString(),
-        "<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>");
+        "<div xmlns=\"http://www.w3.org/1999/xhtml\">Narrative Text</div>");
   }
 
   @Test

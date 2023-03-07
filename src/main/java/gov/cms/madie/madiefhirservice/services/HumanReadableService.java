@@ -28,15 +28,14 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class HumanReadableService extends ResourceUtils {
+  private static final String EFFECTIVE_DATA_REQUIREMENT_URL =
+      "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements";
 
   private final FhirContext fhirContextForR5;
 
   private final ElmTranslatorClient elmTranslatorClient;
 
-  private static final String EFFECTIVE_DATA_REQUIREMENT_URL =
-      "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements";
-
-  public String generateHumanReadable(
+  public String generateMeasureHumanReadable(
       Measure madieMeasure, String accessToken, Bundle bundleResource) {
 
     if (bundleResource == null) {
@@ -98,18 +97,24 @@ public class HumanReadableService extends ResourceUtils {
    * @param library
    * @return human-readable string
    */
-  public String generateHrForLibrary(Library library) {
+  public String generateLibraryHumanReadable(Library library) {
     if (library == null) {
-      return null;
+      return "<div></div>";
     }
-    // convert r4 libray to R5 library
+    // convert r4 libray to R5 library as we are using r5 liquid engine
     var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
     org.hl7.fhir.r5.model.Library r5Library =
         (org.hl7.fhir.r5.model.Library) versionConvertor_40_50.convertResource(library);
     String template = getData("/templates/Library.liquid");
     LiquidEngine engine = getLiquidEngine(null);
-    LiquidEngine.LiquidDocument doc = engine.parse(template, "libray-hr");
-    return engine.evaluate(doc, r5Library, "madie");
+    try {
+      LiquidEngine.LiquidDocument doc = engine.parse(template, "libray-hr");
+      return engine.evaluate(doc, r5Library, "madie");
+    } catch (FHIRException ex) {
+      log.error("Error occurred while generating human readable for library:", ex);
+      throw new HumanReadableGenerationException(
+          "Error occurred while generating human readable for library: " + library.getName());
+    }
   }
 
   /**

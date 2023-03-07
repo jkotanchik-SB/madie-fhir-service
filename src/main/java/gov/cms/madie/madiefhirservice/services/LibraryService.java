@@ -138,12 +138,7 @@ public class LibraryService {
   private Narrative createLibraryNarrativeText(Library library) {
     Narrative narrative = new Narrative();
     narrative.setStatusAsString("generated");
-    String hrDiv = humanReadableService.generateHrForLibrary(library);
-    if (StringUtils.isBlank(hrDiv)) {
-      narrative.setDivAsString("<div></div>");
-    } else {
-      narrative.setDivAsString(hrDiv);
-    }
+    narrative.setDivAsString(humanReadableService.generateLibraryHumanReadable(library));
     return narrative;
   }
 }
