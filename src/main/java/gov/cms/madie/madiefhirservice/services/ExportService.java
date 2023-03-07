@@ -45,7 +45,7 @@ public class ExportService {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
 
     String humanReadableStr =
-        humanReadableService.generateHumanReadable(measure, accessToken, bundle);
+        humanReadableService.generateMeasureHumanReadable(measure, accessToken, bundle);
 
     setMeasureTextInBundle(bundle, measure.getId(), humanReadableStr);
 

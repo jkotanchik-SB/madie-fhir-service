@@ -89,7 +89,7 @@ class ExportServiceTest implements ResourceFileUtil {
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
 
-    when(humanReadableService.generateHumanReadable(
+    when(humanReadableService.generateMeasureHumanReadable(
             any(Measure.class), anyString(), any(Bundle.class)))
         .thenReturn(humanReadable);
     when(humanReadableService.addCssToHumanReadable(anyString())).thenReturn(humanReadable);
@@ -122,7 +122,7 @@ class ExportServiceTest implements ResourceFileUtil {
     doThrow(new IOException()).when(exportService).addBytesToZip(anyString(), any(), any());
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
-    when(humanReadableService.generateHumanReadable(
+    when(humanReadableService.generateMeasureHumanReadable(
             any(Measure.class), anyString(), any(Bundle.class)))
         .thenReturn(humanReadable);
 

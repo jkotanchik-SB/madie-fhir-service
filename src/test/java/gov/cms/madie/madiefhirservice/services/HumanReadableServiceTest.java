@@ -10,36 +10,36 @@ import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.MeasureMetaData;
-
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r5.context.SimpleWorkerContext;
+import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HumanReadableServiceTest implements ResourceFileUtil {
 
   @Mock FhirContext fhirContext;
+
+  @Mock LiquidEngine liquidEngine;
 
   @Mock JsonParser jsonParser;
 
@@ -130,17 +130,29 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR5().newJsonParser());
 
+    String hrText = "<div>Human Readable for Measure: " + madieMeasure.getMeasureName() + "</div>";
+
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
+
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Measure.class),
+            any()))
+        .thenReturn(hrText);
+
     String generatedHumanReadable =
-        humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, bundle);
+        humanReadableService.generateMeasureHumanReadable(madieMeasure, testAccessToken, bundle);
     assertNotNull(generatedHumanReadable);
-    assertTrue(generatedHumanReadable.contains("test_measure_name"));
+    assertTrue(generatedHumanReadable.contains(hrText));
   }
 
   @Test
   public void generateHumanReadableThrowsResourceNotFoundExceptionForNoBundle() {
     assertThrows(
         ResourceNotFoundException.class,
-        () -> humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, null));
+        () ->
+            humanReadableService.generateMeasureHumanReadable(madieMeasure, testAccessToken, null));
   }
 
   @Test
@@ -149,7 +161,9 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     assertThrows(
         ResourceNotFoundException.class,
-        () -> humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, bundle));
+        () ->
+            humanReadableService.generateMeasureHumanReadable(
+                madieMeasure, testAccessToken, bundle));
   }
 
   @Test
@@ -161,7 +175,9 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     assertThrows(
         ResourceNotFoundException.class,
-        () -> humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, bundle));
+        () ->
+            humanReadableService.generateMeasureHumanReadable(
+                madieMeasure, testAccessToken, bundle));
   }
 
   @Test
@@ -180,41 +196,49 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     assertThrows(
         HumanReadableGenerationException.class,
-        () -> humanReadableService.generateHumanReadable(madieMeasure, testAccessToken, bundle));
+        () ->
+            humanReadableService.generateMeasureHumanReadable(
+                madieMeasure, testAccessToken, bundle));
   }
 
   @Test
-  public void testGetLiquidEngineThrowsExceptionForFileNotFoundException()
-      throws FileNotFoundException, FHIRException, IOException {
+  public void testGetHumanReadableForLibrary() {
+    String hrText = "<div>test hr text for library</div>";
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
 
-    try (MockedConstruction<SimpleWorkerContext> mocked =
-        Mockito.mockConstructionWithAnswer(
-            SimpleWorkerContext.class,
-            invocation -> {
-              throw new FileNotFoundException();
-            })) {
-
-      assertThrows(
-          HumanReadableGenerationException.class,
-          () -> humanReadableService.getLiquidEngine(madieMeasure));
-    }
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Library.class),
+            anyString()))
+        .thenReturn(hrText);
+    String hr = humanReadableService.generateLibraryHumanReadable(library);
+    assertEquals(hr, hrText);
   }
 
   @Test
-  public void testGetLiquidEngineThrowsExceptionForIOException()
-      throws FileNotFoundException, FHIRException, IOException {
+  public void testGetHumanReadableForLibraryWhenLibraryIsnull() {
+    assertEquals(humanReadableService.generateLibraryHumanReadable(null), "<div></div>");
+  }
 
-    try (MockedConstruction<SimpleWorkerContext> mocked =
-        Mockito.mockConstructionWithAnswer(
-            SimpleWorkerContext.class,
-            invocation -> {
-              throw new IOException();
-            })) {
+  @Test
+  public void testGetHumanReadableForLibraryWhenTemplateEvaluationFailed() {
+    library.setName(madieMeasure.getCqlLibraryName());
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
 
-      assertThrows(
-          HumanReadableGenerationException.class,
-          () -> humanReadableService.getLiquidEngine(madieMeasure));
-    }
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Library.class),
+            anyString()))
+        .thenThrow(new FHIRException());
+    Exception ex =
+        assertThrows(
+            HumanReadableGenerationException.class,
+            () -> humanReadableService.generateLibraryHumanReadable(library));
+    assertEquals(
+        ex.getMessage(),
+        "Error occurred while generating human readable for library: " + library.getName());
   }
 
   @Test
