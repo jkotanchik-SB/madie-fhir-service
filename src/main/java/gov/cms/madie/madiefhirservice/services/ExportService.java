@@ -3,12 +3,13 @@ package gov.cms.madie.madiefhirservice.services;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
+import gov.cms.madie.models.common.Version;
+import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import lombok.AllArgsConstructor;
@@ -36,7 +37,6 @@ public class ExportService {
   public void createExport(
       Measure measure, Bundle bundle, OutputStream outputStream, String accessToken) {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
-
     String humanReadableFile =
         humanReadableService.generateMeasureHumanReadable(measure, accessToken, bundle);
 
@@ -52,7 +52,7 @@ public class ExportService {
           zos);
       addLibraryCqlFilesToExport(zos, bundle);
       addLibraryResourcesToExport(zos, bundle);
-      addHumanReadableFile(zos, measure, humanReadableFile);
+      addHumanReadableFile(exportFileName + ".html", humanReadableFile, zos);
     } catch (Exception ex) {
       log.error(ex.getMessage());
       throw new RuntimeException(
@@ -60,19 +60,19 @@ public class ExportService {
     }
   }
 
-  private void addHumanReadableFile(ZipOutputStream zos, Measure measure, String humanReadableFile)
+  private void addHumanReadableFile(
+      String humanReadableFileName, String humanReadableFile, ZipOutputStream zos)
       throws IOException {
-    String humanReadableFileName =
-        measure.getEcqmTitle() + "-" + measure.getVersion() + "-FHIR.html";
     addBytesToZip(humanReadableFileName, humanReadableFile.getBytes(), zos);
   }
 
   private void addLibraryCqlFilesToExport(ZipOutputStream zos, Bundle measureBundle)
       throws IOException {
-    Map<String, String> cqlMap = getCQLForLibraries(measureBundle);
-    for (Map.Entry<String, String> entry : cqlMap.entrySet()) {
-      String filePath = CQL_DIRECTORY + entry.getKey() + ".cql";
-      String data = entry.getValue();
+    List<CqlLibrary> libraries = getCQLForLibraries(measureBundle);
+    for (CqlLibrary library : libraries) {
+      String filePath =
+          CQL_DIRECTORY + library.getCqlLibraryName() + "-" + library.getVersion() + ".cql";
+      String data = library.getCql();
       addBytesToZip(filePath, data.getBytes(), zos);
     }
   }
@@ -83,7 +83,7 @@ public class ExportService {
     for (Library library : libraries) {
       String json = convertFhirResourceToString(library, fhirContext.newJsonParser());
       String xml = convertFhirResourceToString(library, fhirContext.newXmlParser());
-      String fileName = RESOURCES_DIRECTORY + "library-" + library.getName();
+      String fileName = RESOURCES_DIRECTORY + library.getName() + "-" + library.getVersion();
       addBytesToZip(fileName + ".json", json.getBytes(), zos);
       addBytesToZip(fileName + ".xml", xml.getBytes(), zos);
     }
@@ -97,15 +97,20 @@ public class ExportService {
         .toList();
   }
 
-  private Map<String, String> getCQLForLibraries(Bundle measureBundle) {
-    Map<String, String> libraryCqlMap = new HashMap<>();
+  private List<CqlLibrary> getCQLForLibraries(Bundle measureBundle) {
     List<Library> libraries = getLibraryResources(measureBundle);
+    List<CqlLibrary> cqlLibries = new ArrayList<>();
     for (Library library : libraries) {
       Attachment attachment = getCqlAttachment(library);
       String cql = new String(attachment.getData());
-      libraryCqlMap.put(library.getName(), cql);
+      cqlLibries.add(
+          CqlLibrary.builder()
+              .cqlLibraryName(library.getName())
+              .cql(cql)
+              .version(Version.parse(library.getVersion()))
+              .build());
     }
-    return libraryCqlMap;
+    return cqlLibries;
   }
 
   private Attachment getCqlAttachment(Library library) {
