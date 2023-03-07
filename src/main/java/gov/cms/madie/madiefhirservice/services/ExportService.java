@@ -98,23 +98,6 @@ public class ExportService {
         .toList();
   }
 
-  //  private Map<String, ArrayList<String>> getCQLForLibraries(Bundle measureBundle) {
-  //    //Multimap<String, String> libraryCqlMap = ArrayListMultimap.create();
-  //    Map<String, ArrayList<String>> libraryCqlMap = new HashMap<String, ArrayList<String>>();
-  //
-  //    List<Library> libraries = getLibraryResources(measureBundle);
-  //    for (Library library : libraries) {
-  //      Attachment attachment = getCqlAttachment(library);
-  //      String cql = new String(attachment.getData());
-  //      libraryCqlMap.put(library.getName(), new ArrayList<String>());
-  //      libraryCqlMap.get(library.getName()).add(cql);
-  //      libraryCqlMap.get(library.getName()).add(library.getVersion());
-  //    }
-  //    return libraryCqlMap;
-  //
-  //
-  //  }
-
   private List<CqlLibrary> getCQLForLibraries(Bundle measureBundle) {
     List<Library> libraries = getLibraryResources(measureBundle);
     List<CqlLibrary> cqlLibries = new ArrayList<>();
