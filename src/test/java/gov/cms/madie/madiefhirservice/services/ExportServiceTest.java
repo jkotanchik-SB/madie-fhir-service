@@ -92,6 +92,7 @@ class ExportServiceTest implements ResourceFileUtil {
     when(humanReadableService.generateHumanReadable(
             any(Measure.class), anyString(), any(Bundle.class)))
         .thenReturn(humanReadable);
+    when(humanReadableService.addCssToHumanReadable(anyString())).thenReturn(humanReadable);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 

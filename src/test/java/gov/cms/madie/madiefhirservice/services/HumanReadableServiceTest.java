@@ -57,6 +57,8 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
   private String effectiveDataElementsStr = "";
 
+  private String humanReadable;
+
   @BeforeEach
   void setUp() {
     madieMeasure =
@@ -98,6 +100,8 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     effectiveDataElementsStr =
         getStringFromTestResource("/humanReadable/effective-data-requirements.json");
+
+    humanReadable = getStringFromTestResource("/humanReadable/humanReadable_test");
   }
 
   public Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
@@ -211,5 +215,11 @@ class HumanReadableServiceTest implements ResourceFileUtil {
           HumanReadableGenerationException.class,
           () -> humanReadableService.getLiquidEngine(madieMeasure));
     }
+  }
+
+  @Test
+  public void testAddCssToHumanReadable() {
+    String humanReadableWithCSS = humanReadableService.addCssToHumanReadable(humanReadable);
+    assertTrue(humanReadableWithCSS.contains("<style>"));
   }
 }

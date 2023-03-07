@@ -79,9 +79,7 @@ public class HumanReadableService extends ResourceUtils {
       LiquidEngine engine = getLiquidEngine(madieMeasure);
       LiquidEngine.LiquidDocument doc = engine.parse(measureTemplate, "hr-script");
       String measureHr = engine.evaluate(doc, r5Measure, null);
-      // Wrapper template for Measure.liquid o/p
-      String humanReadable = getData("/templates/HumanReadable.liquid");
-      return humanReadable.replace("human_readable_content_holder", measureHr);
+      return measureHr;
     } catch (FHIRException fhirException) {
       log.error(
           "Unable to generate Human readable for measure {} Reason => {}",
@@ -126,5 +124,11 @@ public class HumanReadableService extends ResourceUtils {
       log.error("LiquidEngine IOException for measure {} Reason => {}", madieMeasure.getId(), e);
       throw new HumanReadableGenerationException("measure", madieMeasure.getId());
     }
+  }
+
+  protected String addCssToHumanReadable(String measureHr) {
+    // Wrapper template for Measure.liquid o/p
+    String humanReadable = getData("/templates/HumanReadable.liquid");
+    return humanReadable.replace("human_readable_content_holder", measureHr);
   }
 }

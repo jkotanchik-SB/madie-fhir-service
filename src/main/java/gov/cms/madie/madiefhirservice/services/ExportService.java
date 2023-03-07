@@ -49,6 +49,8 @@ public class ExportService {
 
     setMeasureTextInBundle(bundle, measure.getId(), humanReadableStr);
 
+    String humanReadableStrWithCSS = humanReadableService.addCssToHumanReadable(humanReadableStr);
+
     log.info("Generating exports for " + exportFileName);
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
       addBytesToZip(
@@ -61,7 +63,7 @@ public class ExportService {
           zos);
       addLibraryCqlFilesToExport(zos, bundle);
       addLibraryResourcesToExport(zos, bundle);
-      addHumanReadableFile(zos, measure, humanReadableStr);
+      addHumanReadableFile(zos, measure, humanReadableStrWithCSS);
     } catch (Exception ex) {
       log.error(ex.getMessage());
       throw new RuntimeException(
@@ -166,10 +168,9 @@ public class ExportService {
       Document doc = Jsoup.parse(humanReadableStr);
       doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
       doc.outputSettings().escapeMode(org.jsoup.nodes.Entities.EscapeMode.xhtml);
-      String divContent = "<div>" + doc.select("body").html() + "</div>";
       Narrative narrative = new Narrative();
       narrative.setStatusAsString("generated");
-      narrative.setDivAsString(divContent);
+      narrative.setDivAsString(humanReadableStr);
       return narrative;
     } catch (Exception e) {
       throw new HumanReadableInvalidException(id, humanReadableStr, e);
