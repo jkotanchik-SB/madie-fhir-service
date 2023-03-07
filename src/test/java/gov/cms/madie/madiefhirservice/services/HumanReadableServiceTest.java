@@ -16,6 +16,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +28,6 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +38,8 @@ import static org.mockito.Mockito.when;
 class HumanReadableServiceTest implements ResourceFileUtil {
 
   @Mock FhirContext fhirContext;
+
+  @Mock LiquidEngine liquidEngine;
 
   @Mock JsonParser jsonParser;
 
@@ -124,10 +126,21 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR5().newJsonParser());
 
+    String hrText = "<div>Human Readable for Measure: " + madieMeasure.getMeasureName() + "</div>";
+
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
+
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Measure.class),
+            any()))
+        .thenReturn(hrText);
+
     String generatedHumanReadable =
         humanReadableService.generateMeasureHumanReadable(madieMeasure, testAccessToken, bundle);
     assertNotNull(generatedHumanReadable);
-    assertTrue(generatedHumanReadable.contains("test_measure_name"));
+    assertTrue(generatedHumanReadable.contains(hrText));
   }
 
   @Test
@@ -186,12 +199,41 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
   @Test
   public void testGetHumanReadableForLibrary() {
+    String hrText = "<div>test hr text for library</div>";
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
+
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Library.class),
+            anyString()))
+        .thenReturn(hrText);
     String hr = humanReadableService.generateLibraryHumanReadable(library);
-    assertEquals(hr.contains("test_cql_library_name"), true);
+    assertEquals(hr, hrText);
   }
 
   @Test
   public void testGetHumanReadableForLibraryWhenLibraryIsnull() {
     assertEquals(humanReadableService.generateLibraryHumanReadable(null), "<div></div>");
+  }
+
+  @Test
+  public void testGetHumanReadableForLibraryWhenTemplateEvaluationFailed() {
+    library.setName(madieMeasure.getCqlLibraryName());
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
+
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Library.class),
+            anyString()))
+        .thenThrow(new FHIRException());
+    Exception ex =
+        assertThrows(
+            HumanReadableGenerationException.class,
+            () -> humanReadableService.generateLibraryHumanReadable(library));
+    assertEquals(
+        ex.getMessage(),
+        "Error occurred while generating human readable for library: " + library.getName());
   }
 }

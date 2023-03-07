@@ -15,13 +15,10 @@ import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r5.context.SimpleWorkerContext;
 import org.hl7.fhir.r5.model.Extension;
 import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Optional;
 
 @Slf4j
@@ -34,6 +31,8 @@ public class HumanReadableService extends ResourceUtils {
   private final FhirContext fhirContextForR5;
 
   private final ElmTranslatorClient elmTranslatorClient;
+
+  private final LiquidEngine liquidEngine;
 
   public String generateMeasureHumanReadable(
       Measure madieMeasure, String accessToken, Bundle bundleResource) {
@@ -76,9 +75,8 @@ public class HumanReadableService extends ResourceUtils {
       r5Measure.getExtension().add(createEffectiveDataRequirementExtension());
 
       String measureTemplate = getData("/templates/Measure.liquid");
-      LiquidEngine engine = getLiquidEngine(madieMeasure);
-      LiquidEngine.LiquidDocument doc = engine.parse(measureTemplate, "hr-script");
-      String measureHr = engine.evaluate(doc, r5Measure, null);
+      LiquidEngine.LiquidDocument doc = liquidEngine.parse(measureTemplate, "hr-script");
+      String measureHr = liquidEngine.evaluate(doc, r5Measure, null);
       // Wrapper template for Measure.liquid o/p
       String humanReadable = getData("/templates/HumanReadable.liquid");
       return humanReadable.replace("human_readable_content_holder", measureHr);
@@ -106,10 +104,9 @@ public class HumanReadableService extends ResourceUtils {
     org.hl7.fhir.r5.model.Library r5Library =
         (org.hl7.fhir.r5.model.Library) versionConvertor_40_50.convertResource(library);
     String template = getData("/templates/Library.liquid");
-    LiquidEngine engine = getLiquidEngine(null);
     try {
-      LiquidEngine.LiquidDocument doc = engine.parse(template, "libray-hr");
-      return engine.evaluate(doc, r5Library, "madie");
+      LiquidEngine.LiquidDocument doc = liquidEngine.parse(template, "libray-hr");
+      return liquidEngine.evaluate(doc, r5Library, "madie");
     } catch (FHIRException ex) {
       log.error("Error occurred while generating human readable for library:", ex);
       throw new HumanReadableGenerationException(
@@ -135,22 +132,5 @@ public class HumanReadableService extends ResourceUtils {
     extension.setUrl(EFFECTIVE_DATA_REQUIREMENT_URL);
     extension.getValueReference().setReference("#effective-data-requirements");
     return extension;
-  }
-
-  protected LiquidEngine getLiquidEngine(Measure madieMeasure) {
-    try {
-      LiquidEngine engine =
-          new LiquidEngine(new SimpleWorkerContext.SimpleWorkerContextBuilder().build(), null);
-      return engine;
-    } catch (FileNotFoundException e) {
-      log.error(
-          "LiquidEngine FileNotFoundException for measure {} Reason => {}",
-          madieMeasure.getId(),
-          e);
-      throw new HumanReadableGenerationException("measure", madieMeasure.getId());
-    } catch (IOException e) {
-      log.error("LiquidEngine IOException for measure {} Reason => {}", madieMeasure.getId(), e);
-      throw new HumanReadableGenerationException("measure", madieMeasure.getId());
-    }
   }
 }
