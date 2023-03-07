@@ -12,8 +12,8 @@ public class ElmTranslatorClientConfig {
   @Value("${madie.cql-elm.service.base-url}")
   private String cqlElmServiceBaseUrl;
 
-  @Value("${madie.cql-elm.service.human-readable-uri}")
-  private String humanReadableUri;
+  @Value("${madie.cql-elm.service.effective-data-requirements-uri}")
+  private String effectiveDataRequirementsDataUri;
 
   @Bean
   public RestTemplate elmTranslatorRestTemplate() {

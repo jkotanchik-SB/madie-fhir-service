@@ -2,13 +2,10 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import gov.cms.madie.madiefhirservice.config.ElmTranslatorClientConfig;
-import gov.cms.madie.madiefhirservice.exceptions.CqlElmTranslationServiceException;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.models.measure.Measure;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +18,7 @@ import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -33,8 +26,8 @@ import org.springframework.web.client.RestTemplate;
 public class ExportService {
 
   private FhirContext fhirContext;
-  private RestTemplate elmTranslatorRestTemplate;
-  private ElmTranslatorClientConfig elmTranslatorClientConfig;
+
+  private final HumanReadableService humanReadableService;
 
   private static final String TEXT_CQL = "text/cql";
   private static final String CQL_DIRECTORY = "/cql/";
@@ -43,7 +36,10 @@ public class ExportService {
   public void createExport(
       Measure measure, Bundle bundle, OutputStream outputStream, String accessToken) {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
-    String humanReadableFile = getHumanReadable(measure, accessToken);
+
+    String humanReadableFile =
+        humanReadableService.generateHumanReadable(measure, accessToken, bundle);
+
     log.info("Generating exports for " + exportFileName);
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
       addBytesToZip(
@@ -61,28 +57,6 @@ public class ExportService {
       log.error(ex.getMessage());
       throw new RuntimeException(
           "Unexpected error while generating exports for measureID: " + measure.getId());
-    }
-  }
-
-  private String getHumanReadable(Measure measure, String accessToken) {
-    try {
-      URI uri =
-          URI.create(
-              elmTranslatorClientConfig.getCqlElmServiceBaseUrl()
-                  + elmTranslatorClientConfig.getHumanReadableUri());
-      HttpHeaders headers = new HttpHeaders();
-      headers.set(HttpHeaders.AUTHORIZATION, accessToken);
-      HttpEntity<Measure> measureEntity = new HttpEntity<>(measure, headers);
-      return elmTranslatorRestTemplate
-          .exchange(uri, HttpMethod.PUT, measureEntity, String.class)
-          .getBody();
-    } catch (Exception ex) {
-      log.error(
-          "An error occurred parsing the human readable response "
-              + "from the CQL to ELM translation service",
-          ex);
-      throw new CqlElmTranslationServiceException(
-          "There was an error calling CQL-ELM translation service", ex);
     }
   }
 

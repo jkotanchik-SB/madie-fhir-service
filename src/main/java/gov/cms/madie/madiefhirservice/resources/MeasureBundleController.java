@@ -45,6 +45,7 @@ public class MeasureBundleController {
       HttpServletRequest request,
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure,
       @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
+      @RequestHeader("Authorization") String accessToken,
       @RequestParam(required = false, defaultValue = "calculation", name = "bundleType")
           String bundleType) {
 
