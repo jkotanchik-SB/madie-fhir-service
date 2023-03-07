@@ -6,13 +6,14 @@ import ca.uhn.fhir.context.support.IValidationSupport;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.IValidatorModule;
 import lombok.extern.slf4j.Slf4j;
-import org.hl7.fhir.common.hapi.validation.support.CachingValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.CommonCodeSystemsTerminologyService;
 import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.NpmPackageValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.UnknownCodeSystemWarningValidationSupport;
 import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
+import org.hl7.fhir.r5.context.SimpleWorkerContext;
+import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -65,5 +66,10 @@ public class HapiFhirConfig {
     IValidatorModule module = new FhirInstanceValidator(validationSupportChain);
     validator.registerValidatorModule(module);
     return validator;
+  }
+
+  @Bean
+  public LiquidEngine liquidEngine() throws IOException {
+    return new LiquidEngine(new SimpleWorkerContext.SimpleWorkerContextBuilder().build(), null);
   }
 }
