@@ -2,7 +2,6 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import gov.cms.madie.madiefhirservice.exceptions.HumanReadableInvalidException;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.models.measure.Measure;
 import java.io.IOException;
@@ -23,8 +22,6 @@ import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Narrative;
 import org.hl7.fhir.r4.model.Narrative.NarrativeStatus;
 import org.hl7.fhir.r4.model.Resource;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -47,7 +44,7 @@ public class ExportService {
     String humanReadableStr =
         humanReadableService.generateMeasureHumanReadable(measure, accessToken, bundle);
 
-    setMeasureTextInBundle(bundle, measure.getId(), humanReadableStr);
+    setMeasureTextInBundle(bundle, humanReadableStr);
 
     String humanReadableStrWithCSS = humanReadableService.addCssToHumanReadable(humanReadableStr);
 
@@ -147,33 +144,24 @@ public class ExportService {
     return parser.setPrettyPrint(true).encodeResourceToString(resource);
   }
 
-  protected DomainResource setMeasureTextInBundle(
-      Bundle bundle, String measureId, String humanReadableStr) {
+  protected DomainResource setMeasureTextInBundle(Bundle bundle, String humanReadableStr) {
 
     Optional<Bundle.BundleEntryComponent> measureEntryOpt =
         humanReadableService.getMeasureEntry(bundle);
 
     if (measureEntryOpt.isPresent()) {
       DomainResource dr = (DomainResource) measureEntryOpt.get().getResource();
-      dr.setText(createNarrative(measureId, humanReadableStr));
+      dr.setText(createNarrative(humanReadableStr));
       dr.getText().setStatus(NarrativeStatus.GENERATED);
       return dr;
     }
     return null;
   }
 
-  protected Narrative createNarrative(String id, String humanReadableStr) {
-
-    try {
-      Document doc = Jsoup.parse(humanReadableStr);
-      doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-      doc.outputSettings().escapeMode(org.jsoup.nodes.Entities.EscapeMode.xhtml);
-      Narrative narrative = new Narrative();
-      narrative.setStatusAsString("generated");
-      narrative.setDivAsString(humanReadableStr);
-      return narrative;
-    } catch (Exception e) {
-      throw new HumanReadableInvalidException(id, humanReadableStr, e);
-    }
+  protected Narrative createNarrative(String humanReadableStr) {
+    Narrative narrative = new Narrative();
+    narrative.setStatusAsString("generated");
+    narrative.setDivAsString(humanReadableStr);
+    return narrative;
   }
 }

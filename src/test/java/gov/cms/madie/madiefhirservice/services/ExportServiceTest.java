@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import ca.uhn.fhir.context.FhirContext;
-import gov.cms.madie.madiefhirservice.exceptions.HumanReadableInvalidException;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.measure.Measure;
@@ -157,8 +156,7 @@ class ExportServiceTest implements ResourceFileUtil {
         new Bundle().setType(Bundle.BundleType.TRANSACTION).addEntry(measureBundleEntryComponent);
     when(humanReadableService.getMeasureEntry(any(Bundle.class)))
         .thenReturn(Optional.of(measureBundleEntryComponent));
-    DomainResource result =
-        exportService.setMeasureTextInBundle(bundle, madieMeasure.getId(), humanReadable);
+    DomainResource result = exportService.setMeasureTextInBundle(bundle, humanReadable);
 
     assertNotNull(result);
     assertEquals(result.getText().getStatus(), NarrativeStatus.GENERATED);
@@ -167,20 +165,13 @@ class ExportServiceTest implements ResourceFileUtil {
   @Test
   public void testSetMeasureTextNoMeasureEntry() {
     Bundle bundle = new Bundle();
-    DomainResource result = exportService.setMeasureTextInBundle(bundle, "test", "test");
+    DomainResource result = exportService.setMeasureTextInBundle(bundle, "test");
     assertNull(result);
   }
 
   @Test
   public void testCreateNarrativeSuccess() {
-    Narrative narrative = exportService.createNarrative("testId", humanReadable);
+    Narrative narrative = exportService.createNarrative(humanReadable);
     assertEquals(narrative.getStatus(), NarrativeStatus.GENERATED);
-  }
-
-  @Test
-  public void testCreateNarrativeThrowsException() {
-
-    assertThrows(
-        HumanReadableInvalidException.class, () -> exportService.createNarrative("testId", null));
   }
 }
