@@ -39,58 +39,56 @@ public class HumanReadableService extends ResourceUtils {
   public String generateHumanReadable(
       Measure madieMeasure, String accessToken, Bundle bundleResource) {
 
-    if (bundleResource != null) {
-      if (CollectionUtils.isEmpty(bundleResource.getEntry())) {
-        log.error("Unable to find bundle entry for measure {}", madieMeasure.getId());
-        throw new ResourceNotFoundException("bundle entry", madieMeasure.getId());
-      }
-      try {
-        Optional<Bundle.BundleEntryComponent> measureEntry = getMeasureEntry(bundleResource);
-        if (measureEntry.isEmpty()) {
-          log.error("Unable to find measure entry for measure {}", madieMeasure.getId());
-          throw new ResourceNotFoundException("measure entry", madieMeasure.getId());
-        }
-        Resource measureResource = measureEntry.get().getResource();
-
-        // converting measure resource from R4 to R5
-        var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
-        org.hl7.fhir.r5.model.Measure r5Measure =
-            (org.hl7.fhir.r5.model.Measure) versionConvertor_40_50.convertResource(measureResource);
-
-        String effectiveDataRequirementsStr =
-            elmTranslatorClient.getEffectiveDataRequirements(
-                bundleResource,
-                madieMeasure.getCqlLibraryName(),
-                accessToken,
-                madieMeasure.getId());
-
-        org.hl7.fhir.r5.model.Library effectiveDataRequirements =
-            fhirContextForR5
-                .newJsonParser()
-                .parseResource(org.hl7.fhir.r5.model.Library.class, effectiveDataRequirementsStr);
-
-        // effectiveDataRequirements needs to have fixed id: effective-data-requirements
-        effectiveDataRequirements.setId("effective-data-requirements");
-        r5Measure.addContained(effectiveDataRequirements);
-        r5Measure.getExtension().add(createExtension());
-
-        String measureTemplate = getData("/templates/Measure.liquid");
-        LiquidEngine engine = getLiquidEngine(madieMeasure);
-        LiquidEngine.LiquidDocument doc = engine.parse(measureTemplate, "hr-script");
-        String measureHr = engine.evaluate(doc, r5Measure, null);
-        // Wrapper template for Measure.liquid o/p
-        String humanReadable = getData("/templates/HumanReadable.liquid");
-        return humanReadable.replace("human_readable_content_holder", measureHr);
-      } catch (FHIRException fhirException) {
-        log.error(
-            "Unable to generate Human readable for measure {} Reason => {}",
-            madieMeasure.getId(),
-            fhirException);
-        throw new HumanReadableGenerationException("measure", madieMeasure.getId());
-      }
-    } else {
+    if (bundleResource == null) {
       log.error("Unable to find a bundleResource for measure {}", madieMeasure.getId());
       throw new ResourceNotFoundException("bundle", madieMeasure.getId());
+    }
+
+    if (CollectionUtils.isEmpty(bundleResource.getEntry())) {
+      log.error("Unable to find bundle entry for measure {}", madieMeasure.getId());
+      throw new ResourceNotFoundException("bundle entry", madieMeasure.getId());
+    }
+
+    try {
+      Optional<Bundle.BundleEntryComponent> measureEntry = getMeasureEntry(bundleResource);
+      if (measureEntry.isEmpty()) {
+        log.error("Unable to find measure entry for measure {}", madieMeasure.getId());
+        throw new ResourceNotFoundException("measure entry", madieMeasure.getId());
+      }
+      Resource measureResource = measureEntry.get().getResource();
+
+      // converting measure resource from R4 to R5 as we are using r5 liquid engine.
+      var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
+      org.hl7.fhir.r5.model.Measure r5Measure =
+          (org.hl7.fhir.r5.model.Measure) versionConvertor_40_50.convertResource(measureResource);
+
+      String effectiveDataRequirementsStr =
+          elmTranslatorClient.getEffectiveDataRequirements(
+              bundleResource, madieMeasure.getCqlLibraryName(), accessToken, madieMeasure.getId());
+
+      org.hl7.fhir.r5.model.Library effectiveDataRequirements =
+          fhirContextForR5
+              .newJsonParser()
+              .parseResource(org.hl7.fhir.r5.model.Library.class, effectiveDataRequirementsStr);
+
+      // effectiveDataRequirements needs to have fixed id: effective-data-requirements
+      effectiveDataRequirements.setId("effective-data-requirements");
+      r5Measure.addContained(effectiveDataRequirements);
+      r5Measure.getExtension().add(createEffectiveDataRequirementExtension());
+
+      String measureTemplate = getData("/templates/Measure.liquid");
+      LiquidEngine engine = getLiquidEngine(madieMeasure);
+      LiquidEngine.LiquidDocument doc = engine.parse(measureTemplate, "hr-script");
+      String measureHr = engine.evaluate(doc, r5Measure, null);
+      // Wrapper template for Measure.liquid o/p
+      String humanReadable = getData("/templates/HumanReadable.liquid");
+      return humanReadable.replace("human_readable_content_holder", measureHr);
+    } catch (FHIRException fhirException) {
+      log.error(
+          "Unable to generate Human readable for measure {} Reason => {}",
+          madieMeasure.getId(),
+          fhirException);
+      throw new HumanReadableGenerationException("measure", madieMeasure.getId());
     }
   }
 
@@ -127,7 +125,7 @@ public class HumanReadableService extends ResourceUtils {
         .findFirst();
   }
 
-  private Extension createExtension() {
+  private Extension createEffectiveDataRequirementExtension() {
     var extension = new Extension();
     extension.setUrl(EFFECTIVE_DATA_REQUIREMENT_URL);
     extension.getValueReference().setReference("#effective-data-requirements");
