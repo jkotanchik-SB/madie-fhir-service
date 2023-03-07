@@ -149,12 +149,7 @@ public class ExportService {
       Bundle bundle, String measureId, String humanReadableStr) {
 
     Optional<Bundle.BundleEntryComponent> measureEntryOpt =
-        bundle.getEntry().stream()
-            .filter(
-                entry ->
-                    StringUtils.equalsIgnoreCase(
-                        "Measure", entry.getResource().getResourceType().toString()))
-            .findFirst();
+        humanReadableService.getMeasureEntry(bundle);
 
     if (measureEntryOpt.isPresent()) {
       DomainResource dr = (DomainResource) measureEntryOpt.get().getResource();

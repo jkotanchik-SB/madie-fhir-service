@@ -95,7 +95,7 @@ public class HumanReadableService extends ResourceUtils {
    * @param bundleResource Bundle resource
    * @return BundleEntry which is of type Measure
    */
-  private Optional<Bundle.BundleEntryComponent> getMeasureEntry(Bundle bundleResource) {
+  protected Optional<Bundle.BundleEntryComponent> getMeasureEntry(Bundle bundleResource) {
     return bundleResource.getEntry().stream()
         .filter(
             entry ->
