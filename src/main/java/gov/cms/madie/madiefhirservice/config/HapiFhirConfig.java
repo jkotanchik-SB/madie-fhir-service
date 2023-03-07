@@ -14,6 +14,7 @@ import org.hl7.fhir.common.hapi.validation.support.UnknownCodeSystemWarningValid
 import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,6 +27,12 @@ public class HapiFhirConfig {
   @Bean
   public FhirContext fhirContext() {
     return FhirContext.forR4();
+  }
+
+  @Bean
+  @Qualifier("fhirContextForR5")
+  public FhirContext fhirContextForR5() {
+    return FhirContext.forR5();
   }
 
   @Bean

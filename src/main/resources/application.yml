@@ -13,7 +13,7 @@ madie:
   cql-elm:
     service:
       base-url: ${ELM_TRANSLATOR_SERVICE_URL:http://localhost:8084/api}
-      human-readable-uri: /human-readable
+      effective-data-requirements-uri: /effective-data-requirements
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}
