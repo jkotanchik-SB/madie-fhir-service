@@ -74,7 +74,7 @@ public class LibraryTranslatorService {
     identifier.setUse(IdentifierUse.OFFICIAL);
     identifier.setSystem("https://madie.cms.gov/login");
     identifier.setValue(cqlLibrary.getId());
-    
+
     library.setIdentifier(List.of(identifier));
     // TODO: probably have to revisit this. Human Readable feature is not yet ready
     // result.setText(findHumanReadable(lib.getMeasureId()));
