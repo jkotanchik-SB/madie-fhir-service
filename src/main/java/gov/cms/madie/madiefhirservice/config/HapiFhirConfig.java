@@ -50,10 +50,10 @@ public class HapiFhirConfig {
 
     return new ValidationSupportChain(
         npmPackageSupport,
-        unknownCodeSystemWarningValidationSupport,
         new DefaultProfileValidationSupport(fhirContext),
+        new InMemoryTerminologyServerValidationSupport(fhirContext),
         new CommonCodeSystemsTerminologyService(fhirContext),
-        new InMemoryTerminologyServerValidationSupport(fhirContext));
+        unknownCodeSystemWarningValidationSupport);
   }
 
   @Bean
