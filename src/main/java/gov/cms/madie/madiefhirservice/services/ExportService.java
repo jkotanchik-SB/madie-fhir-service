@@ -38,7 +38,7 @@ public class ExportService {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
 
     String humanReadableFile =
-        humanReadableService.generateHumanReadable(measure, accessToken, bundle);
+        humanReadableService.generateMeasureHumanReadable(measure, accessToken, bundle);
 
     log.info("Generating exports for " + exportFileName);
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {

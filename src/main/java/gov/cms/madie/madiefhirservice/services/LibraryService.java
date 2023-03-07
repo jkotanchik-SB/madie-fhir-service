@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
+import org.hl7.fhir.r4.model.Narrative;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,6 +29,7 @@ public class LibraryService {
   private final HapiFhirServer hapiFhirServer;
   private final LibraryTranslatorService libraryTranslatorService;
   private final LibraryCqlVisitorFactory libCqlVisitorFactory;
+  private final HumanReadableService humanReadableService;
 
   public String getLibraryCql(String name, String version) {
 
@@ -102,6 +104,7 @@ public class LibraryService {
     }
 
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
+    library.setText(createLibraryNarrativeText(library));
     hapiFhirServer.createResource(library);
     return library;
   }
@@ -130,5 +133,12 @@ public class LibraryService {
             libraryNameValuePair.getLeft(), libraryNameValuePair.getRight());
       }
     }
+  }
+
+  private Narrative createLibraryNarrativeText(Library library) {
+    Narrative narrative = new Narrative();
+    narrative.setStatusAsString("generated");
+    narrative.setDivAsString(humanReadableService.generateLibraryHumanReadable(library));
+    return narrative;
   }
 }
