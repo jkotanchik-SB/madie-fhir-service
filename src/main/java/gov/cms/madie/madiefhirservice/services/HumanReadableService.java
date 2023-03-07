@@ -56,8 +56,7 @@ public class HumanReadableService extends ResourceUtils {
       }
       Resource measureResource = measureEntry.get().getResource();
 
-      // converting measure resource from R4 to R5 as R5 measures have properties like population
-      // basis, scoring, scoring unit, etc that R4 measure does not have.
+      // converting measure resource from R4 to R5 as we are using r5 liquid engine.
       var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
       org.hl7.fhir.r5.model.Measure r5Measure =
           (org.hl7.fhir.r5.model.Measure) versionConvertor_40_50.convertResource(measureResource);
