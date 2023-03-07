@@ -37,7 +37,6 @@ public class ExportService {
   public void createExport(
       Measure measure, Bundle bundle, OutputStream outputStream, String accessToken) {
     String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
-
     String humanReadableFile =
         humanReadableService.generateMeasureHumanReadable(measure, accessToken, bundle);
 
