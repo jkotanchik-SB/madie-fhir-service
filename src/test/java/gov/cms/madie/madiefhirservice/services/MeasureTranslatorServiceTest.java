@@ -1,9 +1,19 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import static gov.cms.madie.madiefhirservice.constants.UriConstants.CqfMeasures.CODE_SYSTEM_IDENTIFIER_TYPE_URI;
+import static gov.cms.madie.madiefhirservice.constants.UriConstants.MadieMeasure.SHORT_NAME;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_ENDORSER;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_PUBLISHER;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_SHORT_NAME;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_VERSION_INDEPENDENT;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_VERSION_SPECIFIC;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.URN_IETF_RFC_3986;
+import static gov.cms.madie.madiefhirservice.constants.ValueConstants.URN_UUID_PREFIX;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,8 +25,10 @@ import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.measure.AssociationType;
+import gov.cms.madie.models.measure.Endorsement;
 import gov.cms.madie.models.measure.Group;
 import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.MeasureMetaData;
 import gov.cms.madie.models.measure.MeasureScoring;
 import gov.cms.madie.models.measure.Population;
 import gov.cms.madie.models.measure.PopulationType;
@@ -30,6 +42,7 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r4.model.Expression;
 import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
@@ -603,6 +616,148 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         output.hasProfile(UriConstants.CqfMeasures.PUBLISHABLE_MEASURE_PROFILE_URI), is(true));
     assertThat(
         output.hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI), is(true));
+  }
+
+  @Test
+  public void testBuildMeasureIdentifiersReturnsEmptyListForNullMeasure() {
+    final Measure madieMeasure = null;
+    List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
+    assertThat(output, is(notNullValue()));
+    assertThat(output.isEmpty(), is(true));
+  }
+
+  @Test
+  public void testBuildMeasureIdentifiersReturnsIdentifiersForMeasure() {
+    final Measure madieMeasure =
+        Measure.builder()
+            .id("MEASURE_ID_1")
+            .measureSetId("MEASURE_SET_ID_99")
+            .ecqmTitle("ECQM_TITLE")
+            .cmsId("REAL_CMS_ID")
+            .measureMetaData(
+                MeasureMetaData.builder()
+                    .endorsements(
+                        List.of(
+                            Endorsement.builder().endorsementId("NQF1234").endorser("NQF").build()))
+                    .build())
+            .build();
+    List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
+    assertThat(output, is(notNullValue()));
+    // Short Name
+    assertThat(output.size(), is(equalTo(5)));
+    assertThat(output.get(0), is(notNullValue()));
+    assertThat(output.get(0).getUse(), is(equalTo(Identifier.IdentifierUse.USUAL)));
+    assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
+    assertThat(output.get(0).getValue(), is(equalTo("ECQM_TITLE")));
+    assertThat(output.get(0).getType(), is(notNullValue()));
+    assertThat(
+        output.get(0).getType().getCodingFirstRep().getSystem(),
+        is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
+    assertThat(output.get(0).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_SHORT_NAME)));
+    // Measure Set ID
+    assertThat(output.get(1), is(notNullValue()));
+    assertThat(output.get(1).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
+    assertThat(output.get(1).getSystem(), is(equalTo(URN_IETF_RFC_3986)));
+    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    assertThat(output.get(1).getType(), is(notNullValue()));
+    assertThat(
+        output.get(1).getType().getCodingFirstRep().getSystem(),
+        is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
+    assertThat(
+        output.get(1).getType().getCodingFirstRep().getCode(),
+        is(equalTo(CODE_VERSION_INDEPENDENT)));
+    // Measure ID
+    assertThat(output.get(2), is(notNullValue()));
+    assertThat(output.get(2).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
+    assertThat(output.get(2).getSystem(), is(equalTo(URN_IETF_RFC_3986)));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getType(), is(notNullValue()));
+    assertThat(
+        output.get(2).getType().getCodingFirstRep().getSystem(),
+        is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
+    assertThat(
+        output.get(2).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_VERSION_SPECIFIC)));
+    // NQF ID
+    assertThat(output.get(3), is(notNullValue()));
+    assertThat(output.get(3).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
+    assertThat(output.get(3).getSystem(), is(equalTo(UriConstants.MadieMeasure.NQF_ID)));
+    assertThat(output.get(3).getValue(), is(equalTo("NQF1234")));
+    assertThat(output.get(3).getType(), is(notNullValue()));
+    assertThat(
+        output.get(3).getType().getCodingFirstRep().getSystem(),
+        is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
+    assertThat(output.get(3).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_ENDORSER)));
+    assertThat(output.get(3).getAssigner(), is(notNullValue()));
+    assertThat(output.get(3).getAssigner().getDisplay(), is(equalTo("NQF")));
+    // CMS ID
+    assertThat(output.get(4), is(notNullValue()));
+    assertThat(output.get(4).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
+    assertThat(output.get(4).getSystem(), is(equalTo(UriConstants.MadieMeasure.CMS_ID)));
+    assertThat(output.get(4).getValue(), is(equalTo("REAL_CMS_ID")));
+    assertThat(output.get(4).getType(), is(notNullValue()));
+    assertThat(
+        output.get(4).getType().getCodingFirstRep().getSystem(),
+        is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
+    assertThat(output.get(4).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_PUBLISHER)));
+    assertThat(output.get(4).getAssigner(), is(notNullValue()));
+    assertThat(output.get(4).getAssigner().getDisplay(), is(equalTo("CMS")));
+  }
+
+  @Test
+  public void testBuildMeasureIdentifiersReturnsIdentifiersWithCmsIdWithoutNqfForMeasure() {
+    final Measure madieMeasure =
+        Measure.builder()
+            .id("MEASURE_ID_1")
+            .measureSetId("MEASURE_SET_ID_99")
+            .ecqmTitle("ECQM_TITLE")
+            .cmsId("REAL_CMS_ID")
+            .build();
+    List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
+    assertThat(output, is(notNullValue()));
+    // Short Name
+    assertThat(output.size(), is(equalTo(4)));
+    assertThat(output.get(0), is(notNullValue()));
+    assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
+    // Measure Set ID
+    assertThat(output.get(1), is(notNullValue()));
+    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    // Measure ID
+    assertThat(output.get(2), is(notNullValue()));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    // CMS ID
+    assertThat(output.get(3), is(notNullValue()));
+    assertThat(output.get(3).getValue(), is(equalTo("REAL_CMS_ID")));
+  }
+
+  @Test
+  public void testBuildMeasureIdentifiersReturnsIdentifiersWithoutCmsIdWithNqfForMeasure() {
+    final Measure madieMeasure =
+        Measure.builder()
+            .id("MEASURE_ID_1")
+            .measureSetId("MEASURE_SET_ID_99")
+            .ecqmTitle("ECQM_TITLE")
+            .measureMetaData(
+                MeasureMetaData.builder()
+                    .endorsements(
+                        List.of(
+                            Endorsement.builder().endorsementId("NQF1234").endorser("NQF").build()))
+                    .build())
+            .build();
+    List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
+    assertThat(output, is(notNullValue()));
+    // Short Name
+    assertThat(output.size(), is(equalTo(4)));
+    assertThat(output.get(0), is(notNullValue()));
+    assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
+    // Measure Set ID
+    assertThat(output.get(1), is(notNullValue()));
+    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    // Measure ID
+    assertThat(output.get(2), is(notNullValue()));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    // NQF ID
+    assertThat(output.get(3), is(notNullValue()));
+    assertThat(output.get(3).getValue(), is(equalTo("NQF1234")));
   }
 
   @Test

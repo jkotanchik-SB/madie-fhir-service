@@ -8,8 +8,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import gov.cms.madie.madiefhirservice.constants.ValueConstants;
+import gov.cms.madie.models.measure.Endorsement;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.CanonicalType;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -57,6 +60,7 @@ public class MeasureTranslatorService {
     measure
         .setName(madieMeasure.getCqlLibraryName())
         .setTitle(madieMeasure.getMeasureName())
+        .setIdentifier(buildMeasureIdentifiers(madieMeasure))
         .setExperimental(true)
         .setUrl(fhirBaseUrl + "/Measure/" + madieMeasure.getCqlLibraryName())
         .setVersion(madieMeasure.getVersion().toString())
@@ -100,6 +104,74 @@ public class MeasureTranslatorService {
     } else {
       return null;
     }
+  }
+
+  public List<Identifier> buildMeasureIdentifiers(Measure madieMeasure) {
+    List<Identifier> identifiers = new ArrayList<>();
+    if (madieMeasure != null) {
+      identifiers.add(
+          buildIdentifier(
+              IdentifierUse.USUAL,
+              UriConstants.MadieMeasure.SHORT_NAME,
+              madieMeasure.getEcqmTitle(),
+              ValueConstants.CODE_SHORT_NAME));
+      identifiers.add(
+          buildIdentifier(
+              IdentifierUse.OFFICIAL,
+              ValueConstants.URN_IETF_RFC_3986,
+              buildUrnUuid(madieMeasure.getMeasureSetId()),
+              ValueConstants.CODE_VERSION_INDEPENDENT));
+      identifiers.add(
+          buildIdentifier(
+              IdentifierUse.OFFICIAL,
+              ValueConstants.URN_IETF_RFC_3986,
+              buildUrnUuid(madieMeasure.getId()),
+              ValueConstants.CODE_VERSION_SPECIFIC));
+      if (madieMeasure.getMeasureMetaData() != null
+          && madieMeasure.getMeasureMetaData().getEndorsements() != null
+          && !madieMeasure.getMeasureMetaData().getEndorsements().isEmpty()) {
+        Endorsement endorsement = madieMeasure.getMeasureMetaData().getEndorsements().get(0);
+        identifiers.add(
+            buildIdentifier(
+                    IdentifierUse.OFFICIAL,
+                    UriConstants.MadieMeasure.NQF_ID,
+                    endorsement.getEndorsementId(),
+                    ValueConstants.CODE_ENDORSER)
+                .setAssigner(buildDisplayReference("NQF")));
+      }
+      if (StringUtils.isNotBlank(madieMeasure.getCmsId())) {
+        identifiers.add(
+            buildIdentifier(
+                    IdentifierUse.OFFICIAL,
+                    UriConstants.MadieMeasure.CMS_ID,
+                    madieMeasure.getCmsId(),
+                    ValueConstants.CODE_PUBLISHER)
+                .setAssigner(buildDisplayReference("CMS")));
+      }
+    }
+    return identifiers;
+  }
+
+  private String buildUrnUuid(String value) {
+    return ValueConstants.URN_UUID_PREFIX + (value == null ? "null" : value);
+  }
+
+  private Reference buildDisplayReference(String display) {
+    Reference ref = new Reference();
+    ref.setDisplay(display);
+    return ref;
+  }
+
+  public Identifier buildIdentifier(
+      IdentifierUse use, String system, String value, String conceptCode) {
+    Identifier identifier = new Identifier();
+    identifier.setUse(use);
+    identifier.setSystem(system);
+    identifier.setValue(value);
+    identifier.setType(
+        buildCodeableConcept(
+            conceptCode, UriConstants.CqfMeasures.CODE_SYSTEM_IDENTIFIER_TYPE_URI, null));
+    return identifier;
   }
 
   public Meta buildMeasureMeta() {
