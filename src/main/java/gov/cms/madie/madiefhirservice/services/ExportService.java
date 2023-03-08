@@ -160,7 +160,6 @@ public class ExportService {
 
   protected Narrative createNarrative(String humanReadableStr) {
     Narrative narrative = new Narrative();
-    narrative.setStatusAsString("generated");
     narrative.setDivAsString(humanReadableStr);
     return narrative;
   }

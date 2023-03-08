@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -172,6 +173,10 @@ class ExportServiceTest implements ResourceFileUtil {
   @Test
   public void testCreateNarrativeSuccess() {
     Narrative narrative = exportService.createNarrative(humanReadable);
-    assertEquals(narrative.getStatus(), NarrativeStatus.GENERATED);
+    assertNotNull(narrative);
+    assertTrue(
+        narrative
+            .getDivAsString()
+            .contains(humanReadable.replace("<div>", "").replace("</div>", "")));
   }
 }
