@@ -77,9 +77,8 @@ public class HumanReadableService extends ResourceUtils {
       String measureTemplate = getData("/templates/Measure.liquid");
       LiquidEngine.LiquidDocument doc = liquidEngine.parse(measureTemplate, "hr-script");
       String measureHr = liquidEngine.evaluate(doc, r5Measure, null);
-      // Wrapper template for Measure.liquid o/p
-      String humanReadable = getData("/templates/HumanReadable.liquid");
-      return humanReadable.replace("human_readable_content_holder", measureHr);
+      return measureHr;
+
     } catch (FHIRException fhirException) {
       log.error(
           "Unable to generate Human readable for measure {} Reason => {}",
@@ -118,7 +117,7 @@ public class HumanReadableService extends ResourceUtils {
    * @param bundleResource Bundle resource
    * @return BundleEntry which is of type Measure
    */
-  private Optional<Bundle.BundleEntryComponent> getMeasureEntry(Bundle bundleResource) {
+  protected Optional<Bundle.BundleEntryComponent> getMeasureEntry(Bundle bundleResource) {
     return bundleResource.getEntry().stream()
         .filter(
             entry ->
@@ -132,5 +131,11 @@ public class HumanReadableService extends ResourceUtils {
     extension.setUrl(EFFECTIVE_DATA_REQUIREMENT_URL);
     extension.getValueReference().setReference("#effective-data-requirements");
     return extension;
+  }
+
+  protected String addCssToHumanReadable(String measureHr) {
+    // Wrapper template for Measure.liquid o/p
+    String humanReadable = getData("/templates/HumanReadable.liquid");
+    return humanReadable.replace("human_readable_content_holder", measureHr);
   }
 }
