@@ -9,6 +9,8 @@ public final class UriConstants {
       "http://terminology.hl7.org/CodeSystem/library-type";
 
   public static final class CqfMeasures {
+    public static final String EFFECTIVE_DATA_REQUIREMENT_URL =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements";
     public static final String SCORING_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring";
     public static final String SCORING_UNIT_URI =

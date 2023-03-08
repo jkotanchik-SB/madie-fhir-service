@@ -155,6 +155,7 @@ class LibraryServiceTest implements LibraryHelper, ResourceFileUtil {
     assertEquals(
         libraryResource.getText().getDivAsString(),
         "<div xmlns=\"http://www.w3.org/1999/xhtml\">Narrative Text</div>");
+    assertEquals(libraryResource.getText().getStatus().getDisplay(), "Extensions");
   }
 
   @Test
