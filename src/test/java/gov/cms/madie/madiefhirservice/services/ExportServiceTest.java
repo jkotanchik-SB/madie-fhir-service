@@ -101,15 +101,15 @@ class ExportServiceTest implements ResourceFileUtil {
     // expected files in export zip
     List<String> expectedFilesInZip =
         List.of(
-            "ExportTest-v1.0.000-QI-Core v4.1.1.json",
-            "ExportTest-v1.0.000-QI-Core v4.1.1.xml",
-            "/cql/ExportTest.cql",
-            "/cql/FHIRHelpers.cql",
-            "/resources/library-ExportTest.json",
-            "/resources/library-ExportTest.xml",
-            "/resources/library-FHIRHelpers.json",
-            "/resources/library-FHIRHelpers.xml",
-            "ExportTest-1.0.000-FHIR.html");
+            "ExportTest-v1.0.000-FHIR.json",
+            "ExportTest-v1.0.000-FHIR.xml",
+            "/cql/ExportTest-0.0.000.cql",
+            "/cql/FHIRHelpers-4.1.000.cql",
+            "/resources/ExportTest-0.0.000.json",
+            "/resources/ExportTest-0.0.000.xml",
+            "/resources/FHIRHelpers-4.1.000.json",
+            "/resources/FHIRHelpers-4.1.000.xml",
+            "ExportTest-v1.0.000-FHIR.html");
 
     ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(out.toByteArray()));
     List<String> actualFilesInZip = getFilesInZip(zipInputStream);
