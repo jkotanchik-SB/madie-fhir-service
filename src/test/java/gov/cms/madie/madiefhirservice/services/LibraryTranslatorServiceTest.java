@@ -6,7 +6,9 @@ import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.common.Version;
 import org.hl7.fhir.r4.model.Attachment;
+import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Library;
+import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +52,15 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     assertEquals(library.getName(), cqlLibrary.getCqlLibraryName());
     assertEquals(library.getVersion(), cqlLibrary.getVersion().toString());
     assertEquals(library.getDataRequirement().size(), visitor.getDataRequirements().size());
+    assertThat(library.getTitle(), is(equalTo(cqlLibrary.getCqlLibraryName())));
+    assertThat(library.getPublisher(), is(equalTo(cqlLibrary.getPublisher())));
+    Identifier identifier = new Identifier();
+    identifier.setUse(IdentifierUse.OFFICIAL);
+    identifier.setSystem("https://madie.cms.gov/login");
+    identifier.setValue(library.getId());
+    assertThat(library.getIdentifier().get(0).getValue(), is(equalTo(identifier.getValue())));
+    assertThat(library.getIdentifier().get(0).getSystem(), is(equalTo(identifier.getSystem())));
+    assertThat(library.getIdentifier().get(0).getUse(), is(equalTo(identifier.getUse())));
   }
 
   @Test
