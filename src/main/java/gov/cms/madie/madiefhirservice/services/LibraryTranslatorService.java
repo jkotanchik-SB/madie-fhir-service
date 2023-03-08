@@ -12,9 +12,11 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DataRequirement;
 import org.hl7.fhir.r4.model.Enumerations;
+import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.RelatedArtifact;
+import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +68,14 @@ public class LibraryTranslatorService {
     library.setDataRequirement(distinctDataRequirements(visitor.getDataRequirements()));
     library.setRelatedArtifact(distinctArtifacts(visitor.getRelatedArtifacts()));
     library.setMeta(createLibraryMeta());
+    library.setTitle(cqlLibrary.getCqlLibraryName());
+    library.setPublisher(cqlLibrary.getPublisher());
+    Identifier identifier = new Identifier();
+    identifier.setUse(IdentifierUse.OFFICIAL);
+    identifier.setSystem("https://madie.cms.gov/login");
+    identifier.setValue(cqlLibrary.getId());
+
+    library.setIdentifier(List.of(identifier));
     // TODO: probably have to revisit this. Human Readable feature is not yet ready
     // result.setText(findHumanReadable(lib.getMeasureId()));
     return library;
