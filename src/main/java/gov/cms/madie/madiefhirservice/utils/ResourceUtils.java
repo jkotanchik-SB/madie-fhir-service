@@ -28,7 +28,7 @@ public class ResourceUtils {
    * @return r4 resource
    */
   public static Resource getResource(Bundle bundleResource, String resourceType) {
-    if (bundleResource == null) {
+    if (bundleResource == null || resourceType == null) {
       return null;
     }
     var measureEntry =
