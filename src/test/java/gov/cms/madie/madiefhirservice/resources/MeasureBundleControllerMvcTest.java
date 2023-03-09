@@ -60,7 +60,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
-            any(Measure.class), any(Principal.class), anyString()))
+            any(Measure.class), any(Principal.class), anyString(), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -78,7 +78,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
         .andExpect(jsonPath("$.entry[0].resource.name").value("TestCMS0001"))
         .andExpect(jsonPath("$.entry[0].resource.version").value("0.0.001"));
     verify(measureBundleService, times(1))
-        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString());
+        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString(), anyString());
   }
 
   @Test
@@ -88,7 +88,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
-            any(Measure.class), any(Principal.class), anyString()))
+            any(Measure.class), any(Principal.class), anyString(), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newXmlParser()).thenReturn(FhirContext.forR4().newXmlParser());
 
@@ -97,14 +97,14 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
             MockMvcRequestBuilders.put("/fhir/measures/bundles")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
-                .header("Authorization", "test-okta")
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
                 .accept(MediaType.APPLICATION_XML)
                 .content(madieMeasureJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_XML));
     verify(measureBundleService, times(1))
-        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString());
+        .createMeasureBundle(any(Measure.class), any(Principal.class), anyString(), anyString());
   }
 
   @Test
@@ -114,7 +114,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
-            any(Measure.class), any(Principal.class), anyString()))
+            any(Measure.class), any(Principal.class), anyString(), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -129,6 +129,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
             MockMvcRequestBuilders.post("/fhir/measures/save")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
                 .content(madieMeasureJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isCreated());
@@ -142,7 +143,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
-            any(Measure.class), any(Principal.class), anyString()))
+            any(Measure.class), any(Principal.class), anyString(), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -153,6 +154,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
             MockMvcRequestBuilders.post("/fhir/measures/save")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
                 .content(madieMeasureJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().is5xxServerError());
@@ -166,7 +168,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
-            any(Measure.class), any(Principal.class), anyString()))
+            any(Measure.class), any(Principal.class), anyString(), anyString()))
         .thenReturn(testBundle);
     when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
 
@@ -178,6 +180,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
             MockMvcRequestBuilders.post("/fhir/measures/save")
                 .with(user(TEST_USER_ID))
                 .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
                 .content(madieMeasureJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().is5xxServerError());

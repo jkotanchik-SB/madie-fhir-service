@@ -7,7 +7,6 @@ import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
 import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -84,21 +83,6 @@ public class HumanReadableService extends ResourceUtils {
       throw new HumanReadableGenerationException(
           "Error occurred while generating human readable for library: " + library.getName());
     }
-  }
-
-  /**
-   * @param bundleResource Bundle resource
-   * @return r4 resource
-   */
-  protected Resource getResource(Bundle bundleResource, String resourceType) {
-    var measureEntry =
-        bundleResource.getEntry().stream()
-            .filter(
-                entry ->
-                    StringUtils.equalsIgnoreCase(
-                        resourceType, entry.getResource().getResourceType().toString()))
-            .findFirst();
-    return measureEntry.map(Bundle.BundleEntryComponent::getResource).orElse(null);
   }
 
   private Extension createEffectiveDataRequirementExtension() {

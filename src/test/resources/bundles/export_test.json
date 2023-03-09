@@ -5,6 +5,10 @@
     "resource": {
       "resourceType": "Measure",
       "url": "http://ecqi.healthit.gov/ecqms/Measure/ExportTest",
+      "text": {
+        "status": "extensions",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Measure narrative</div>"
+      },
       "version": "0.0.000",
       "name": "ExportTest",
       "title": "ExportTest",

@@ -50,7 +50,8 @@ public class MeasureBundleController {
           String bundleType) {
 
     Bundle bundle =
-        measureBundleService.createMeasureBundle(measure, request.getUserPrincipal(), bundleType);
+        measureBundleService.createMeasureBundle(
+            measure, request.getUserPrincipal(), bundleType, accessToken);
 
     if (accept != null
         && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
@@ -66,12 +67,16 @@ public class MeasureBundleController {
   @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> saveMeasure(
       HttpServletRequest request,
+      @RequestHeader("Authorization") String accessToken,
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
     log.debug("Entering saveMeasure()");
 
     Bundle bundle =
         measureBundleService.createMeasureBundle(
-            measure, request.getUserPrincipal(), BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION);
+            measure,
+            request.getUserPrincipal(),
+            BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT,
+            accessToken);
     bundle.setType(Bundle.BundleType.DOCUMENT);
     String serialized =
         fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
