@@ -28,7 +28,7 @@ public class HumanReadableService extends ResourceUtils {
       Measure madieMeasure,
       Bundle bundleResource,
       org.hl7.fhir.r5.model.Library effectiveDataRequirements) {
-    log.info("Generating human readable for measure: {}",  madieMeasure.getId());
+    log.info("Generating human readable for measure: {}", madieMeasure.getId());
     if (bundleResource == null) {
       log.error("Unable to find a bundleResource for measure {}", madieMeasure.getId());
       throw new ResourceNotFoundException("bundle", madieMeasure.getId());
@@ -71,7 +71,7 @@ public class HumanReadableService extends ResourceUtils {
     if (library == null) {
       return "<div></div>";
     }
-    log.info("Generating human readable for library {}",  library.getName());
+    log.info("Generating human readable for library {}", library.getName());
     // convert r4 libray to R5 library as we are using r5 liquid engine
     var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
     org.hl7.fhir.r5.model.Library r5Library =
