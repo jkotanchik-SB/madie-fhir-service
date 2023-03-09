@@ -158,11 +158,10 @@ public class MeasureBundleService {
     // TODO: verify effective data requirement profile compliance:
     // http://hl7.org/fhir/us/cqfmeasures/StructureDefinition-module-definition-library-cqfm.html
     measure.addContained(r4EffectiveDataRequirements);
-
-    Reference reference = new Reference().setReference("#effective-data-requirements");
-    Extension extension = new Extension();
-    extension.setUrl(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL);
-    extension.setValue(reference);
+    Extension extension =
+        new Extension()
+            .setUrl(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL)
+            .setValue(new Reference().setReference("#effective-data-requirements"));
     measure.getExtension().add(extension);
   }
 }
