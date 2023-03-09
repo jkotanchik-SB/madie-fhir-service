@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.common.ProgramUseContext;
 import gov.cms.madie.models.common.Version;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -16,6 +17,7 @@ import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.RelatedArtifact;
+import org.hl7.fhir.r4.model.UsageContext;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -74,11 +76,30 @@ public class LibraryTranslatorService {
     identifier.setUse(IdentifierUse.OFFICIAL);
     identifier.setSystem("https://madie.cms.gov/login");
     identifier.setValue(cqlLibrary.getId());
-
     library.setIdentifier(List.of(identifier));
+    if (cqlLibrary.getProgramUseContext() != null) {
+      library.setUseContext(List.of(convertUseContext(cqlLibrary.getProgramUseContext())));
+    }
     // TODO: probably have to revisit this. Human Readable feature is not yet ready
     // result.setText(findHumanReadable(lib.getMeasureId()));
     return library;
+  }
+
+  public UsageContext convertUseContext(ProgramUseContext programUseContext) {
+    UsageContext useContext = new UsageContext();
+    Coding code = new Coding();
+    code.setSystem("http://terminology.hl7.org/CodeSystem/usage-context-type");
+    code.setCode("program");
+    useContext.setCode(code);
+    CodeableConcept valueCodeableConcept = new CodeableConcept();
+    Coding coding = new Coding();
+    coding.setSystem("http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs");
+    coding.setCode(programUseContext.getCode());
+    coding.setDisplay(programUseContext.getDisplay());
+    valueCodeableConcept.setCoding(List.of(coding));
+    useContext.setValue(valueCodeableConcept);
+    return useContext;
+    //
   }
 
   public CqlLibrary convertToCqlLibrary(Library library) {
