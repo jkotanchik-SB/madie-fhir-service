@@ -99,7 +99,6 @@ public class LibraryTranslatorService {
     valueCodeableConcept.setCoding(List.of(coding));
     useContext.setValue(valueCodeableConcept);
     return useContext;
-    //
   }
 
   public CqlLibrary convertToCqlLibrary(Library library) {
