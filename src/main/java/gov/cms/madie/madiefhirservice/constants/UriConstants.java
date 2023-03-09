@@ -9,6 +9,8 @@ public final class UriConstants {
       "http://terminology.hl7.org/CodeSystem/library-type";
 
   public static final class CqfMeasures {
+    public static final String EFFECTIVE_DATA_REQUIREMENT_URL =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements";
     public static final String SCORING_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring";
     public static final String SCORING_UNIT_URI =
@@ -38,10 +40,19 @@ public final class UriConstants {
 
     public static final String EXECUTABLE_MEASURE_PROFILE_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/executable-measure-cqfm";
+
+    public static final String CODE_SYSTEM_IDENTIFIER_TYPE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/identifier-type";
   }
 
   public static final class QiCore {
     public static final String PATIENT_PROFILE_URI =
         "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient";
+  }
+
+  public static final class MadieMeasure {
+    public static final String CMS_ID = "https://madie.cms.gov/measure/cmsId";
+    public static final String SHORT_NAME = "https://madie.cms.gov/measure/shortName";
+    public static final String NQF_ID = "https://madie.cms.gov/measure/nqfId";
   }
 }

@@ -15,6 +15,7 @@ import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Narrative;
+import org.hl7.fhir.r4.model.Narrative.NarrativeStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -137,7 +138,7 @@ public class LibraryService {
 
   private Narrative createLibraryNarrativeText(Library library) {
     Narrative narrative = new Narrative();
-    narrative.setStatusAsString("generated");
+    narrative.setStatus(NarrativeStatus.EXTENSIONS);
     narrative.setDivAsString(humanReadableService.generateLibraryHumanReadable(library));
     return narrative;
   }
