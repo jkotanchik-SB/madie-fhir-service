@@ -100,7 +100,7 @@ public class MeasureBundleController {
         MediaType.APPLICATION_XML_VALUE
       },
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<StreamingResponseBody> getMeasureExport(
+  public ResponseEntity<StreamingResponseBody> generateMeasureExport(
       HttpServletRequest request,
       @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure,
       @RequestHeader("Authorization") String accessToken) {

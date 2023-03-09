@@ -17,10 +17,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.security.Principal;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -181,27 +185,31 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
   }
 
   @Test
-  public void testExportMeasureBundle() throws Exception {
+  public void testExportMeasure() throws Exception {
     String madieMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
 
-    when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR4().newJsonParser());
     doNothing()
         .when(exportService)
         .createExport(any(Measure.class), any(), any(Principal.class), anyString());
 
-    mockMvc
-        .perform(
-            MockMvcRequestBuilders.put("/fhir/measures/export")
-                .with(user(TEST_USER_ID))
-                .with(csrf())
-                .header(HttpHeaders.AUTHORIZATION, "test-okta")
-                .content(madieMeasureJson)
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isOk())
-        .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
-        .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE));
-    verify(exportService, times(1))
-        .createExport(any(Measure.class), any(), any(Principal.class), anyString());
+    MvcResult result =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.put("/fhir/measures/export")
+                    .with(user(TEST_USER_ID))
+                    .with(csrf())
+                    .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                    .content(madieMeasureJson)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(header().exists(HttpHeaders.CONTENT_DISPOSITION))
+            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+            .andReturn();
+
+    assertThat(result.getResponse().getContentType(), is(equalTo("application/octet-stream")));
+    assertThat(
+        result.getResponse().getHeader("Content-Disposition"),
+        is(equalTo("attachment;filename=\"title-v0.0.000-FHIR.zip\"")));
   }
 }
