@@ -2,28 +2,35 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
+import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Narrative;
 import org.hl7.fhir.r4.model.Narrative.NarrativeStatus;
+import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.Extension;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -32,22 +39,36 @@ public class ExportService {
 
   private FhirContext fhirContext;
 
+  private final MeasureBundleService measureBundleService;
   private final HumanReadableService humanReadableService;
+  private final ElmTranslatorClient elmTranslatorClient;
 
   private static final String TEXT_CQL = "text/cql";
   private static final String CQL_DIRECTORY = "/cql/";
   private static final String RESOURCES_DIRECTORY = "/resources/";
 
   public void createExport(
-      Measure measure, Bundle bundle, OutputStream outputStream, String accessToken) {
-    String exportFileName = ExportFileNamesUtil.getExportFileName(measure);
+      Measure madieMeasure, OutputStream outputStream, Principal principal, String accessToken) {
+    String exportFileName = ExportFileNamesUtil.getExportFileName(madieMeasure);
 
-    String humanReadableStr =
-        humanReadableService.generateMeasureHumanReadable(measure, accessToken, bundle);
+    Bundle bundle =
+        measureBundleService.createMeasureBundle(
+            madieMeasure, principal, BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT);
 
-    setMeasureTextInBundle(bundle, humanReadableStr);
+    org.hl7.fhir.r5.model.Library effectiveDataRequirements =
+        elmTranslatorClient.getEffectiveDataRequirements(
+            bundle, madieMeasure.getCqlLibraryName(), madieMeasure.getId(), accessToken);
 
-    String humanReadableStrWithCSS = humanReadableService.addCssToHumanReadable(humanReadableStr);
+    String humanReadable =
+        humanReadableService.generateMeasureHumanReadable(
+            madieMeasure, bundle, effectiveDataRequirements);
+    var measure =
+        (org.hl7.fhir.r4.model.Measure) humanReadableService.getResource(bundle, "Measure");
+
+    setNarrativeText(measure, humanReadable);
+    addEffectiveDataRequirementsToMeasure(measure, effectiveDataRequirements);
+
+    String humanReadableStrWithCSS = humanReadableService.addCssToHumanReadable(humanReadable);
 
     log.info("Generating exports for " + exportFileName);
     try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
@@ -67,7 +88,7 @@ public class ExportService {
     } catch (Exception ex) {
       log.error(ex.getMessage());
       throw new RuntimeException(
-          "Unexpected error while generating exports for measureID: " + measure.getId());
+          "Unexpected error while generating exports for measureID: " + madieMeasure.getId());
     }
   }
 
@@ -152,23 +173,28 @@ public class ExportService {
     return parser.setPrettyPrint(true).encodeResourceToString(resource);
   }
 
-  protected DomainResource setMeasureTextInBundle(Bundle bundle, String humanReadableStr) {
-
-    Optional<Bundle.BundleEntryComponent> measureEntryOpt =
-        humanReadableService.getMeasureEntry(bundle);
-
-    if (measureEntryOpt.isPresent()) {
-      DomainResource dr = (DomainResource) measureEntryOpt.get().getResource();
-      dr.setText(createNarrative(humanReadableStr));
-      dr.getText().setStatus(NarrativeStatus.GENERATED);
-      return dr;
-    }
-    return null;
+  private void setNarrativeText(DomainResource resource, String humanReadable) {
+    Narrative narrative = new Narrative();
+    narrative.setStatus(NarrativeStatus.EXTENSIONS);
+    narrative.setDivAsString(humanReadable);
+    resource.setText(narrative);
   }
 
-  protected Narrative createNarrative(String humanReadableStr) {
-    Narrative narrative = new Narrative();
-    narrative.setDivAsString(humanReadableStr);
-    return narrative;
+  private void addEffectiveDataRequirementsToMeasure(
+      org.hl7.fhir.r4.model.Measure measure,
+      org.hl7.fhir.r5.model.Library effectiveDataRequirements) {
+    var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
+    org.hl7.fhir.r4.model.Library r4EffectiveDataRequirements =
+        (org.hl7.fhir.r4.model.Library)
+            versionConvertor_40_50.convertResource(effectiveDataRequirements);
+    // TODO: verify effective data requirement profile compliance:
+    // http://hl7.org/fhir/us/cqfmeasures/StructureDefinition-module-definition-library-cqfm.html
+    measure.addContained(r4EffectiveDataRequirements);
+
+    Reference reference = new Reference().setReference("#effective-data-requirements");
+    Extension extension = new Extension();
+    extension.setUrl(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL);
+    extension.setValue(reference);
+    measure.getExtension().add(extension);
   }
 }
