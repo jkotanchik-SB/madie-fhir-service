@@ -1,8 +1,6 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
-import ca.uhn.fhir.parser.JsonParser;
 import gov.cms.madie.madiefhirservice.exceptions.HumanReadableGenerationException;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
@@ -37,13 +35,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class HumanReadableServiceTest implements ResourceFileUtil {
 
-  @Mock FhirContext fhirContext;
-
   @Mock LiquidEngine liquidEngine;
-
-  @Mock JsonParser jsonParser;
-
-  @Mock ElmTranslatorClient elmTranslatorClient;
 
   @InjectMocks HumanReadableService humanReadableService;
 
@@ -53,9 +45,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
   private Library library;
 
-  private final String testAccessToken = "test_access_token";
-
-  private String effectiveDataElementsStr = "";
+  private org.hl7.fhir.r5.model.Library effectiveDataRequirements;
 
   private String humanReadable;
 
@@ -98,8 +88,10 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
     library.setId(madieMeasure.getCqlLibraryName());
 
-    effectiveDataElementsStr =
-        getStringFromTestResource("/humanReadable/effective-data-requirements.json");
+    effectiveDataRequirements =
+        convertToFhirR5Resource(
+            org.hl7.fhir.r5.model.Library.class,
+            getStringFromTestResource("/humanReadable/effective-data-requirements.json"));
 
     humanReadable = getStringFromTestResource("/humanReadable/humanReadable_test");
   }
@@ -115,7 +107,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  public void generateHumanReadable() {
+  public void generateMeasureHumanReadable() {
     Bundle.BundleEntryComponent measureBundleEntryComponent = getBundleEntryComponent(measure);
     Bundle.BundleEntryComponent libraryBundleEntryComponent = getBundleEntryComponent(library);
     Bundle bundle =
@@ -123,12 +115,6 @@ class HumanReadableServiceTest implements ResourceFileUtil {
             .setType(Bundle.BundleType.TRANSACTION)
             .addEntry(measureBundleEntryComponent)
             .addEntry(libraryBundleEntryComponent);
-
-    when(elmTranslatorClient.getEffectiveDataRequirements(
-            any(Bundle.class), anyString(), anyString(), anyString()))
-        .thenReturn(effectiveDataElementsStr);
-
-    when(fhirContext.newJsonParser()).thenReturn(FhirContext.forR5().newJsonParser());
 
     String hrText = "<div>Human Readable for Measure: " + madieMeasure.getMeasureName() + "</div>";
 
@@ -142,7 +128,8 @@ class HumanReadableServiceTest implements ResourceFileUtil {
         .thenReturn(hrText);
 
     String generatedHumanReadable =
-        humanReadableService.generateMeasureHumanReadable(madieMeasure, testAccessToken, bundle);
+        humanReadableService.generateMeasureHumanReadable(
+            madieMeasure, bundle, effectiveDataRequirements);
     assertNotNull(generatedHumanReadable);
     assertTrue(generatedHumanReadable.contains(hrText));
   }
@@ -151,19 +138,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
   public void generateHumanReadableThrowsResourceNotFoundExceptionForNoBundle() {
     assertThrows(
         ResourceNotFoundException.class,
-        () ->
-            humanReadableService.generateMeasureHumanReadable(madieMeasure, testAccessToken, null));
-  }
-
-  @Test
-  void generateHumanReadableThrowsResourceNotFoundExceptionForNoEntry() {
-    Bundle bundle = new Bundle().setType(Bundle.BundleType.TRANSACTION);
-
-    assertThrows(
-        ResourceNotFoundException.class,
-        () ->
-            humanReadableService.generateMeasureHumanReadable(
-                madieMeasure, testAccessToken, bundle));
+        () -> humanReadableService.generateMeasureHumanReadable(madieMeasure, null, null));
   }
 
   @Test
@@ -177,7 +152,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
         ResourceNotFoundException.class,
         () ->
             humanReadableService.generateMeasureHumanReadable(
-                madieMeasure, testAccessToken, bundle));
+                madieMeasure, bundle, effectiveDataRequirements));
   }
 
   @Test
@@ -190,15 +165,20 @@ class HumanReadableServiceTest implements ResourceFileUtil {
             .addEntry(measureBundleEntryComponent)
             .addEntry(libraryBundleEntryComponent);
 
-    when(elmTranslatorClient.getEffectiveDataRequirements(
-            any(Bundle.class), anyString(), anyString(), anyString()))
-        .thenThrow(new FHIRException("error"));
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
+
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            any(org.hl7.fhir.r5.model.Measure.class),
+            any()))
+        .thenThrow(new FHIRException());
 
     assertThrows(
         HumanReadableGenerationException.class,
         () ->
             humanReadableService.generateMeasureHumanReadable(
-                madieMeasure, testAccessToken, bundle));
+                madieMeasure, bundle, effectiveDataRequirements));
   }
 
   @Test
