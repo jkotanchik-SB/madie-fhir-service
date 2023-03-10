@@ -29,7 +29,7 @@ public class ElmTranslatorClient {
   public Library getEffectiveDataRequirements(
       Bundle bundleResource, String libraryName, String measureId, String accessToken) {
     try {
-
+      log.info("Getting data requirements for measure: {}", measureId);
       URI uri =
           UriComponentsBuilder.fromHttpUrl(
                   elmTranslatorClientConfig.getCqlElmServiceBaseUrl()

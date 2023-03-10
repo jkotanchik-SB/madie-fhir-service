@@ -7,7 +7,6 @@ import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
 import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -29,6 +28,7 @@ public class HumanReadableService extends ResourceUtils {
       Measure madieMeasure,
       Bundle bundleResource,
       org.hl7.fhir.r5.model.Library effectiveDataRequirements) {
+    log.info("Generating human readable for measure: {}", madieMeasure.getId());
     if (bundleResource == null) {
       log.error("Unable to find a bundleResource for measure {}", madieMeasure.getId());
       throw new ResourceNotFoundException("bundle", madieMeasure.getId());
@@ -71,6 +71,7 @@ public class HumanReadableService extends ResourceUtils {
     if (library == null) {
       return "<div></div>";
     }
+    log.info("Generating human readable for library {}", library.getName());
     // convert r4 libray to R5 library as we are using r5 liquid engine
     var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
     org.hl7.fhir.r5.model.Library r5Library =
@@ -84,21 +85,6 @@ public class HumanReadableService extends ResourceUtils {
       throw new HumanReadableGenerationException(
           "Error occurred while generating human readable for library: " + library.getName());
     }
-  }
-
-  /**
-   * @param bundleResource Bundle resource
-   * @return r4 resource
-   */
-  protected Resource getResource(Bundle bundleResource, String resourceType) {
-    var measureEntry =
-        bundleResource.getEntry().stream()
-            .filter(
-                entry ->
-                    StringUtils.equalsIgnoreCase(
-                        resourceType, entry.getResource().getResourceType().toString()))
-            .findFirst();
-    return measureEntry.map(Bundle.BundleEntryComponent::getResource).orElse(null);
   }
 
   private Extension createEffectiveDataRequirementExtension() {

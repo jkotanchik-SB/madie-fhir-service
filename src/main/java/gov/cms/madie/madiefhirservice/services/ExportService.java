@@ -2,26 +2,19 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
-import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
+import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.common.Version;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
-import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r4.model.Narrative;
-import org.hl7.fhir.r4.model.Narrative.NarrativeStatus;
-import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r4.model.Extension;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -41,7 +34,6 @@ public class ExportService {
 
   private final MeasureBundleService measureBundleService;
   private final HumanReadableService humanReadableService;
-  private final ElmTranslatorClient elmTranslatorClient;
 
   private static final String TEXT_CQL = "text/cql";
   private static final String CQL_DIRECTORY = "/cql/";
@@ -53,21 +45,9 @@ public class ExportService {
 
     Bundle bundle =
         measureBundleService.createMeasureBundle(
-            madieMeasure, principal, BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT);
-
-    org.hl7.fhir.r5.model.Library effectiveDataRequirements =
-        elmTranslatorClient.getEffectiveDataRequirements(
-            bundle, madieMeasure.getCqlLibraryName(), madieMeasure.getId(), accessToken);
-
-    String humanReadable =
-        humanReadableService.generateMeasureHumanReadable(
-            madieMeasure, bundle, effectiveDataRequirements);
-    var measure =
-        (org.hl7.fhir.r4.model.Measure) humanReadableService.getResource(bundle, "Measure");
-
-    setNarrativeText(measure, humanReadable);
-    addEffectiveDataRequirementsToMeasure(measure, effectiveDataRequirements);
-
+            madieMeasure, principal, BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT, accessToken);
+    var measure = (org.hl7.fhir.r4.model.Measure) ResourceUtils.getResource(bundle, "Measure");
+    String humanReadable = measure.getText().getDivAsString();
     String humanReadableStrWithCSS = humanReadableService.addCssToHumanReadable(humanReadable);
 
     log.info("Generating exports for " + exportFileName);
@@ -171,30 +151,5 @@ public class ExportService {
 
   private String convertFhirResourceToString(Resource resource, IParser parser) {
     return parser.setPrettyPrint(true).encodeResourceToString(resource);
-  }
-
-  private void setNarrativeText(DomainResource resource, String humanReadable) {
-    Narrative narrative = new Narrative();
-    narrative.setStatus(NarrativeStatus.EXTENSIONS);
-    narrative.setDivAsString(humanReadable);
-    resource.setText(narrative);
-  }
-
-  private void addEffectiveDataRequirementsToMeasure(
-      org.hl7.fhir.r4.model.Measure measure,
-      org.hl7.fhir.r5.model.Library effectiveDataRequirements) {
-    var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
-    org.hl7.fhir.r4.model.Library r4EffectiveDataRequirements =
-        (org.hl7.fhir.r4.model.Library)
-            versionConvertor_40_50.convertResource(effectiveDataRequirements);
-    // TODO: verify effective data requirement profile compliance:
-    // http://hl7.org/fhir/us/cqfmeasures/StructureDefinition-module-definition-library-cqfm.html
-    measure.addContained(r4EffectiveDataRequirements);
-
-    Reference reference = new Reference().setReference("#effective-data-requirements");
-    Extension extension = new Extension();
-    extension.setUrl(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL);
-    extension.setValue(reference);
-    measure.getExtension().add(extension);
   }
 }

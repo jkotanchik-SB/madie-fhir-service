@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
@@ -44,20 +45,19 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   @InjectMocks private MeasureBundleService measureBundleService;
 
   @Mock private MeasureTranslatorService measureTranslatorService;
-
   @Mock private LibraryTranslatorService libraryTranslatorService;
-
   @Mock private LibraryService libraryService;
-
+  @Mock private HumanReadableService humanReadableService;
+  @Mock private ElmTranslatorClient elmTranslatorClient;
   @Mock private HapiFhirServer hapiFhirServer;
-
   @Mock MethodOutcome methodOutcome;
-
   @Mock IIdType iidType;
 
   private Measure madieMeasure;
   private Library library;
+  private String humanReadable;
   private org.hl7.fhir.r4.model.Measure measure;
+  private org.hl7.fhir.r5.model.Library effectiveDataRequirements;
 
   @BeforeEach
   public void setup() throws JsonProcessingException {
@@ -74,6 +74,12 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     String fhirLibraryJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/fhir_measure_library.json");
     library = MeasureTestHelper.createFhirResourceFromJson(fhirLibraryJson, Library.class);
+    effectiveDataRequirements =
+        convertToFhirR5Resource(
+            org.hl7.fhir.r5.model.Library.class,
+            getStringFromTestResource("/humanReadable/effective-data-requirements.json"));
+    effectiveDataRequirements.setId("effective-data-requirements");
+    humanReadable = getStringFromTestResource("/humanReadable/humanReadable_test");
   }
 
   @Test
@@ -94,7 +100,10 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
 
     Bundle bundle =
         measureBundleService.createMeasureBundle(
-            madieMeasure, mock(Principal.class), BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION);
+            madieMeasure,
+            mock(Principal.class),
+            BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION,
+            "token");
 
     assertThat(bundle.getEntry().size(), is(3));
     assertThat(bundle.getType(), is(equalTo(Bundle.BundleType.TRANSACTION)));
@@ -126,7 +135,8 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
                 measureBundleService.createMeasureBundle(
                     madieMeasure,
                     mock(Principal.class),
-                    BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION));
+                    BundleUtil.MEASURE_BUNDLE_TYPE_CALCULATION,
+                    "token"));
 
     assertThat(
         exception.getMessage(),
@@ -144,5 +154,64 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
 
     assertTrue(outcome.getCreated());
     assertEquals("testId", outcome.getId().toString());
+  }
+
+  @Test
+  public void testCreateMeasureBundleForExport() {
+    when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
+        .thenReturn(measure);
+    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
+
+    doAnswer(
+            invocation -> {
+              Object[] args = invocation.getArguments();
+              Map<String, Library> includedLibraries = (Map<String, Library>) args[1];
+              includedLibraries.put("test", new Library());
+              return null;
+            })
+        .when(libraryService)
+        .getIncludedLibraries(anyString(), anyMap());
+
+    when(elmTranslatorClient.getEffectiveDataRequirements(
+            any(Bundle.class), anyString(), anyString(), anyString()))
+        .thenReturn(effectiveDataRequirements);
+    when(humanReadableService.generateMeasureHumanReadable(
+            any(Measure.class), any(Bundle.class), any(org.hl7.fhir.r5.model.Library.class)))
+        .thenReturn(humanReadable);
+    when(humanReadableService.generateLibraryHumanReadable(
+            any(org.hl7.fhir.r4.model.Library.class)))
+        .thenReturn("<div>test narrative</div>");
+
+    Bundle bundle =
+        measureBundleService.createMeasureBundle(
+            madieMeasure, mock(Principal.class), BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT, "token");
+
+    assertThat(bundle.getEntry().size(), is(3));
+    assertThat(bundle.getType(), is(equalTo(Bundle.BundleType.TRANSACTION)));
+
+    org.hl7.fhir.r4.model.Measure measureResource =
+        (org.hl7.fhir.r4.model.Measure) bundle.getEntry().get(0).getResource();
+    assertThat(madieMeasure.getCqlLibraryName(), is(equalTo(measureResource.getName())));
+    assertThat(
+        madieMeasure.getMeasureMetaData().getSteward(), is(equalTo(measureResource.getGuidance())));
+
+    var r4Measure = (org.hl7.fhir.r4.model.Measure) bundle.getEntry().get(0).getResource();
+    Library r4MeasureLibrary = (Library) bundle.getEntry().get(1).getResource();
+
+    assertThat(r4MeasureLibrary.getName(), is(equalTo(madieMeasure.getCqlLibraryName())));
+    // assert effective DR
+    assertThat(r4Measure.getContained().size(), is(equalTo(1)));
+    assertThat(r4Measure.getContained().get(0).getId(), is(equalTo("effective-data-requirements")));
+
+    // assert narrative text
+    assertThat(r4Measure.getText().getStatus().getDisplay(), is(equalTo("Extensions")));
+    assertThat(r4Measure.getText().getDivAsString(), is(notNullValue()));
+    assertThat(
+        r4Measure.getExtension().get(0).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL)));
+    assertThat(r4MeasureLibrary.getText().getStatus().getDisplay(), is(equalTo("Extensions")));
+    assertThat(
+        r4MeasureLibrary.getText().getDivAsString(),
+        is(equalTo("<div xmlns=\"http://www.w3.org/1999/xhtml\">test narrative</div>")));
   }
 }
