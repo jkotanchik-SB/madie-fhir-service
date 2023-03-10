@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
@@ -81,12 +82,13 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
             .build();
     Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibraryWithPUC);
     Coding code = new Coding();
-    code.setSystem("http://terminology.hl7.org/CodeSystem/usage-context-type");
+    code.setSystem(UriConstants.UseContext.CODE_SYSTEM_URI);
     code.setCode("program");
     assertThat(library.getUseContext().get(0).getCode().getSystem(), is(equalTo(code.getSystem())));
+    assertThat(library.getUseContext().get(0).getCode().getCode(), is(equalTo(code.getCode())));
     assertThat(
         library.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getSystem(),
-        is(equalTo("http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs")));
+        is(equalTo(UriConstants.UseContext.VALUE_CODABLE_CONTEXT_CODING_SYSTEM_URI)));
   }
 
   @Test

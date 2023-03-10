@@ -88,12 +88,12 @@ public class LibraryTranslatorService {
   public UsageContext convertUseContext(ProgramUseContext programUseContext) {
     UsageContext useContext = new UsageContext();
     Coding code = new Coding();
-    code.setSystem("http://terminology.hl7.org/CodeSystem/usage-context-type");
+    code.setSystem(UriConstants.UseContext.CODE_SYSTEM_URI);
     code.setCode("program");
     useContext.setCode(code);
     CodeableConcept valueCodeableConcept = new CodeableConcept();
     Coding coding = new Coding();
-    coding.setSystem("http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs");
+    coding.setSystem(UriConstants.UseContext.VALUE_CODABLE_CONTEXT_CODING_SYSTEM_URI);
     coding.setCode(programUseContext.getCode());
     coding.setDisplay(programUseContext.getDisplay());
     valueCodeableConcept.setCoding(List.of(coding));
