@@ -1,6 +1,10 @@
 package gov.cms.madie.madiefhirservice.utils;
 
 import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
+import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Resource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -17,5 +21,23 @@ public class ResourceUtils {
     } catch (NullPointerException nullPointerException) {
       throw new InternalServerException("Resource name cannot be null");
     }
+  }
+
+  /**
+   * @param bundleResource Bundle resource
+   * @return r4 resource
+   */
+  public static Resource getResource(Bundle bundleResource, String resourceType) {
+    if (bundleResource == null || resourceType == null) {
+      return null;
+    }
+    var measureEntry =
+        bundleResource.getEntry().stream()
+            .filter(
+                entry ->
+                    StringUtils.equalsIgnoreCase(
+                        resourceType, entry.getResource().getResourceType().toString()))
+            .findFirst();
+    return measureEntry.map(Bundle.BundleEntryComponent::getResource).orElse(null);
   }
 }
