@@ -34,6 +34,7 @@ import gov.cms.madie.models.measure.Population;
 import gov.cms.madie.models.measure.PopulationType;
 import gov.cms.madie.models.measure.Stratification;
 import java.sql.Date;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -368,10 +369,10 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         is(equalTo("01/01/2023")));
     assertThat(
             DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"),
-            is(equalTo("01/13/2023")));
+            is(equalTo(DateFormatUtils.format(java.util.Date.from(Instant.now()), "MM/dd/yyyy"))));
     assertThat(
             DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
-            is(equalTo("02/13/2023")));
+            is(equalTo(DateFormatUtils.format(java.util.Date.from(Instant.now()), "MM/dd/yyyy"))));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),

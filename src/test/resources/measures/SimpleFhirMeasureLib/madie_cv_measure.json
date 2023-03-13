@@ -74,10 +74,6 @@
     "guidance":"test guidance",
     "clinicalRecommendation": "testClinical"
   },
-  "reviewMetaData" : {
-    "approvalDate" : "2023-01-13T16:21:27.014+0000",
-    "lastReviewDate" : "2023-02-13T16:21:27.014+0000"
-  },
   "versionId": "492e7385-7d16-4e33-878b-17d97101a12f",
   "cmsId": null
 }
