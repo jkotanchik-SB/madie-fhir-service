@@ -97,6 +97,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
+    assertThat(
+            DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"),
+            is(equalTo("01/13/2023")));
+    assertThat(
+            DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
+            is(equalTo("02/13/2023")));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
@@ -233,6 +239,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
+    assertThat(
+            DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"),
+            is(equalTo("01/13/2023")));
+    assertThat(
+            DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
+            is(equalTo("02/13/2023")));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
@@ -354,6 +366,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("01/01/2023")));
+    assertThat(
+            DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"),
+            is(equalTo("01/13/2023")));
+    assertThat(
+            DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
+            is(equalTo("02/13/2023")));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),

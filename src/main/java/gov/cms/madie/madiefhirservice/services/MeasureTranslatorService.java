@@ -66,6 +66,8 @@ public class MeasureTranslatorService {
         .setEffectivePeriod(
             getPeriodFromDates(
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
+        .setApprovalDate(Date.from(Optional.ofNullable(approvalDate).orElse(Instant.now())))
+        .setLastReviewDate(Date.from(Optional.ofNullable(lastReviewDate).orElse(Instant.now())))
         .setPublisher(StringUtils.isBlank(steward) ? UNKNOWN : steward)
         .setCopyright(StringUtils.isBlank(copyright) ? UNKNOWN : copyright)
         .setDisclaimer(StringUtils.isBlank(disclaimer) ? UNKNOWN : disclaimer)
@@ -87,8 +89,6 @@ public class MeasureTranslatorService {
         .setClinicalRecommendationStatement(
             madieMeasure.getMeasureMetaData().getClinicalRecommendation())
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
-        .setApprovalDate(Date.from(Optional.ofNullable(approvalDate).orElse(Instant.now())))
-        .setLastReviewDate(Date.from(Optional.ofNullable(lastReviewDate).orElse(Instant.now())))
         .setMeta(buildMeasureMeta());
 
     return measure;
