@@ -13,17 +13,18 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.common.Organization;
 import gov.cms.madie.models.measure.AssociationType;
 import gov.cms.madie.models.measure.Endorsement;
 import gov.cms.madie.models.measure.Group;
@@ -34,7 +35,9 @@ import gov.cms.madie.models.measure.Population;
 import gov.cms.madie.models.measure.PopulationType;
 import gov.cms.madie.models.measure.Stratification;
 import java.sql.Date;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -97,6 +100,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
+    assertThat(
+        DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"), is(equalTo("01/13/2023")));
+    assertThat(
+        DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
+        is(equalTo("02/13/2023")));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
@@ -116,9 +124,24 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getAuthor().size(),
         is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().size())));
     assertThat(
+        measure.getAuthor().get(0).getName(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().get(0).getName())));
+    assertThat(measure.getAuthor().get(0).getTelecomFirstRep(), is(notNullValue()));
+    assertThat(
+        measure.getAuthor().get(0).getTelecomFirstRep().getValue(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().get(0).getUrl())));
+    assertThat(
         measure.getClinicalRecommendationStatement(),
         is(equalTo(madieMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieMeasure.getLastModifiedAt()))));
+    assertNotNull(measure.getUseContext());
+    assertTrue(measure.getUseContext().size() == 1);
+    assertThat(
+        measure.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getCode(),
+        is(equalTo(madieMeasure.getProgramUseContext().getCode())));
+    assertThat(
+        measure.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getDisplay(),
+        is(equalTo(madieMeasure.getProgramUseContext().getDisplay())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -212,7 +235,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   public void testCreateFhirMeasureForMadieRatioMeasure() {
     ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
 
-    madieRatioMeasure.getMeasureMetaData().setSteward("testSteward");
+    madieRatioMeasure
+        .getMeasureMetaData()
+        .setSteward(Organization.builder().name("testSteward").url("test-steward-url.com").build());
     madieRatioMeasure.getMeasureMetaData().setCopyright("testCopyright");
     madieRatioMeasure.getMeasureMetaData().setDisclaimer("testDisclaimer");
     org.hl7.fhir.r4.model.Measure measure =
@@ -223,6 +248,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getRationale(), is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
     assertThat(measure.getPublisher(), is(equalTo("testSteward")));
+    assertThat(measure.getContact(), is(notNullValue()));
+    assertThat(measure.getContactFirstRep(), is(notNullValue()));
+    assertThat(measure.getContactFirstRep().getTelecomFirstRep(), is(notNullValue()));
+    assertThat(
+        measure.getContactFirstRep().getTelecomFirstRep().getValue(),
+        is(equalTo("test-steward-url.com")));
     assertThat(measure.getCopyright(), is(equalTo("testCopyright")));
     assertThat(measure.getDisclaimer(), is(equalTo("testDisclaimer")));
     assertThat(
@@ -233,6 +264,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("12/31/2023")));
+    assertThat(
+        DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"), is(equalTo("01/13/2023")));
+    assertThat(
+        DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
+        is(equalTo("02/13/2023")));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
@@ -256,6 +292,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getClinicalRecommendationStatement(),
         is(equalTo(madieRatioMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieRatioMeasure.getLastModifiedAt()))));
+    assertThat(measure.getUseContext(), is(Collections.emptyList()));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -343,7 +380,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
     assertThat(measure.getName(), is(equalTo(madieCVMeasure.getCqlLibraryName())));
     assertThat(
-        measure.getPublisher(), is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward())));
+        measure.getPublisher(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward().getName())));
     assertThat(
         measure.getRationale(), is(equalTo(madieCVMeasure.getMeasureMetaData().getRationale())));
     assertThat(
@@ -354,6 +392,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getEnd(), "MM/dd/yyyy"),
         is(equalTo("01/01/2023")));
+    assertThat(
+        DateFormatUtils.format(measure.getApprovalDate(), "MM/dd/yyyy"),
+        is(equalTo(DateFormatUtils.format(java.util.Date.from(Instant.now()), "MM/dd/yyyy"))));
+    assertThat(
+        DateFormatUtils.format(measure.getLastReviewDate(), "MM/dd/yyyy"),
+        is(equalTo(DateFormatUtils.format(java.util.Date.from(Instant.now()), "MM/dd/yyyy"))));
     assertThat(measure.getMeta().getProfile().size(), is(equalTo(3)));
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
@@ -364,6 +408,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
+    assertThat(measure.getUseContext(), is(Collections.emptyList()));
     assertThat(measure.getGroup().size(), is(equalTo(madieCVMeasure.getGroups().size())));
 
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));
