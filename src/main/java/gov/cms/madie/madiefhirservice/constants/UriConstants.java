@@ -45,6 +45,13 @@ public final class UriConstants {
         "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/identifier-type";
   }
 
+  public static final class UseContext {
+    public static final String CODE_SYSTEM_URI =
+        "http://terminology.hl7.org/CodeSystem/usage-context-type";
+    public static final String VALUE_CODABLE_CONTEXT_CODING_SYSTEM_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs";
+  }
+
   public static final class QiCore {
     public static final String PATIENT_PROFILE_URI =
         "http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient";

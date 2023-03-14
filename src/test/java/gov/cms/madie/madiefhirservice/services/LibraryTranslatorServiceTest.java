@@ -1,11 +1,14 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
 import gov.cms.madie.madiefhirservice.utils.LibraryHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
+import gov.cms.madie.models.common.ProgramUseContext;
 import gov.cms.madie.models.common.Version;
 import org.hl7.fhir.r4.model.Attachment;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
@@ -61,6 +64,31 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     assertThat(library.getIdentifier().get(0).getValue(), is(equalTo(identifier.getValue())));
     assertThat(library.getIdentifier().get(0).getSystem(), is(equalTo(identifier.getSystem())));
     assertThat(library.getIdentifier().get(0).getUse(), is(equalTo(identifier.getUse())));
+  }
+
+  @Test
+  public void convertToFhirLibraryWithProgramUseContext() {
+    var visitor = new LibraryCqlVisitorFactory().visit(exm1234Cql);
+    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
+    CqlLibrary cqlLibraryWithPUC =
+        cqlLibrary
+            .toBuilder()
+            .programUseContext(
+                ProgramUseContext.builder()
+                    .code("code")
+                    .display("display")
+                    .codeSystem("code system")
+                    .build())
+            .build();
+    Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibraryWithPUC);
+    Coding code = new Coding();
+    code.setSystem(UriConstants.UseContext.CODE_SYSTEM_URI);
+    code.setCode("program");
+    assertThat(library.getUseContext().get(0).getCode().getSystem(), is(equalTo(code.getSystem())));
+    assertThat(library.getUseContext().get(0).getCode().getCode(), is(equalTo(code.getCode())));
+    assertThat(
+        library.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getSystem(),
+        is(equalTo(UriConstants.UseContext.VALUE_CODABLE_CONTEXT_CODING_SYSTEM_URI)));
   }
 
   @Test
