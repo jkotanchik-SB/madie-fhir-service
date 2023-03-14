@@ -13,12 +13,12 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
@@ -35,6 +35,7 @@ import gov.cms.madie.models.measure.PopulationType;
 import gov.cms.madie.models.measure.Stratification;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -119,6 +120,14 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getClinicalRecommendationStatement(),
         is(equalTo(madieMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieMeasure.getLastModifiedAt()))));
+    assertNotNull(measure.getUseContext());
+    assertTrue(measure.getUseContext().size() == 1);
+    assertThat(
+        measure.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getCode(),
+        is(equalTo(madieMeasure.getProgramUseContext().getCode())));
+    assertThat(
+        measure.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getDisplay(),
+        is(equalTo(madieMeasure.getProgramUseContext().getDisplay())));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -256,6 +265,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getClinicalRecommendationStatement(),
         is(equalTo(madieRatioMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieRatioMeasure.getLastModifiedAt()))));
+    assertThat(measure.getUseContext(), is(Collections.emptyList()));
     assertThat(measure.getGroup().size(), is(equalTo(madieRatioMeasure.getGroups().size())));
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -364,6 +374,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getMeta().hasProfile(UriConstants.CqfMeasures.EXECUTABLE_MEASURE_PROFILE_URI),
         is(true));
+    assertThat(measure.getUseContext(), is(Collections.emptyList()));
     assertThat(measure.getGroup().size(), is(equalTo(madieCVMeasure.getGroups().size())));
 
     assertThat(measure.getStatus(), is(equalTo(PublicationStatus.ACTIVE)));

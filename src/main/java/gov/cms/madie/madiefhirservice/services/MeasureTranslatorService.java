@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import gov.cms.madie.madiefhirservice.constants.ValueConstants;
+import gov.cms.madie.madiefhirservice.utils.UseContextUtil;
 import gov.cms.madie.models.measure.Endorsement;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -89,6 +90,10 @@ public class MeasureTranslatorService {
             madieMeasure.getMeasureMetaData().getClinicalRecommendation())
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
         .setMeta(buildMeasureMeta());
+    if (madieMeasure.getProgramUseContext() != null) {
+      measure.setUseContext(
+          List.of(new UseContextUtil().convertUseContext(madieMeasure.getProgramUseContext())));
+    }
 
     return measure;
   }
