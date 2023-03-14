@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import gov.cms.madie.madiefhirservice.constants.ValueConstants;
+import gov.cms.madie.models.common.Organization;
 import gov.cms.madie.models.measure.Endorsement;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +49,7 @@ public class MeasureTranslatorService {
   private String fhirBaseUrl;
 
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure) {
-    String steward = madieMeasure.getMeasureMetaData().getSteward();
+    Organization steward = madieMeasure.getMeasureMetaData().getSteward();
     String copyright = madieMeasure.getMeasureMetaData().getCopyright();
     String disclaimer = madieMeasure.getMeasureMetaData().getDisclaimer();
     String rationale = madieMeasure.getMeasureMetaData().getRationale();
@@ -68,7 +69,10 @@ public class MeasureTranslatorService {
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
         .setApprovalDate(Date.from(Optional.ofNullable(approvalDate).orElse(Instant.now())))
         .setLastReviewDate(Date.from(Optional.ofNullable(lastReviewDate).orElse(Instant.now())))
-        .setPublisher(StringUtils.isBlank(steward) ? UNKNOWN : steward)
+        .setPublisher(
+            (steward == null || StringUtils.isBlank(steward.getName()))
+                ? UNKNOWN
+                : steward.getName())
         .setCopyright(StringUtils.isBlank(copyright) ? UNKNOWN : copyright)
         .setDisclaimer(StringUtils.isBlank(disclaimer) ? UNKNOWN : disclaimer)
         .setRationale(rationale)
@@ -76,7 +80,7 @@ public class MeasureTranslatorService {
             Collections.singletonList(
                 new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
         .setPurpose(UNKNOWN)
-        .setContact(buildContactDetailUrl())
+        .setContact(buildContactDetail(madieMeasure.getMeasureMetaData().getSteward(), false))
         .setGroup(buildGroups(madieMeasure.getGroups()))
         .setSupplementalData(buildSupplementalData(madieMeasure))
         .setStatus(
@@ -85,26 +89,13 @@ public class MeasureTranslatorService {
                 : PublicationStatus.ACTIVE)
         .setDescription(madieMeasure.getMeasureMetaData().getDescription())
         .setUsage(madieMeasure.getMeasureMetaData().getGuidance())
-        .setAuthor(buildAuthors(madieMeasure.getMeasureMetaData().getDevelopers()))
+        .setAuthor(buildContactDetail(madieMeasure.getMeasureMetaData().getDevelopers(), true))
         .setClinicalRecommendationStatement(
             madieMeasure.getMeasureMetaData().getClinicalRecommendation())
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
         .setMeta(buildMeasureMeta());
 
     return measure;
-  }
-
-  public List<ContactDetail> buildAuthors(List<String> developers) {
-    if (CollectionUtils.isNotEmpty(developers)) {
-      return developers.stream()
-          .map(
-              developer -> {
-                return new ContactDetail().setName(developer);
-              })
-          .toList();
-    } else {
-      return null;
-    }
   }
 
   public List<Identifier> buildMeasureIdentifiers(Measure madieMeasure) {
@@ -399,21 +390,43 @@ public class MeasureTranslatorService {
     return new Coding().setCode(code).setSystem(system).setDisplay(display);
   }
 
-  private List<ContactDetail> buildContactDetailUrl() {
-    ContactDetail contactDetail = new ContactDetail();
-    contactDetail.setTelecom(new ArrayList<>());
-    contactDetail.getTelecom().add(buildContactPoint());
+  private List<ContactDetail> buildContactDetail(Organization organization, boolean includeName) {
+    if (organization == null) {
+      return List.of();
+    }
+    return buildContactDetail(List.of(organization), includeName);
+  }
 
-    List<ContactDetail> contactDetails = new ArrayList<>(1);
-    contactDetails.add(contactDetail);
+  private List<ContactDetail> buildContactDetail(
+      List<Organization> organizations, boolean includeName) {
+    if (CollectionUtils.isEmpty(organizations)) {
+      return List.of();
+    }
+
+    List<ContactDetail> contactDetails = new ArrayList<>();
+    for (Organization organization : organizations) {
+      contactDetails.add(buildContact(organization, includeName));
+    }
 
     return contactDetails;
   }
 
-  private ContactPoint buildContactPoint() {
-    return new ContactPoint()
-        .setValue("https://cms.gov")
-        .setSystem(ContactPoint.ContactPointSystem.URL);
+  private ContactDetail buildContact(Organization organization, boolean includeName) {
+    if (organization == null) {
+      return null;
+    }
+
+    ContactDetail contactDetail = new ContactDetail();
+    if (includeName) {
+      contactDetail.setName(organization.getName());
+    }
+    contactDetail.setTelecom(new ArrayList<>());
+    contactDetail.getTelecom().add(buildContactPoint(organization.getUrl()));
+    return contactDetail;
+  }
+
+  private ContactPoint buildContactPoint(String url) {
+    return new ContactPoint().setValue(url).setSystem(ContactPoint.ContactPointSystem.URL);
   }
 
   private List<MeasureSupplementalDataComponent> buildSupplementalData(Measure madieMeasure) {

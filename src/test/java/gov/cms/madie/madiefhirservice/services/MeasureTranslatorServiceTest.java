@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.common.Organization;
 import gov.cms.madie.models.measure.AssociationType;
 import gov.cms.madie.models.measure.Endorsement;
 import gov.cms.madie.models.measure.Group;
@@ -122,6 +123,13 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getAuthor().size(),
         is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().size())));
     assertThat(
+        measure.getAuthor().get(0).getName(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().get(0).getName())));
+    assertThat(measure.getAuthor().get(0).getTelecomFirstRep(), is(notNullValue()));
+    assertThat(
+        measure.getAuthor().get(0).getTelecomFirstRep().getValue(),
+        is(equalTo(madieMeasure.getMeasureMetaData().getDevelopers().get(0).getUrl())));
+    assertThat(
         measure.getClinicalRecommendationStatement(),
         is(equalTo(madieMeasure.getMeasureMetaData().getClinicalRecommendation())));
     assertThat(measure.getDate(), is(equalTo(Date.from(madieMeasure.getLastModifiedAt()))));
@@ -218,7 +226,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   public void testCreateFhirMeasureForMadieRatioMeasure() {
     ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
 
-    madieRatioMeasure.getMeasureMetaData().setSteward("testSteward");
+    madieRatioMeasure
+        .getMeasureMetaData()
+        .setSteward(Organization.builder().name("testSteward").url("test-steward-url.com").build());
     madieRatioMeasure.getMeasureMetaData().setCopyright("testCopyright");
     madieRatioMeasure.getMeasureMetaData().setDisclaimer("testDisclaimer");
     org.hl7.fhir.r4.model.Measure measure =
@@ -229,6 +239,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getRationale(), is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
     assertThat(measure.getPublisher(), is(equalTo("testSteward")));
+    assertThat(measure.getContact(), is(notNullValue()));
+    assertThat(measure.getContactFirstRep(), is(notNullValue()));
+    assertThat(measure.getContactFirstRep().getTelecomFirstRep(), is(notNullValue()));
+    assertThat(
+        measure.getContactFirstRep().getTelecomFirstRep().getValue(),
+        is(equalTo("test-steward-url.com")));
     assertThat(measure.getCopyright(), is(equalTo("testCopyright")));
     assertThat(measure.getDisclaimer(), is(equalTo("testDisclaimer")));
     assertThat(
@@ -354,7 +370,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
     assertThat(measure.getName(), is(equalTo(madieCVMeasure.getCqlLibraryName())));
     assertThat(
-        measure.getPublisher(), is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward())));
+        measure.getPublisher(),
+        is(equalTo(madieCVMeasure.getMeasureMetaData().getSteward().getName())));
     assertThat(
         measure.getRationale(), is(equalTo(madieCVMeasure.getMeasureMetaData().getRationale())));
     assertThat(
