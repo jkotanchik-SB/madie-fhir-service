@@ -1,10 +1,7 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -57,6 +54,8 @@ public class MeasureTranslatorService {
     String copyright = madieMeasure.getMeasureMetaData().getCopyright();
     String disclaimer = madieMeasure.getMeasureMetaData().getDisclaimer();
     String rationale = madieMeasure.getMeasureMetaData().getRationale();
+    Instant approvalDate = madieMeasure.getReviewMetaData().getApprovalDate();
+    Instant lastReviewDate = madieMeasure.getReviewMetaData().getLastReviewDate();
 
     org.hl7.fhir.r4.model.Measure measure = new org.hl7.fhir.r4.model.Measure();
     measure
@@ -69,6 +68,8 @@ public class MeasureTranslatorService {
         .setEffectivePeriod(
             getPeriodFromDates(
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
+        .setApprovalDate(Date.from(Optional.ofNullable(approvalDate).orElse(Instant.now())))
+        .setLastReviewDate(Date.from(Optional.ofNullable(lastReviewDate).orElse(Instant.now())))
         .setPublisher(
             (steward == null || StringUtils.isBlank(steward.getName()))
                 ? UNKNOWN
