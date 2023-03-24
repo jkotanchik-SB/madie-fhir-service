@@ -65,7 +65,9 @@ class ResourceValidationServiceTest {
       OperationOutcome output = validationService.validateBundleResourcesProfiles(bundle);
       assertThat(output, is(notNullValue()));
       assertThat(output.hasIssue(), is(true));
-      assertThat(output.getIssue().size(), is(equalTo(1)));
+      // empty profiles for Patient and Encounter has 2 issues, required profile missing adds
+      // another one
+      assertThat(output.getIssue().size(), is(equalTo(3)));
     }
   }
 
@@ -85,7 +87,8 @@ class ResourceValidationServiceTest {
       OperationOutcome output = validationService.validateBundleResourcesProfiles(bundle);
       assertThat(output, is(notNullValue()));
       assertThat(output.hasIssue(), is(true));
-      assertThat(output.getIssue().size(), is(equalTo(1)));
+      // empty profile also counts as an issue
+      assertThat(output.getIssue().size(), is(equalTo(2)));
     }
   }
 
@@ -93,10 +96,12 @@ class ResourceValidationServiceTest {
   void testValidateBundleResourcesProfilesReturnsValidForPresentRequiredProfile() {
     Patient p = new Patient();
     p.getMeta().addProfile(UriConstants.QiCore.PATIENT_PROFILE_URI);
+    Encounter encounter = new Encounter();
+    encounter.getMeta().addProfile("http://test.profile.com");
     try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
       utilities
           .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
-          .thenReturn(List.of(p, new Encounter()));
+          .thenReturn(List.of(p, encounter));
 
       when(validationConfig.getResourceProfileMap())
           .thenReturn(Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI));

@@ -39,10 +39,19 @@ public class ResourceValidationService {
               fhirContext,
               operationOutcome,
               OperationOutcome.IssueSeverity.ERROR.toCode(),
-              formatMissingProfileMessage(resource, requiredProfile),
+              formatMissingRequiredProfileMessage(resource, requiredProfile),
               null,
               OperationOutcome.IssueType.INVALID.toCode());
         }
+      }
+      if (resource.getMeta().getProfile().isEmpty()) {
+        OperationOutcomeUtil.addIssue(
+            fhirContext,
+            operationOutcome,
+            OperationOutcome.IssueSeverity.WARNING.toCode(),
+            formatMissingProfileMessage(resource),
+            null,
+            OperationOutcome.IssueType.INVALID.toCode());
       }
     }
     return operationOutcome;
@@ -71,7 +80,7 @@ public class ResourceValidationService {
     return operationOutcome;
   }
 
-  private String formatMissingProfileMessage(IBaseResource resource, final String profile) {
+  private String formatMissingRequiredProfileMessage(IBaseResource resource, final String profile) {
     return String.format(
         "Resource of type [%s] must declare conformance to profile [%s].",
         resource.fhirType(), profile);
@@ -81,5 +90,11 @@ public class ResourceValidationService {
     return String.format(
         "All resources in bundle must have unique ID regardless of type. Multiple resources detected with ID [%s]",
         resourceId);
+  }
+
+  private String formatMissingProfileMessage(IBaseResource resource) {
+    return String.format(
+        "Resource of type [%s] is missing profile. Resource Id: [%s]",
+        resource.fhirType(), resource.getIdElement().getIdPart());
   }
 }
