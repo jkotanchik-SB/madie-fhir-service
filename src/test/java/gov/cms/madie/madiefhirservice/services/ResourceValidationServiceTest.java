@@ -72,6 +72,50 @@ class ResourceValidationServiceTest {
   }
 
   @Test
+  void testValidateBundleResourcesProfilesReturnsIssueForInvalidProfile() {
+    Patient p = new Patient();
+    p.getMeta().addProfile(UriConstants.QiCore.PATIENT_PROFILE_URI);
+    Encounter encounter = new Encounter();
+    encounter.getMeta().addProfile("invalidURL");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, encounter));
+
+      when(validationConfig.getResourceProfileMap())
+          .thenReturn(Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesProfiles(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertThat(output.getIssue().size(), is(equalTo(1)));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesProfilesReturnsIssueForInvalidProfileWithURISyntaxException() {
+    Patient p = new Patient();
+    p.getMeta().addProfile(UriConstants.QiCore.PATIENT_PROFILE_URI);
+    Encounter encounter = new Encounter();
+    encounter.getMeta().addProfile("http://localhost:8080/measures/id?s=^IXIC");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, encounter));
+
+      when(validationConfig.getResourceProfileMap())
+          .thenReturn(Map.of(Patient.class, UriConstants.QiCore.PATIENT_PROFILE_URI));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesProfiles(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertThat(output.getIssue().size(), is(equalTo(1)));
+    }
+  }
+
+  @Test
   void testValidateBundleResourcesProfilesReturnsIssueForIncorrectProfile() {
     Patient p = new Patient();
     p.getMeta().addProfile(UriConstants.CqfMeasures.RATIO_PROFILE_URI);

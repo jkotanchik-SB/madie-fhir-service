@@ -12,6 +12,9 @@ import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,22 @@ public class ResourceValidationService {
             formatMissingProfileMessage(resource),
             null,
             OperationOutcome.IssueType.INVALID.toCode());
+      } else {
+        resource
+            .getMeta()
+            .getProfile()
+            .forEach(
+                (p) -> {
+                  if (!isValidURL(p.getValueAsString())) {
+                    OperationOutcomeUtil.addIssue(
+                        fhirContext,
+                        operationOutcome,
+                        OperationOutcome.IssueSeverity.WARNING.toCode(),
+                        formatInvalidProfileMessage(resource),
+                        null,
+                        OperationOutcome.IssueType.INVALID.toCode());
+                  }
+                });
       }
     }
     return operationOutcome;
@@ -94,7 +113,25 @@ public class ResourceValidationService {
 
   private String formatMissingProfileMessage(IBaseResource resource) {
     return String.format(
-        "Resource of type [%s] is missing profile. Resource Id: [%s]",
+        "Resource of type [%s] is missing the Meta.profile. Resource Id: [%s]. "
+            + "Resources missing Meta.profile may cause incorrect results while executing this test case.",
+        resource.fhirType(), resource.getIdElement().getIdPart());
+  }
+
+  private boolean isValidURL(String url) {
+    try {
+      new URL(url).toURI();
+      return true;
+    } catch (MalformedURLException e) {
+      return false;
+    } catch (URISyntaxException e) {
+      return false;
+    }
+  }
+
+  private String formatInvalidProfileMessage(IBaseResource resource) {
+    return String.format(
+        "Resource of type [%s] has invalid profile. Resource Id: [%s]",
         resource.fhirType(), resource.getIdElement().getIdPart());
   }
 }
