@@ -52,7 +52,7 @@ public class ResourceValidationService {
             fhirContext,
             operationOutcome,
             OperationOutcome.IssueSeverity.WARNING.toCode(),
-            formatMissingProfileMessage(resource),
+            formatMissingMetaProfileMessage(resource),
             null,
             OperationOutcome.IssueType.INVALID.toCode());
       } else {
@@ -111,7 +111,7 @@ public class ResourceValidationService {
         resourceId);
   }
 
-  private String formatMissingProfileMessage(IBaseResource resource) {
+  private String formatMissingMetaProfileMessage(IBaseResource resource) {
     return String.format(
         "Resource of type [%s] is missing the Meta.profile. Resource Id: [%s]. "
             + "Resources missing Meta.profile may cause incorrect results while executing this test case.",
@@ -122,9 +122,7 @@ public class ResourceValidationService {
     try {
       new URL(url).toURI();
       return true;
-    } catch (MalformedURLException e) {
-      return false;
-    } catch (URISyntaxException e) {
+    } catch (MalformedURLException | URISyntaxException e) {
       return false;
     }
   }
