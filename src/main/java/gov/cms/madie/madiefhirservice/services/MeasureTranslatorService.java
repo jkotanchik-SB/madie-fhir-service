@@ -9,6 +9,7 @@ import gov.cms.madie.madiefhirservice.constants.ValueConstants;
 import gov.cms.madie.madiefhirservice.utils.UseContextUtil;
 import gov.cms.madie.models.common.Organization;
 import gov.cms.madie.models.measure.Endorsement;
+import gov.cms.madie.models.measure.MeasureGroupTypes;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
@@ -220,6 +221,8 @@ public class MeasureTranslatorService {
             : madieGroup.getPopulationBasis();
     final CodeableConcept scoringUnit = getScoringUnitCode(madieGroup.getScoringUnit());
 
+    final List<CodeableConcept> types = getMeasureTypes(madieGroup.getMeasureGroupTypes());
+
     Element element =
         new MeasureGroupComponent()
             .setDescription(madieGroup.getGroupDescription())
@@ -236,7 +239,29 @@ public class MeasureTranslatorService {
     if (scoringUnit != null) {
       element.addExtension(new Extension(UriConstants.CqfMeasures.SCORING_UNIT_URI, scoringUnit));
     }
+    if (types != null) {
+      types.forEach(
+          type -> element.addExtension(new Extension(UriConstants.CqfMeasures.CQFM_TYPE, type)));
+    }
     return (MeasureGroupComponent) element;
+  }
+
+  private List<CodeableConcept> getMeasureTypes(List<MeasureGroupTypes> measureGroupTypes) {
+    if (CollectionUtils.isEmpty(measureGroupTypes)) {
+      return null;
+    }
+    List<CodeableConcept> types = new ArrayList<>();
+    measureGroupTypes.forEach(
+        type -> {
+          types.add(
+              new CodeableConcept()
+                  .addCoding(
+                      new Coding(
+                          "http://terminology.hl7.org/CodeSystem/measure-type",
+                          type.getValue().replaceAll("\\s+", "-").toLowerCase(),
+                          type.toString())));
+        });
+    return types;
   }
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
