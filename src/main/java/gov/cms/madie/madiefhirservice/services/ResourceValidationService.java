@@ -12,6 +12,9 @@ import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +42,35 @@ public class ResourceValidationService {
               fhirContext,
               operationOutcome,
               OperationOutcome.IssueSeverity.ERROR.toCode(),
-              formatMissingProfileMessage(resource, requiredProfile),
+              formatMissingRequiredProfileMessage(resource, requiredProfile),
               null,
               OperationOutcome.IssueType.INVALID.toCode());
         }
+      }
+      if (resource.getMeta().getProfile().isEmpty()) {
+        OperationOutcomeUtil.addIssue(
+            fhirContext,
+            operationOutcome,
+            OperationOutcome.IssueSeverity.WARNING.toCode(),
+            formatMissingMetaProfileMessage(resource),
+            null,
+            OperationOutcome.IssueType.INVALID.toCode());
+      } else {
+        resource
+            .getMeta()
+            .getProfile()
+            .forEach(
+                (p) -> {
+                  if (!isValidURL(p.getValueAsString())) {
+                    OperationOutcomeUtil.addIssue(
+                        fhirContext,
+                        operationOutcome,
+                        OperationOutcome.IssueSeverity.WARNING.toCode(),
+                        formatInvalidProfileMessage(resource),
+                        null,
+                        OperationOutcome.IssueType.INVALID.toCode());
+                  }
+                });
       }
     }
     return operationOutcome;
@@ -71,7 +99,7 @@ public class ResourceValidationService {
     return operationOutcome;
   }
 
-  private String formatMissingProfileMessage(IBaseResource resource, final String profile) {
+  private String formatMissingRequiredProfileMessage(IBaseResource resource, final String profile) {
     return String.format(
         "Resource of type [%s] must declare conformance to profile [%s].",
         resource.fhirType(), profile);
@@ -81,5 +109,27 @@ public class ResourceValidationService {
     return String.format(
         "All resources in bundle must have unique ID regardless of type. Multiple resources detected with ID [%s]",
         resourceId);
+  }
+
+  private String formatMissingMetaProfileMessage(IBaseResource resource) {
+    return String.format(
+        "Resource of type [%s] is missing the Meta.profile. Resource Id: [%s]. "
+            + "Resources missing Meta.profile may cause incorrect results while executing this test case.",
+        resource.fhirType(), resource.getIdElement().getIdPart());
+  }
+
+  private boolean isValidURL(String url) {
+    try {
+      new URL(url).toURI();
+      return true;
+    } catch (MalformedURLException | URISyntaxException e) {
+      return false;
+    }
+  }
+
+  private String formatInvalidProfileMessage(IBaseResource resource) {
+    return String.format(
+        "Resource of type [%s] has invalid profile. Resource Id: [%s]",
+        resource.fhirType(), resource.getIdElement().getIdPart());
   }
 }

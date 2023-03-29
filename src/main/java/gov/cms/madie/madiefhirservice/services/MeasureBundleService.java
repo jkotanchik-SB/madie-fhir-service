@@ -76,6 +76,7 @@ public class MeasureBundleService {
       // set narrative to measure library
       var measureLibrary =
           (org.hl7.fhir.r4.model.Library) ResourceUtils.getResource(bundle, "Library");
+      addEffectiveDataRequirementsToLibrary(measureLibrary, effectiveDataRequirements);
       String libraryHr = humanReadableService.generateLibraryHumanReadable(measureLibrary);
       setNarrativeText(measureLibrary, libraryHr);
     }
@@ -165,5 +166,17 @@ public class MeasureBundleService {
             .setUrl(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL)
             .setValue(new Reference().setReference("#effective-data-requirements"));
     measure.getExtension().add(extension);
+  }
+
+  private void addEffectiveDataRequirementsToLibrary(
+      org.hl7.fhir.r4.model.Library library,
+      org.hl7.fhir.r5.model.Library effectiveDataRequirements) {
+    var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
+    org.hl7.fhir.r4.model.Library r4EffectiveDataRequirements =
+        (org.hl7.fhir.r4.model.Library)
+            versionConvertor_40_50.convertResource(effectiveDataRequirements);
+    // TODO: verify effective data requirement profile compliance:
+    // http://hl7.org/fhir/us/cqfmeasures/StructureDefinition-module-definition-library-cqfm.html
+    library.setDataRequirement(r4EffectiveDataRequirements.getDataRequirement());
   }
 }
