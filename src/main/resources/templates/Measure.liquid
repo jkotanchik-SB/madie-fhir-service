@@ -469,7 +469,7 @@
                         {% for supplementalData in Measure.supplementalData %}
                             <tr>
                                 <td>{{supplementalData.criteria.expression}}</td>
-                                <td>{{(supplementalData.usage.first() as CodeableConcept).coding.first().system}}</td>
+                                <td>{{supplementalData.usage.first().coding.first().system}}</td>
                             </tr>
                         {% endfor %}
                     </table>
