@@ -17,6 +17,8 @@ public final class UriConstants {
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoringUnit";
     public static final String POPULATION_BASIS =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-populationBasis";
+    public static final String CQFM_TYPE =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-type";
     public static final String PROPORTION_PROFILE_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/proportion-measure-cqfm";
     public static final String COHORT_PROFILE_URI =
