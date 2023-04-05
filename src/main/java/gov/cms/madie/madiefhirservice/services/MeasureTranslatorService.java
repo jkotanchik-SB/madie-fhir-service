@@ -279,7 +279,7 @@ public class MeasureTranslatorService {
                                   UriConstants.POPULATION_SYSTEM_URI,
                                   populationDisplay))
                           .setCriteria(
-                              buildExpression("text/cql.identifier", population.getDefinition()))
+                              buildExpression("text/cql-identifier", population.getDefinition()))
                           .setId(population.getId()))
                       .addExtension(buildPopulationTypeExtension(population, madieGroup));
               // TODO: Add an extension for measure observations
@@ -306,7 +306,7 @@ public class MeasureTranslatorService {
                                   PopulationType.MEASURE_OBSERVATION.getDisplay()))
                           .setCriteria(
                               buildExpression(
-                                  "text/cql.identifier", measureObservation.getDefinition()))
+                                  "text/cql-identifier", measureObservation.getDefinition()))
                           .addExtension(
                               new Extension(
                                   UriConstants.CqfMeasures.AGGREGATE_METHOD_URI,
@@ -348,7 +348,7 @@ public class MeasureTranslatorService {
                                 .setDescription(strat.getDescription())
                                 .setCriteria(
                                     buildExpression(
-                                        "text/cql.identifier", strat.getCqlDefinition())))
+                                        "text/cql-identifier", strat.getCqlDefinition())))
                             .setId(
                                 StringUtils.isNotBlank(strat.getId())
                                     ? strat.getId()
