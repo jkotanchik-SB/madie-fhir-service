@@ -5,7 +5,6 @@ import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.LenientErrorHandler;
 import ca.uhn.fhir.validation.FhirValidator;
-import ca.uhn.fhir.validation.ResultSeverityEnum;
 import ca.uhn.fhir.validation.ValidationResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,7 +14,6 @@ import gov.cms.madie.madiefhirservice.services.ResourceValidationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.OperationOutcome;
 import org.springframework.http.HttpEntity;
@@ -24,12 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.Collection;
 
 @Slf4j
 @RestController
@@ -80,17 +72,11 @@ public class ValidationController {
 
     ValidationResult result = validator.validateWithResult(bundle);
     try {
-      final OperationOutcome combinedOutcome =
-          validationService.combineOutcomes(
-              requiredProfilesOutcome,
-              uniqueIdsOutcome,
-              (OperationOutcome) result.toOperationOutcome());
+      final OperationOutcome combinedOutcome = validationService.combineOutcomes(requiredProfilesOutcome, uniqueIdsOutcome, (OperationOutcome)result.toOperationOutcome());
       String outcomeString = parser.encodeResourceToString(combinedOutcome);
       return HapiOperationOutcome.builder()
-          .code(
-              requiredProfilesOutcome.hasIssue() || uniqueIdsOutcome.hasIssue()
-                  ? HttpStatus.BAD_REQUEST.value()
-                  : HttpStatus.OK.value())
+          .code(requiredProfilesOutcome.hasIssue() || uniqueIdsOutcome.hasIssue() ?
+              HttpStatus.BAD_REQUEST.value() : HttpStatus.OK.value())
           .successful(validationService.isSuccessful(combinedOutcome))
           .outcomeResponse(mapper.readValue(outcomeString, Object.class))
           .build();
