@@ -26,7 +26,6 @@ public class ResourceValidationService {
 
   private FhirContext fhirContext;
 
-  // List<OperationOutcome.OperationOutcomeIssueComponent>
   public OperationOutcome validateBundleResourcesProfiles(IBaseBundle bundleResource) {
     List<IBaseResource> resources = BundleUtil.toListOfResources(fhirContext, bundleResource);
     OperationOutcome operationOutcome = new OperationOutcome();
