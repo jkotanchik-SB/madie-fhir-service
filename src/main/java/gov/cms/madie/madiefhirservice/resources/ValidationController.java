@@ -3,7 +3,7 @@ package gov.cms.madie.madiefhirservice.resources;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
-import ca.uhn.fhir.parser.LenientErrorHandler;
+import ca.uhn.fhir.parser.StrictErrorHandler;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,10 +43,8 @@ public class ValidationController {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   public HapiOperationOutcome validateBundle(HttpEntity<String> request) {
-    LenientErrorHandler lenientErrorHandler =
-        new LenientErrorHandler().setErrorOnInvalidValue(false);
     IParser parser =
-        fhirContext.newJsonParser().setParserErrorHandler(lenientErrorHandler).setPrettyPrint(true);
+        fhirContext.newJsonParser().setParserErrorHandler(new StrictErrorHandler()).setPrettyPrint(true);
 
     Bundle bundle;
 
