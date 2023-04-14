@@ -822,6 +822,33 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   }
 
   @Test
+  public void testBuildMeasureIdentifiersReturnsIdentifiersWithoutNqfForMeasure() {
+    final Measure madieMeasure =
+        Measure.builder()
+            .id("MEASURE_ID_1")
+            .measureSetId("MEASURE_SET_ID_99")
+            .ecqmTitle("ECQM_TITLE")
+            .measureMetaData(
+                MeasureMetaData.builder()
+                    .endorsements(
+                        List.of(Endorsement.builder().endorsementId("").endorser("").build()))
+                    .build())
+            .build();
+    List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
+    assertThat(output, is(notNullValue()));
+    // Short Name
+    assertThat(output.size(), is(equalTo(3)));
+    assertThat(output.get(0), is(notNullValue()));
+    assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
+    // Measure Set ID
+    assertThat(output.get(1), is(notNullValue()));
+    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    // Measure ID
+    assertThat(output.get(2), is(notNullValue()));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+  }
+
+  @Test
   public void testBuildGroupsWithNull() {
     List<MeasureGroupComponent> listOfComponent =
         measureTranslatorService.buildGroups(new ArrayList<>());
