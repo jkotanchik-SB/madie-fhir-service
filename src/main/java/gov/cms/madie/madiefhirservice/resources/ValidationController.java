@@ -68,20 +68,19 @@ public class ValidationController {
 
     OperationOutcome requiredProfilesOutcome =
         validationService.validateBundleResourcesProfiles(bundle);
-    OperationOutcome uniqueIdsOutcome =
-        validationService.validateBundleResourcesIdUniqueness(bundle);
+    OperationOutcome validIdsOutcome = validationService.validateBundleResourcesIdValid(bundle);
 
     ValidationResult result = validator.validateWithResult(bundle);
     try {
       final OperationOutcome combinedOutcome =
           validationService.combineOutcomes(
               requiredProfilesOutcome,
-              uniqueIdsOutcome,
+              validIdsOutcome,
               (OperationOutcome) result.toOperationOutcome());
       String outcomeString = parser.encodeResourceToString(combinedOutcome);
       return HapiOperationOutcome.builder()
           .code(
-              requiredProfilesOutcome.hasIssue() || uniqueIdsOutcome.hasIssue()
+              requiredProfilesOutcome.hasIssue() || validIdsOutcome.hasIssue()
                   ? HttpStatus.BAD_REQUEST.value()
                   : HttpStatus.OK.value())
           .successful(validationService.isSuccessful(combinedOutcome))

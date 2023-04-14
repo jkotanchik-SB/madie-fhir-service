@@ -78,7 +78,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
+    when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
     when(validationService.combineOutcomes(any())).thenReturn(new OperationOutcome());
 
@@ -103,7 +103,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     operationOutcomeWithIssues.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(operationOutcomeWithIssues);
-    when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
+    when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
     when(validationService.combineOutcomes(any())).thenReturn(operationOutcomeWithIssues);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(true);
@@ -127,7 +127,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     String tc1Json = getStringFromTestResource("/testCaseBundles/validTestCase.json");
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
+    when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
     when(validationService.combineOutcomes(any())).thenReturn(new OperationOutcome());
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(true);
@@ -153,10 +153,10 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     profileWarningOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
     when(validationService.validateBundleResourcesProfiles(any(IBaseBundle.class)))
         .thenReturn(profileWarningOutcome);
-    OperationOutcome uniqueIdErrorOutcome = new OperationOutcome();
-    uniqueIdErrorOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
-    when(validationService.validateBundleResourcesIdUniqueness(any(IBaseBundle.class)))
-        .thenReturn(uniqueIdErrorOutcome);
+    OperationOutcome invalidIdErrorOutcome = new OperationOutcome();
+    invalidIdErrorOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
+    when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
+        .thenReturn(invalidIdErrorOutcome);
     OperationOutcome combinedOutcome = new OperationOutcome();
     combinedOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
     combinedOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
