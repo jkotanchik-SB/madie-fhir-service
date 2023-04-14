@@ -260,6 +260,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieRatioMeasure);
 
     assertThat(measure.getName(), is(equalTo(madieMeasure.getCqlLibraryName())));
+    assertFalse(measure.getExperimental());
     assertThat(measure.getGuidance(), is(equalTo(madieMeasure.getMeasureMetaData().getSteward())));
     assertThat(
         measure.getRationale(), is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));

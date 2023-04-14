@@ -63,7 +63,7 @@ public class MeasureTranslatorService {
         .setName(madieMeasure.getCqlLibraryName())
         .setTitle(madieMeasure.getMeasureName())
         .setIdentifier(buildMeasureIdentifiers(madieMeasure))
-        .setExperimental(true)
+        .setExperimental(madieMeasure.getMeasureMetaData().isExperimental())
         .setUrl(fhirBaseUrl + "/Measure/" + madieMeasure.getCqlLibraryName())
         .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
