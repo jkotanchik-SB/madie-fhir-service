@@ -127,7 +127,7 @@ public class MeasureTranslatorService {
               ValueConstants.CODE_VERSION_SPECIFIC));
       if (madieMeasure.getMeasureMetaData() != null
           && madieMeasure.getMeasureMetaData().getEndorsements() != null
-          && !madieMeasure.getMeasureMetaData().getEndorsements().isEmpty()
+          && CollectionUtils.isNotEmpty(madieMeasure.getMeasureMetaData().getEndorsements())
           && StringUtils.isNotBlank(
               madieMeasure.getMeasureMetaData().getEndorsements().get(0).getEndorser())) {
         Endorsement endorsement = madieMeasure.getMeasureMetaData().getEndorsements().get(0);
