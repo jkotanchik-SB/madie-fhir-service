@@ -173,7 +173,7 @@
         {% if Measure.description.exists() %}
             <tr>
                 <th scope="row"><b>Description: </b></th>
-                <td style="padding-left: 4px;">{{Measure.description}}</td>
+                <td style="padding-left: 4px;">{{Measure.description.escape('html')}}</td>
             </tr>
         {% endif %}
         {% if Measure.group.exists() %}
@@ -191,7 +191,7 @@
                                 {% for population in group.population %}
                                     <tr>
                                         <td>{{population.code.coding[0].display}}: </td>
-                                        <td>{{population.description}}</td>
+                                        <td>{{population.description.escape('html')}}</td>
                                     </tr>
                                 {% endfor %}
                             </table>
@@ -579,7 +579,7 @@
 		                                    <td>{{population.code.first().coding.first().display}}</td>
 		                                    <td>
 		                                        {% if population.description %}
-		                                            {{(population.description)}}
+		                                            {{(population.description.escape('html'))}}
 		                                        {% endif %}
 		                                    </td>
 		                                 </tr>
@@ -666,10 +666,10 @@
                             {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                         {% else %}
                             {%if supplementalData.description.exists() %}
-                                {{supplementalData.description}}
+                                {{supplementalData.description.escape('html')}}
                             {% else %}
                                 {%if supplementalData.criteria.description.exists() %}
-                                    {{supplementalData.criteria.description}}
+                                    {{supplementalData.criteria.description.escape('html')}}
                                 {% else %}
                                     {{supplementalData.criteria.expression}}
                                 {% endif %}
@@ -689,10 +689,10 @@
                             {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                         {% else %}
                             {%if supplementalData.description.exists() %}
-                                {{supplementalData.description}}
+                                {{supplementalData.description.escape('html')}}
                             {% else %}
                                 {%if supplementalData.criteria.description.exists() %}
-                                    {{supplementalData.criteria.description}}
+                                    {{supplementalData.criteria.description.escape('html')}}
                                 {% else %}
                                     {{supplementalData.criteria.expression}}
                                 {% endif %}
