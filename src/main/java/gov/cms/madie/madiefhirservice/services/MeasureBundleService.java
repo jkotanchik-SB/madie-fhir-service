@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// import ca.uhn.fhir.context.FhirContext;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,7 +39,6 @@ public class MeasureBundleService {
   private final HapiFhirServer hapiFhirServer;
   private final ElmTranslatorClient elmTranslatorClient;
   private final HumanReadableService humanReadableService;
-  // private final FhirContext fhirContext;
 
   /**
    * Creates measure bundle that contains measure, main library, and included libraries resources
