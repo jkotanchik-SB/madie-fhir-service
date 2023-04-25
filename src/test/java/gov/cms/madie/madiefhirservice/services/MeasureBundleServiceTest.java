@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.exceptions.CqlLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.exceptions.HapiLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
@@ -99,7 +100,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
               return null;
             })
         .when(libraryService)
-        .getIncludedLibraries(anyString(), anyMap());
+        .getIncludedLibraries(anyString(), anyMap(), anyString(), anyString());
 
     Bundle bundle =
         measureBundleService.createMeasureBundle(
@@ -130,12 +131,12 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     when(libraryTranslatorService.convertToFhirLibrary(
             any(CqlLibrary.class), any(ProgramUseContext.class)))
         .thenReturn(library);
-    doThrow(new HapiLibraryNotFoundException("FHIRHelpers", "4.0.001"))
+    doThrow(new CqlLibraryNotFoundException("FHIRHelpers", "4.0.001"))
         .when(libraryService)
-        .getIncludedLibraries(anyString(), anyMap());
+        .getIncludedLibraries(anyString(), any(), anyString(), anyString());
     Exception exception =
         Assertions.assertThrows(
-            HapiLibraryNotFoundException.class,
+            CqlLibraryNotFoundException.class,
             () ->
                 measureBundleService.createMeasureBundle(
                     madieMeasure,
@@ -145,7 +146,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
 
     assertThat(
         exception.getMessage(),
-        is(equalTo("Cannot find a Hapi Fhir Library with name: FHIRHelpers, version: 4.0.001")));
+        is(equalTo("Cannot find a CQL Library with name: FHIRHelpers, version: 4.0.001")));
   }
 
   @Test
@@ -177,7 +178,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
               return null;
             })
         .when(libraryService)
-        .getIncludedLibraries(anyString(), anyMap());
+        .getIncludedLibraries(anyString(), anyMap(), anyString(), anyString());
 
     when(elmTranslatorClient.getEffectiveDataRequirements(
             any(Bundle.class), anyString(), anyString(), anyString()))
