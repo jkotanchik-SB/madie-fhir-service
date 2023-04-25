@@ -44,7 +44,10 @@ public class ValidationController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   public HapiOperationOutcome validateBundle(HttpEntity<String> request) {
     IParser parser =
-        fhirContext.newJsonParser().setParserErrorHandler(new StrictErrorHandler()).setPrettyPrint(true);
+        fhirContext
+            .newJsonParser()
+            .setParserErrorHandler(new StrictErrorHandler())
+            .setPrettyPrint(true);
 
     Bundle bundle;
 
@@ -70,11 +73,17 @@ public class ValidationController {
 
     ValidationResult result = validator.validateWithResult(bundle);
     try {
-      final OperationOutcome combinedOutcome = validationService.combineOutcomes(requiredProfilesOutcome, uniqueIdsOutcome, (OperationOutcome)result.toOperationOutcome());
+      final OperationOutcome combinedOutcome =
+          validationService.combineOutcomes(
+              requiredProfilesOutcome,
+              uniqueIdsOutcome,
+              (OperationOutcome) result.toOperationOutcome());
       String outcomeString = parser.encodeResourceToString(combinedOutcome);
       return HapiOperationOutcome.builder()
-          .code(requiredProfilesOutcome.hasIssue() || uniqueIdsOutcome.hasIssue() ?
-              HttpStatus.BAD_REQUEST.value() : HttpStatus.OK.value())
+          .code(
+              requiredProfilesOutcome.hasIssue() || uniqueIdsOutcome.hasIssue()
+                  ? HttpStatus.BAD_REQUEST.value()
+                  : HttpStatus.OK.value())
           .successful(validationService.isSuccessful(combinedOutcome))
           .outcomeResponse(mapper.readValue(outcomeString, Object.class))
           .build();
