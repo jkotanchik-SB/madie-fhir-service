@@ -14,6 +14,11 @@ madie:
     service:
       base-url: ${ELM_TRANSLATOR_SERVICE_URL:http://host.docker.internal:8084/api}
       effective-data-requirements-uri: /effective-data-requirements
+  library:
+    service:
+      baseUrl: ${CQL_LIBRARY_SERVICE_URL:http://localhost:8082/api}
+      versioned:
+        uri: /cql-libraries/versioned
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}

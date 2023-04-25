@@ -31,7 +31,7 @@ public class MeasureTestHelper {
     measure
         .setName("TestCMS0001")
         .setTitle("TestTitle001")
-        .setExperimental(true)
+        .setExperimental(false)
         .setUrl("/Measure/TestCMS0001")
         .setPublisher("CMS")
         .setCopyright("CMS copyright")

@@ -5,6 +5,8 @@ import ca.uhn.fhir.util.BundleUtil;
 import ca.uhn.fhir.util.OperationOutcomeUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.OperationOutcome;
@@ -59,24 +61,34 @@ public class ResourceValidationService {
     return operationOutcome;
   }
 
-  public OperationOutcome validateBundleResourcesIdUniqueness(IBaseBundle bundleResource) {
+  public OperationOutcome validateBundleResourcesIdValid(IBaseBundle bundleResource) {
     List<IBaseResource> resources = BundleUtil.toListOfResources(fhirContext, bundleResource);
     Set<String> existingIds = new HashSet<>();
     Set<String> duplicateIds = new HashSet<>();
     OperationOutcome operationOutcome = new OperationOutcome();
     for (IBaseResource resource : resources) {
       final String resourceId = resource.getIdElement().getIdPart();
-      if (existingIds.contains(resourceId) && !duplicateIds.contains(resourceId)) {
+      if (StringUtils.isBlank(resourceId)) {
         OperationOutcomeUtil.addIssue(
             fhirContext,
             operationOutcome,
             OperationOutcome.IssueSeverity.ERROR.toCode(),
-            formatUniqueIdViolationMessage(resourceId),
+            "All resources must have an Id",
             null,
             OperationOutcome.IssueType.INVALID.toCode());
-        duplicateIds.add(resourceId);
       } else {
-        existingIds.add(resourceId);
+        if (existingIds.contains(resourceId) && !duplicateIds.contains(resourceId)) {
+          OperationOutcomeUtil.addIssue(
+              fhirContext,
+              operationOutcome,
+              OperationOutcome.IssueSeverity.ERROR.toCode(),
+              formatUniqueIdViolationMessage(resourceId),
+              null,
+              OperationOutcome.IssueType.INVALID.toCode());
+          duplicateIds.add(resourceId);
+        } else {
+          existingIds.add(resourceId);
+        }
       }
     }
     return operationOutcome;

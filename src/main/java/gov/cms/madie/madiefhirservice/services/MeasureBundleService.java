@@ -45,7 +45,8 @@ public class MeasureBundleService {
    */
   public Bundle createMeasureBundle(
       Measure madieMeasure, Principal principal, String bundleType, String accessToken) {
-    log.info("Generating measure bundle for measure {}", madieMeasure.getId());
+    log.info(
+        "Generating measure bundle of type [{}] for measure {}", bundleType, madieMeasure.getId());
     madieMeasure.setCql(CqlFormatter.formatCql(madieMeasure.getCql(), principal));
 
     org.hl7.fhir.r4.model.Measure measure =
@@ -57,7 +58,7 @@ public class MeasureBundleService {
         new Bundle().setType(Bundle.BundleType.TRANSACTION).addEntry(measureEntryComponent);
     // Bundle entries for all the library resources of a MADiE Measure
     List<Bundle.BundleEntryComponent> libraryEntryComponents =
-        createBundleComponentsForLibrariesOfMadieMeasure(madieMeasure);
+        createBundleComponentsForLibrariesOfMadieMeasure(madieMeasure, bundleType, accessToken);
     libraryEntryComponents.forEach(bundle::addEntry);
 
     if (BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT.equals(bundleType)) {
@@ -90,11 +91,12 @@ public class MeasureBundleService {
    * @return list of Library BundleEntryComponents
    */
   public List<Bundle.BundleEntryComponent> createBundleComponentsForLibrariesOfMadieMeasure(
-      Measure madieMeasure) {
+      Measure madieMeasure, final String bundleType, final String accessToken) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
     Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
     Map<String, Library> includedLibraryMap = new HashMap<>();
-    libraryService.getIncludedLibraries(madieMeasure.getCql(), includedLibraryMap);
+    libraryService.getIncludedLibraries(
+        madieMeasure.getCql(), includedLibraryMap, bundleType, accessToken);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
         includedLibraryMap.values().stream()
             .map(this::getBundleEntryComponent)

@@ -25,6 +25,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -135,7 +136,7 @@ class ResourceValidationServiceTest {
           .thenReturn(List.of(p, e1, e2));
 
       Bundle bundle = new Bundle();
-      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      OperationOutcome output = validationService.validateBundleResourcesIdValid(bundle);
       assertThat(output, is(notNullValue()));
       assertThat(output.hasIssue(), is(true));
       assertThat(output.getIssueFirstRep().getDiagnostics().contains("1234"), is(true));
@@ -158,7 +159,7 @@ class ResourceValidationServiceTest {
           .thenReturn(List.of(p, e1, p1, e2));
 
       Bundle bundle = new Bundle();
-      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      OperationOutcome output = validationService.validateBundleResourcesIdValid(bundle);
       assertThat(output, is(notNullValue()));
       assertThat(output.hasIssue(), is(true));
       assertThat(output.getIssueFirstRep().getDiagnostics().contains("1234"), is(true));
@@ -180,9 +181,29 @@ class ResourceValidationServiceTest {
           .thenReturn(List.of(p, e1, e2));
 
       Bundle bundle = new Bundle();
-      OperationOutcome output = validationService.validateBundleResourcesIdUniqueness(bundle);
+      OperationOutcome output = validationService.validateBundleResourcesIdValid(bundle);
       assertThat(output, is(notNullValue()));
       assertThat(output.hasIssue(), is(false));
+    }
+  }
+
+  @Test
+  void testValidateBundleResourcesIdValidReturnsErrorForNoId() {
+    Patient p = new Patient();
+    Encounter e1 = new Encounter();
+    e1.setId("2222");
+    Encounter e2 = new Encounter();
+    e2.setId("3333");
+    try (MockedStatic<BundleUtil> utilities = Mockito.mockStatic(BundleUtil.class)) {
+      utilities
+          .when(() -> BundleUtil.toListOfResources(any(FhirContext.class), any(IBaseBundle.class)))
+          .thenReturn(List.of(p, e1, e2));
+
+      Bundle bundle = new Bundle();
+      OperationOutcome output = validationService.validateBundleResourcesIdValid(bundle);
+      assertThat(output, is(notNullValue()));
+      assertThat(output.hasIssue(), is(true));
+      assertEquals(output.getIssueFirstRep().getDiagnostics(), "All resources must have an Id");
     }
   }
 }
