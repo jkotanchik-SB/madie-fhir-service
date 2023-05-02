@@ -247,25 +247,25 @@
         {% if Measure.purpose.exists() %}
             <tr>
                 <th scope="row"><b>Purpose: </b></th>
-                <td style="padding-left: 4px;">{{Measure.purpose}}</td>
+                <td style="padding-left: 4px;">{{Measure.purpose.escape('html')}}</td>
             </tr>
         {% endif %}
         {% if Measure.usage.exists() %}
             <tr>
                 <th scope="row"><b>Usage: </b></th>
-                <td style="padding-left: 4px;">{{Measure.usage}}</td>
+                <td style="padding-left: 4px;">{{Measure.usage.escape('html')}}</td>
             </tr>
         {% endif %}
         {% if Measure.copyright.exists() %}
             <tr>
                 <th scope="row"><b>Copyright: </b></th>
-                <td style="padding-left: 25px;">{{Measure.copyright}}</td>
+                <td style="padding-left: 25px;">{{Measure.copyright.escape('html')}}</td>
             </tr>
         {% endif %}
         {% if Measure.disclaimer.exists() %}
             <tr>
                 <th scope="row"><b>Disclaimer: </b></th>
-                <td style="padding-left: 25px;">{{Measure.disclaimer}}</td>
+                <td style="padding-left: 25px;">{{Measure.disclaimer.escape('html')}}</td>
             </tr>
         {% endif %}
         {% if Measure.approvalDate.exists() %}
