@@ -167,7 +167,7 @@
         {% if Measure.publisher.exists() %}
             <tr>
                 <th scope="row"><b>Publisher: </b></th>
-                <td style="padding-left: 4px;">{{Measure.publisher}}</td>
+                <td style="padding-left: 4px;">{{Measure.publisher.escape('html')}}</td>
             </tr>
         {% endif %}
         {% if Measure.description.exists() %}
@@ -469,7 +469,7 @@
                                                     <td>{{ population.code.first().coding.first().display }}</td>
                                                     <td>
                                                         {% if population.criteria.expression %}
-                                                        <pre><code class="language-cql">{{ (Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value) }}</code></pre>
+                                                        <pre><code class="language-cql">{{ (Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value).escape('html') }}</code></pre>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
