@@ -142,6 +142,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getUseContext().get(0).getValueCodeableConcept().getCoding().get(0).getDisplay(),
         is(equalTo(madieMeasure.getProgramUseContext().getDisplay())));
+    assertThat(measure.hasExtension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI), is(true));
+    Extension sdgExt = measure.getExtensionByUrl(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
+    assertThat(sdgExt, is(notNullValue()));
+    assertThat(sdgExt.getExtension(), is(notNullValue()));
+    assertThat(sdgExt.getExtension().size(), is(equalTo(2)));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
