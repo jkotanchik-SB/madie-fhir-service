@@ -28,62 +28,66 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CqlLibraryServiceTest {
 
-    @InjectMocks
-    private CqlLibraryService cqlLibraryService;
+  @InjectMocks private CqlLibraryService cqlLibraryService;
 
-    @Mock
-    private RestTemplate restTemplate;
+  @Mock private RestTemplate restTemplate;
 
+  @BeforeEach
+  void setup() {
+    ReflectionTestUtils.setField(
+        cqlLibraryService, "madieLibraryService", "http://test.libraries-url");
+    ReflectionTestUtils.setField(
+        cqlLibraryService, "librariesVersionedUri", "/cql-libraries/versioned");
+  }
 
-    @BeforeEach
-    void setup() {
-        ReflectionTestUtils.setField(cqlLibraryService, "madieLibraryService", "http://test.libraries-url");
-        ReflectionTestUtils.setField(cqlLibraryService, "librariesVersionedUri", "/cql-libraries/versioned");
-    }
+  @Test
+  void getLibraryReturnsLibrary() {
+    CqlLibrary theLibrary =
+        CqlLibrary.builder()
+            .cqlLibraryName("FHIRHelpers")
+            .version(Version.parse("4.0.001"))
+            .build();
+    ResponseEntity<CqlLibrary> response = ResponseEntity.ok(theLibrary);
+    when(restTemplate.exchange(
+            any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        .thenReturn(response);
+    CqlLibrary output = cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN");
+    assertThat(output, is(notNullValue()));
+    assertThat(output, is(equalTo(theLibrary)));
+  }
 
-    @Test
-    void getLibraryReturnsLibrary() {
-        CqlLibrary theLibrary = CqlLibrary.builder()
-                .cqlLibraryName("FHIRHelpers")
-                .version(Version.parse("4.0.001"))
-                .build();
-        ResponseEntity<CqlLibrary> response = ResponseEntity.ok(theLibrary);
-        when(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
-                .thenReturn(response);
-        CqlLibrary output = cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN");
-        assertThat(output, is(notNullValue()));
-        assertThat(output, is(equalTo(theLibrary)));
-    }
+  @Test
+  void getLibraryReturnsExceptionForLibraryNotFound() {
+    ResponseEntity<Object> response = ResponseEntity.notFound().build();
+    when(restTemplate.exchange(
+            any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        .thenReturn(response);
+    Exception ex =
+        assertThrows(
+            CqlLibraryNotFoundException.class,
+            () -> cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN"));
+    assertThat(
+        ex.getMessage(),
+        is(equalTo("Cannot find a CQL Library with name: FHIRHelpers, version: 4.0.001")));
+  }
 
-    @Test
-    void getLibraryReturnsExceptionForLibraryNotFound() {
-        ResponseEntity<Object> response = ResponseEntity.notFound().build();
-        when(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
-                .thenReturn(response);
-        Exception ex =
-                assertThrows(
-                        CqlLibraryNotFoundException.class,
-                        () ->
-                                cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN"));
-        assertThat(ex.getMessage(),
-                is(equalTo("Cannot find a CQL Library with name: FHIRHelpers, version: 4.0.001")));
-    }
+  @Test
+  void getLibraryReturnsNullForConflict() {
+    ResponseEntity<Object> response = ResponseEntity.status(HttpStatus.CONFLICT).build();
+    when(restTemplate.exchange(
+            any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        .thenReturn(response);
+    CqlLibrary output = cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN");
+    assertThat(output, is(nullValue()));
+  }
 
-    @Test
-    void getLibraryReturnsNullForConflict() {
-        ResponseEntity<Object> response = ResponseEntity.status(HttpStatus.CONFLICT).build();
-        when(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
-                .thenReturn(response);
-        CqlLibrary output = cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN");
-        assertThat(output, is(nullValue()));
-    }
-
-    @Test
-    void getLibraryReturnsNullForOkNoBody() {
-        ResponseEntity<Object> response = ResponseEntity.ok().build();
-        when(restTemplate.exchange(any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
-                .thenReturn(response);
-        CqlLibrary output = cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN");
-        assertThat(output, is(nullValue()));
-    }
+  @Test
+  void getLibraryReturnsNullForOkNoBody() {
+    ResponseEntity<Object> response = ResponseEntity.ok().build();
+    when(restTemplate.exchange(
+            any(URI.class), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        .thenReturn(response);
+    CqlLibrary output = cqlLibraryService.getLibrary("FHIRHelpers", "4.0.001", "OKTA_TOKEN");
+    assertThat(output, is(nullValue()));
+  }
 }
