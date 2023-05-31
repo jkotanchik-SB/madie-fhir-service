@@ -11,10 +11,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 @EnableScheduling
 public class SchedulerConfig {
 
-    @CacheEvict(value = "libraries", allEntries = true)
-    @Scheduled(fixedRateString = "${caching.spring.libraries.ttlMillis}")
-    public void emptyLibrariesCache() {
-        log.info("emptying libraries cache");
-    }
-
+  @CacheEvict(value = "libraries", allEntries = true)
+  @Scheduled(fixedRateString = "${caching.spring.libraries.ttlMillis}")
+  public void emptyLibrariesCache() {
+    log.info("emptying libraries cache");
+  }
 }

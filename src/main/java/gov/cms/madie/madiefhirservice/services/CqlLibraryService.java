@@ -30,7 +30,7 @@ public class CqlLibraryService {
   @Value("${madie.library.service.versioned.uri}")
   private String librariesVersionedUri;
 
-  @Cacheable(value="libraries", key="{ #root.methodName, #name, #version }")
+  @Cacheable(value = "libraries", key = "{ #root.methodName, #name, #version }")
   public CqlLibrary getLibrary(String name, String version, String accessToken) {
     URI uri = buildMadieLibraryServiceUri(name, version);
     HttpHeaders headers = new HttpHeaders();

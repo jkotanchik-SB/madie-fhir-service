@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.0.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>gov.cms.madie</groupId>
 	<artifactId>madie-fhir-service</artifactId>
@@ -24,7 +26,8 @@
 		<repository>
 			<id>github</id>
 			<name>Github madie rest commons</name>
-			<url>https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons</url>
+			<url>
+				https://maven.pkg.github.com/MeasureAuthoringTool/madie-rest-commons</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -132,7 +135,12 @@
 		<dependency>
 			<groupId>gov.cms.madie</groupId>
 			<artifactId>madie-java-models</artifactId>
-			<version>0.3.1</version>
+			<version>0.3.6-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.cms.madie.packaging</groupId>
+			<artifactId>packaging-utility</artifactId>
+			<version>0.2</version>
 		</dependency>
 
 	</dependencies>
@@ -141,7 +149,8 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<!-- This will save you frustration if you change checkstyle versions -->
+					<!-- This will save you frustration if you change checkstyle
+					versions -->
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
 					<version>${mvn.checkstyle.version}</version>
@@ -171,7 +180,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
