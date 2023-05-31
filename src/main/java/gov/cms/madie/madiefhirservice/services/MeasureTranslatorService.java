@@ -8,8 +8,10 @@ import java.util.stream.Collectors;
 import gov.cms.madie.madiefhirservice.constants.ValueConstants;
 import gov.cms.madie.madiefhirservice.utils.UseContextUtil;
 import gov.cms.madie.models.common.Organization;
-import gov.cms.madie.models.measure.Endorsement;
-import gov.cms.madie.models.measure.MeasureGroupTypes;
+import gov.cms.madie.models.measure.*;
+import gov.cms.madie.models.measure.Group;
+import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.Population;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
@@ -27,6 +29,7 @@ import org.hl7.fhir.r4.model.Measure.MeasureGroupPopulationComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureGroupStratifierComponent;
 import org.hl7.fhir.r4.model.Measure.MeasureSupplementalDataComponent;
 import org.hl7.fhir.r4.model.Period;
+import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.*;
 
@@ -34,10 +37,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.models.measure.Group;
-import gov.cms.madie.models.measure.Measure;
-import gov.cms.madie.models.measure.Population;
-import gov.cms.madie.models.measure.PopulationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -99,6 +98,10 @@ public class MeasureTranslatorService {
     if (madieMeasure.getProgramUseContext() != null) {
       measure.setUseContext(
           List.of(new UseContextUtil().convertUseContext(madieMeasure.getProgramUseContext())));
+    }
+    Extension supplementalDataGuidanceExt = buildSupplementalDataGuidanceExt(madieMeasure);
+    if (supplementalDataGuidanceExt != null) {
+      measure.addExtension(supplementalDataGuidanceExt);
     }
 
     return measure;
@@ -470,6 +473,33 @@ public class MeasureTranslatorService {
     return measureSupplementalDataComponents;
   }
 
+  public Extension buildSupplementalDataGuidanceExt(Measure madieMeasure) {
+    if (CollectionUtils.isEmpty(madieMeasure.getSupplementalData())) {
+      return null;
+    }
+
+    CodeableConcept codeableConcept = new CodeableConcept();
+    codeableConcept.setCoding(new ArrayList<>());
+    codeableConcept
+            .getCoding()
+            .add(
+                    buildCoding(
+                            "supplemental-data",
+                            UriConstants.CqfMeasures.CODE_SYSTEM_MEASURE_DATA_USAGE_URI,
+                            "Supplemental Data"));
+    codeableConcept.setText("Supplemental Data Guidance");
+    Extension ext = new Extension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
+    ext.setId("supplementalDataGuidance");
+    String descriptionList =
+            madieMeasure.getSupplementalData().stream()
+                    .map(SupplementalData::getDescription)
+                    .collect(Collectors.joining(" "));
+    ext.addExtension(new Extension("guidance", new StringType(descriptionList)));
+    ext.addExtension(new Extension("usage", codeableConcept));
+
+    return ext;
+  }
+
   private List<MeasureSupplementalDataComponent> buildSupplementalDataElements(
       Measure madieMeasure) {
     if (madieMeasure.getSupplementalData() == null) {
@@ -483,7 +513,7 @@ public class MeasureTranslatorService {
                   supplementalData.getDefinition().toLowerCase().replace(" ", "-"));
               measureSupplementalDataComponent.setCriteria(
                   buildExpression("text/cql-identifier", supplementalData.getDefinition()));
-              measureSupplementalDataComponent.setDescription(supplementalData.getDescription());
+              measureSupplementalDataComponent.setDescription(supplementalData.getDefinition());
               measureSupplementalDataComponent.setUsage(
                   List.of(
                       buildCodeableConcept(

@@ -45,6 +45,12 @@ public final class UriConstants {
 
     public static final String CODE_SYSTEM_IDENTIFIER_TYPE_URI =
         "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/identifier-type";
+
+    public static final String SUPPLEMENTAL_DATA_GUIDANCE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-supplementalDataGuidance";
+
+    public static final String CODE_SYSTEM_MEASURE_DATA_USAGE_URI =
+        "http://terminology.hl7.org/CodeSystem/measure-data-usage";
   }
 
   public static final class UseContext {
