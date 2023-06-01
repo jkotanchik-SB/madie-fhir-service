@@ -192,10 +192,6 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
     String madieMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
 
-    //    doNothing()
-    //        .when(exportService)
-    //        .createExport(any(Measure.class), any(Principal.class), anyString());
-
     MvcResult result =
         mockMvc
             .perform(
