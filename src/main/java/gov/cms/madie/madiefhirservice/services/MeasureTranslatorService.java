@@ -481,19 +481,19 @@ public class MeasureTranslatorService {
     CodeableConcept codeableConcept = new CodeableConcept();
     codeableConcept.setCoding(new ArrayList<>());
     codeableConcept
-            .getCoding()
-            .add(
-                    buildCoding(
-                            "supplemental-data",
-                            UriConstants.CqfMeasures.CODE_SYSTEM_MEASURE_DATA_USAGE_URI,
-                            "Supplemental Data"));
+        .getCoding()
+        .add(
+            buildCoding(
+                "supplemental-data",
+                UriConstants.CqfMeasures.CODE_SYSTEM_MEASURE_DATA_USAGE_URI,
+                "Supplemental Data"));
     codeableConcept.setText("Supplemental Data Guidance");
     Extension ext = new Extension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
     ext.setId("supplementalDataGuidance");
     String descriptionList =
-            madieMeasure.getSupplementalData().stream()
-                    .map(SupplementalData::getDescription)
-                    .collect(Collectors.joining(" "));
+        madieMeasure.getSupplementalData().stream()
+            .map(item -> item.getDefinition())
+            .collect(Collectors.joining(" "));
     ext.addExtension(new Extension("guidance", new StringType(descriptionList)));
     ext.addExtension(new Extension("usage", codeableConcept));
 
