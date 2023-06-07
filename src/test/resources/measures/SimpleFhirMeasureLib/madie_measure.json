@@ -221,6 +221,10 @@
       {
          "definition":  "Risk Adjustments example 2",
          "description":  "Risk Adjustments example 2 description"
+      },
+      {
+         "definition":  "Risk Adjustments example 3",
+         "description":  "Risk Adjustments example 3 description"
       }
    ],
    "reviewMetaData" : {

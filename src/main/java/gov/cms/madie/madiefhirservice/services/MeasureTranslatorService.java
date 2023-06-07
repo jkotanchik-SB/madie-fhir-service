@@ -99,12 +99,29 @@ public class MeasureTranslatorService {
       measure.setUseContext(
           List.of(new UseContextUtil().convertUseContext(madieMeasure.getProgramUseContext())));
     }
-    Extension supplementalDataGuidanceExt = buildSupplementalDataGuidanceExt(madieMeasure);
-    if (supplementalDataGuidanceExt != null) {
-      measure.addExtension(supplementalDataGuidanceExt);
+    for (Extension ext : buildExtensions(madieMeasure)) {
+      measure.addExtension(ext);
     }
 
     return measure;
+  }
+
+  /**
+   * Build extensions to add to the top level measure
+   *
+   * @param madieMeasure
+   */
+  protected List<Extension> buildExtensions(Measure madieMeasure) {
+    List<Extension> extensions = new ArrayList<>();
+    Extension supplementalDataGuidanceExt = buildSupplementalDataGuidanceExt(madieMeasure);
+    if (supplementalDataGuidanceExt != null) {
+      extensions.add(supplementalDataGuidanceExt);
+    }
+    Extension riskAdjustmentVariableGuidanceExt = buildRiskAdjustmentGuidanceExt(madieMeasure);
+    if (riskAdjustmentVariableGuidanceExt != null) {
+      extensions.add(riskAdjustmentVariableGuidanceExt);
+    }
+    return extensions;
   }
 
   public List<Identifier> buildMeasureIdentifiers(Measure madieMeasure) {
@@ -473,6 +490,13 @@ public class MeasureTranslatorService {
     return measureSupplementalDataComponents;
   }
 
+  /**
+   * Collect descriptions for all supplemental data elements and combine into a single extension for
+   * Supplemental Data Guidance
+   *
+   * @param madieMeasure
+   * @return
+   */
   public Extension buildSupplementalDataGuidanceExt(Measure madieMeasure) {
     if (CollectionUtils.isEmpty(madieMeasure.getSupplementalData())) {
       return null;
@@ -492,7 +516,41 @@ public class MeasureTranslatorService {
     ext.setId("supplementalDataGuidance");
     String descriptionList =
         madieMeasure.getSupplementalData().stream()
-            .map(item -> item.getDefinition())
+            .map(item -> item.getDescription())
+            .collect(Collectors.joining(" "));
+    ext.addExtension(new Extension("guidance", new StringType(descriptionList)));
+    ext.addExtension(new Extension("usage", codeableConcept));
+
+    return ext;
+  }
+
+  /**
+   * Collect descriptions for all risk adjustment variables and combine into a single extension for
+   * Risk Adjustment Variable Guidance
+   *
+   * @param madieMeasure
+   * @return
+   */
+  public Extension buildRiskAdjustmentGuidanceExt(Measure madieMeasure) {
+    if (CollectionUtils.isEmpty(madieMeasure.getRiskAdjustments())) {
+      return null;
+    }
+
+    CodeableConcept codeableConcept = new CodeableConcept();
+    codeableConcept.setCoding(new ArrayList<>());
+    codeableConcept
+        .getCoding()
+        .add(
+            buildCoding(
+                "risk-adjustment-factor",
+                UriConstants.CqfMeasures.CODE_SYSTEM_MEASURE_DATA_USAGE_URI,
+                "Risk Adjustment Factor"));
+    codeableConcept.setText("Risk Adjustment Variable Guidance");
+    Extension ext = new Extension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
+    ext.setId("riskAdjustmentVariableGuidance");
+    String descriptionList =
+        madieMeasure.getRiskAdjustments().stream()
+            .map(item -> item.getDescription())
             .collect(Collectors.joining(" "));
     ext.addExtension(new Extension("guidance", new StringType(descriptionList)));
     ext.addExtension(new Extension("usage", codeableConcept));
@@ -543,7 +601,7 @@ public class MeasureTranslatorService {
                           "risk-adjustment-factor",
                           "http://terminology.hl7.org/CodeSystem/measure-data-usage",
                           null)));
-              measureSupplementalDataComponent.setDescription(riskAdjustment.getDescription());
+              measureSupplementalDataComponent.setDescription(riskAdjustment.getDefinition());
               return measureSupplementalDataComponent;
             })
         .collect(Collectors.toList());
