@@ -144,11 +144,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         is(equalTo(madieMeasure.getProgramUseContext().getDisplay())));
     assertThat(
         measure.hasExtension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI), is(true));
-    Extension sdgExt =
-        measure.getExtensionByUrl(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
-    assertThat(sdgExt, is(notNullValue()));
-    assertThat(sdgExt.getExtension(), is(notNullValue()));
-    assertThat(sdgExt.getExtension().size(), is(equalTo(2)));
+    List<Extension> guidanceExtensions =
+        measure.getExtensionsByUrl(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
+    assertThat(guidanceExtensions, is(notNullValue()));
+    assertThat(guidanceExtensions.size(), is(equalTo(2)));
+    // Supplemental Data Guidance
+    Extension sdegExt = guidanceExtensions.get(0);
+    assertThat(sdegExt, is(notNullValue()));
+    assertThat(sdegExt.getExtension(), is(notNullValue()));
+    assertThat(sdegExt.getExtension().size(), is(equalTo(2)));
+    // Risk Adjustment Factors
+    Extension ravgExt = guidanceExtensions.get(1);
+    assertThat(ravgExt, is(notNullValue()));
+    assertThat(ravgExt.getExtension(), is(notNullValue()));
+    assertThat(ravgExt.getExtension().size(), is(equalTo(2)));
 
     assertThat(measure.getGroup().get(0), is(notNullValue()));
     MeasureGroupComponent group1 = measure.getGroup().get(0);
@@ -238,7 +247,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(group2CodeableConcept.getCoding().get(0).getCode(), is(equalTo("ratio")));
 
     // verifies if SupplemenntalData is populated, it includes both SDE and RiskAdjustmentFators
-    assertEquals(4, measure.getSupplementalData().size());
+    assertEquals(5, measure.getSupplementalData().size());
     assertEquals("sde-race", measure.getSupplementalData().get(0).getId());
     assertEquals("SDE Race", measure.getSupplementalData().get(0).getCriteria().getExpression());
     assertEquals("SDE Race", measure.getSupplementalData().get(0).getDescription());
@@ -248,9 +257,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertEquals(
         "Risk Adjustments example",
         measure.getSupplementalData().get(2).getCriteria().getExpression());
-    assertEquals(
-        "Risk Adjustments example description",
-        measure.getSupplementalData().get(2).getDescription());
+    assertEquals("Risk Adjustments example", measure.getSupplementalData().get(2).getDescription());
     assertFalse(measure.getSupplementalData().get(2).getUsage().get(0).getCoding().isEmpty());
   }
 
