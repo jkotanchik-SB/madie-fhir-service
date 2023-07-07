@@ -18,8 +18,9 @@
 	<properties>
 		<java.version>17</java.version>
 		<springfox.version>3.0.0</springfox.version>
-		<cqframework.version>2.6.0</cqframework.version>
-		<hapi.fhir.r4.version>6.4.1</hapi.fhir.r4.version>
+		<cqframework.version>2.10.0</cqframework.version>
+		<hapi.fhir.r4.version>6.6.1</hapi.fhir.r4.version>
+		<fhir_core_version>6.0.20</fhir_core_version>
 	</properties>
 
 	<repositories>
@@ -33,6 +34,32 @@
 			</releases>
 		</repository>
 	</repositories>
+
+<!--	<dependencyManagement>-->
+<!--		<dependencies>-->
+<!--			<dependency>-->
+<!--				<groupId>ca.uhn.hapi.fhir</groupId>-->
+<!--				<artifactId>org.hl7.fhir.r4</artifactId>-->
+<!--				<version>${fhir_core_version}</version>-->
+<!--			</dependency>-->
+<!--&lt;!&ndash;			<dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;				<groupId>ca.uhn.hapi.fhir</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;				<artifactId>org.hl7.fhir.r4b</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;				<version>${fhir_core_version}</version>&ndash;&gt;-->
+<!--&lt;!&ndash;			</dependency>&ndash;&gt;-->
+<!--			<dependency>-->
+<!--				<groupId>ca.uhn.hapi.fhir</groupId>-->
+<!--				<artifactId>org.hl7.fhir.utilities</artifactId>-->
+<!--				<version>${fhir_core_version}</version>-->
+<!--			</dependency>-->
+<!--			<dependency>-->
+<!--				<groupId>ca.uhn.hapi.fhir</groupId>-->
+<!--				<artifactId>org.hl7.fhir.validation</artifactId>-->
+<!--				<version>${fhir_core_version}</version>-->
+<!--			</dependency>-->
+<!--		</dependencies>-->
+<!--	</dependencyManagement>-->
+
 
 	<dependencies>
 		<dependency>
@@ -91,6 +118,8 @@
 			<version>${hapi.fhir.r4.version}</version>
 		</dependency>
 
+
+
 		<!--Provides Feasibility to interact with HAPI FHIR JPA Server-->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
@@ -135,12 +164,22 @@
 		<dependency>
 			<groupId>gov.cms.madie</groupId>
 			<artifactId>madie-java-models</artifactId>
-			<version>0.4.0-SNAPSHOT</version>
+			<version>0.5.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>gov.cms.madie.packaging</groupId>
 			<artifactId>packaging-utility</artifactId>
 			<version>0.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>gov.cms.madie</groupId>
+					<artifactId>madie-java-models</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>ca.uhn.hapi.fhir</groupId>
+					<artifactId>hapi-fhir-structures-r4</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>
