@@ -53,6 +53,17 @@ public final class UriConstants {
         "http://terminology.hl7.org/CodeSystem/measure-data-usage";
   }
 
+  public static final class CqfTestCases {
+    public static final String CQFM_TEST_CASES =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/test-case-cqfm";
+    public static final String IS_TEST_CASE =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-isTestCase";
+    public static final String CQFM_INPUT_PARAMETERS =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-inputParameters";
+    public static final String CQFM_TEST_CASE_DESCRIPTION =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-testCaseDescription";
+  }
+
   public static final class UseContext {
     public static final String CODE_SYSTEM_URI =
         "http://terminology.hl7.org/CodeSystem/usage-context-type";
