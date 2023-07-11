@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+
 @Slf4j
 @RestController
 @RequestMapping(path = "/fhir/test-cases")
 @Tag(
-    name = "HAPI-FHIR-TestCase-Controller",
+    name = "TestCase-Bundle-Controller",
     description = "API for generating test case bundle for export")
 @RequiredArgsConstructor
 public class TestCaseBundleController {
@@ -26,8 +28,19 @@ public class TestCaseBundleController {
 
   @PutMapping("/{testCaseId}/exports")
   public ResponseEntity<String> getTestCaseExportBundle(
-      @RequestBody Measure measure, @PathVariable String testCaseId) {
-    String exportableBundle = testCaseBundleService.getTestCaseExportBundle(measure, testCaseId);
-    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(exportableBundle);
+      Principal principal, @RequestBody Measure measure, @PathVariable String testCaseId) {
+
+    final String username = principal.getName();
+    log.info(
+        "User [{}] is attempting to export test case with id [{}] from Measure [{}]",
+        username,
+        testCaseId,
+        measure.getId());
+
+    String exportableTestCaseBundle =
+        testCaseBundleService.getTestCaseExportBundle(measure, testCaseId);
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(exportableTestCaseBundle);
   }
 }

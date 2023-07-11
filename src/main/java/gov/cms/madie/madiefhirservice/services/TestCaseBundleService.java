@@ -9,16 +9,22 @@ import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
-import gov.cms.madie.models.measure.TestCaseStratificationValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,6 +56,10 @@ public class TestCaseBundleService {
     try {
       testCaseBundle = parser.parseResource(Bundle.class, testCase.getJson());
     } catch (DataFormatException | ClassCastException ex) {
+      log.error(
+          "Unable to parse test case bundle resource for test case [{}] from Measure [{}]",
+          testCaseId,
+          measure.getId());
       throw new InternalServerException("An error occurred while parsing the resource");
     }
 
@@ -62,7 +72,7 @@ public class TestCaseBundleService {
   private MeasureReport buildMeasureReport(
       TestCase testCase, Measure measure, Bundle testCaseBundle) {
     MeasureReport measureReport = new MeasureReport();
-    measureReport.setId(testCase.getTitle() + "-measure-report");
+    measureReport.setId(UUID.randomUUID().toString());
     measureReport.setMeta(new Meta().addProfile(UriConstants.CqfTestCases.CQFM_TEST_CASES));
     measureReport.setContained(buildContained(testCase, testCaseBundle));
     measureReport.setExtension(buildExtensions(testCase));
@@ -70,10 +80,11 @@ public class TestCaseBundleService {
     measureReport.setStatus(MeasureReport.MeasureReportStatus.COMPLETE);
     measureReport.setType(MeasureReport.MeasureReportType.INDIVIDUAL);
     measureReport.setMeasure(FhirResourceHelpers.buildMeasureUrl(measure));
-    // Todo rohit setting wrong dates
     measureReport.setPeriod(
         FhirResourceHelpers.getPeriodFromDates(
-            measure.getMeasurementPeriodStart(), measure.getMeasurementPeriodEnd()));
+            getUTCDates(measure.getMeasurementPeriodStart()),
+            getUTCDates(measure.getMeasurementPeriodEnd())));
+
     measureReport.setGroup(buildMeasureReportGroupComponents(testCase));
     measureReport.setEvaluatedResource(buildEvaluatedResource(testCaseBundle));
     return measureReport;
@@ -86,21 +97,24 @@ public class TestCaseBundleService {
    *     "subject"
    */
   private List<Resource> buildContained(TestCase testCase, Bundle testCaseBundle) {
-    var testCaseResource =
+    var patientResource =
         testCaseBundle.getEntry().stream()
             .filter(
                 entry ->
                     "Patient".equalsIgnoreCase(entry.getResource().getResourceType().toString()))
             .findFirst();
-    if (testCaseResource.isPresent()) {
+    if (patientResource.isPresent()) {
       var parameter =
           new Parameters.ParametersParameterComponent()
               .setName("subject")
-              .setValue(new StringType(testCaseResource.get().getResource().getIdPart()));
+              .setValue(new StringType(patientResource.get().getResource().getIdPart()));
       var parameters =
           new Parameters().addParameter(parameter).setId(testCase.getTitle() + "-parameters");
       return Collections.singletonList(parameters);
     } else {
+      log.error(
+          "Unable to find Patient resource in test case bundle for test case [{}]",
+          testCase.getId());
       throw new ResourceNotFoundException("Patient resource", "test case", testCase.getId());
     }
   }
@@ -160,20 +174,6 @@ public class TestCaseBundleService {
                         .collect(Collectors.toList());
                 measureReportGroupComponent.setPopulation(measureReportGroupPopulationComponents);
               }
-
-              if (population.getStratificationValues() != null) {
-                // Todo Rohit add stratifier to measureReportGroupComponent ask Gail
-                var stratificationComponent =
-                    population.getStratificationValues().stream()
-                        .map(
-                            testCaseStratificationValue -> new MeasureReport.MeasureReportGroupStratifierComponent()
-                                .setStratum(
-                                    Collections.singletonList(
-                                        buildStratifierGroupComponent(
-                                            testCaseStratificationValue))))
-                        .collect(Collectors.toList());
-                measureReportGroupComponent.setStratifier(stratificationComponent);
-              }
               return measureReportGroupComponent;
             })
         .collect(Collectors.toList());
@@ -184,30 +184,13 @@ public class TestCaseBundleService {
    * @return an equivalent integer
    */
   private int getExpectedValue(Object expectedValue) {
-    if (expectedValue == null) return 0;
-    else if (expectedValue instanceof Boolean) return (Boolean) expectedValue ? 1 : 0;
-    else return Integer.parseInt(expectedValue.toString());
-  }
-
-  // Todo Rohit Not sure if this is the right implementation
-  private MeasureReport.StratifierGroupComponent buildStratifierGroupComponent(
-      TestCaseStratificationValue testCaseStratificationValue) {
-    String stratificationCode = testCaseStratificationValue.getName(); // convert it to code
-    int expectedValue = getExpectedValue(testCaseStratificationValue.getExpected());
-    MeasureReport.StratifierGroupComponent stratifierGroupComponent =
-        new MeasureReport.StratifierGroupComponent();
-    //    stratifierGroupComponent.setComponent();
-    stratifierGroupComponent.setPopulation(
-        new ArrayList<>(
-            Collections.singletonList(
-                new MeasureReport.StratifierGroupPopulationComponent()
-                    .setCode(
-                        FhirResourceHelpers.buildCodeableConcept(
-                            stratificationCode,
-                            UriConstants.POPULATION_SYSTEM_URI,
-                            stratificationCode))
-                    .setCount(expectedValue))));
-    return stratifierGroupComponent;
+    if (expectedValue == null) {
+      return 0;
+    } else if (expectedValue instanceof Boolean) {
+      return (Boolean) expectedValue ? 1 : 0;
+    } else {
+      return Integer.parseInt(expectedValue.toString());
+    }
   }
 
   /**
@@ -221,5 +204,16 @@ public class TestCaseBundleService {
         .getEntry()
         .forEach(entry -> references.add(new Reference("/" + entry.getResource().getId())));
     return references;
+  }
+
+  private Date getUTCDates(Date date) {
+    try {
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH);
+      var utcFormattedString =
+          DateFormatUtils.format(date, "MM/dd/yyyy", TimeZone.getTimeZone("UTC"));
+      return simpleDateFormat.parse(utcFormattedString);
+    } catch (ParseException parseException) {
+      throw new RuntimeException("Unable to parse date ", parseException);
+    }
   }
 }
