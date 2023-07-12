@@ -68,7 +68,9 @@ public class TestCaseBundleController {
       return ResponseEntity.ok()
           .header(
               HttpHeaders.CONTENT_DISPOSITION,
-              "attachment;filename=\"" + ExportFileNamesUtil.getTestCaseExportZipName(measure) + ".zip\"")
+              "attachment;filename=\""
+                  + ExportFileNamesUtil.getTestCaseExportZipName(measure)
+                  + ".zip\"")
           .contentType(MediaType.APPLICATION_OCTET_STREAM)
           .body(utility.getZipBundle(exportableTestCaseBundle, exportFileName));
     } catch (RestClientException
