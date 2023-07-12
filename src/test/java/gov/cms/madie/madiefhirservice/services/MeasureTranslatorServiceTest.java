@@ -706,6 +706,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .cmsId("REAL_CMS_ID")
@@ -745,7 +746,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(2), is(notNullValue()));
     assertThat(output.get(2).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
     assertThat(output.get(2).getSystem(), is(equalTo(URN_IETF_RFC_3986)));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     assertThat(output.get(2).getType(), is(notNullValue()));
     assertThat(
         output.get(2).getType().getCodingFirstRep().getSystem(),
@@ -783,6 +784,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .cmsId("REAL_CMS_ID")
@@ -798,7 +800,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     // CMS ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getValue(), is(equalTo("REAL_CMS_ID")));
@@ -809,6 +811,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .measureMetaData(
@@ -829,7 +832,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     // NQF ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getValue(), is(equalTo("NQF1234")));
@@ -840,6 +843,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .measureMetaData(
@@ -859,7 +863,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
   }
 
   @Test

@@ -141,7 +141,7 @@ public class MeasureTranslatorService {
           buildIdentifier(
               IdentifierUse.OFFICIAL,
               ValueConstants.URN_IETF_RFC_3986,
-              buildUrnUuid(madieMeasure.getId()),
+              buildUrnUuid(madieMeasure.getVersionId()),
               ValueConstants.CODE_VERSION_SPECIFIC));
       if (madieMeasure.getMeasureMetaData() != null
           && madieMeasure.getMeasureMetaData().getEndorsements() != null
