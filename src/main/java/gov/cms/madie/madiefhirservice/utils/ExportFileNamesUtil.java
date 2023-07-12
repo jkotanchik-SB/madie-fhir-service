@@ -2,6 +2,7 @@ package gov.cms.madie.madiefhirservice.utils;
 
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
+import org.apache.commons.lang3.StringUtils;
 
 public class ExportFileNamesUtil {
 
@@ -13,13 +14,21 @@ public class ExportFileNamesUtil {
   }
 
   public static String getTestCaseExportFileName(Measure measure, TestCase testCase) {
-    return measure.getEcqmTitle()
-        + "-v"
-        + measure.getVersion().toString()
-        + "-"
-        + testCase.getSeries()
-        + "-"
-        + testCase.getTitle();
+    if (StringUtils.isEmpty(testCase.getSeries())) {
+      return measure.getEcqmTitle()
+          + "-v"
+          + measure.getVersion().toString()
+          + "-"
+          + testCase.getTitle();
+    } else {
+      return measure.getEcqmTitle()
+          + "-v"
+          + measure.getVersion().toString()
+          + "-"
+          + testCase.getSeries()
+          + "-"
+          + testCase.getTitle();
+    }
   }
 
   public static String getTestCaseExportZipName(Measure measure) {
