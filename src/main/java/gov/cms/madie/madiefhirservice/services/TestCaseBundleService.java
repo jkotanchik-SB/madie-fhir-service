@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,16 +33,10 @@ public class TestCaseBundleService {
 
   private final FhirContext fhirContext;
 
-  public String getTestCaseExportBundle(Measure measure, String testCaseId) {
-    TestCase testCase =
-        Optional.ofNullable(measure.getTestCases())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("test cases", "measure", measure.getId()))
-            .stream()
-            .filter(tc -> tc.getId().equals(testCaseId))
-            .findFirst()
-            .orElseThrow(
-                () -> new ResourceNotFoundException("test case resource", "test case", testCaseId));
+  public Bundle getTestCaseExportBundle(Measure measure, TestCase testCase) {
+    if (measure == null || testCase == null) {
+      throw new InternalServerException("Unable to find Measure and/or test case");
+    }
 
     IParser parser =
         fhirContext
@@ -58,7 +51,7 @@ public class TestCaseBundleService {
     } catch (DataFormatException | ClassCastException ex) {
       log.error(
           "Unable to parse test case bundle resource for test case [{}] from Measure [{}]",
-          testCaseId,
+          testCase.getId(),
           measure.getId());
       throw new InternalServerException("An error occurred while parsing the resource");
     }
@@ -66,7 +59,7 @@ public class TestCaseBundleService {
     var measureReport = buildMeasureReport(testCase, measure, testCaseBundle);
     var bundleEntryComponent = FhirResourceHelpers.getBundleEntryComponent(measureReport);
     testCaseBundle.getEntry().add(bundleEntryComponent);
-    return fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(testCaseBundle);
+    return testCaseBundle;
   }
 
   private MeasureReport buildMeasureReport(

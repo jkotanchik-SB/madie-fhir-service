@@ -1,7 +1,6 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.StrictErrorHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
@@ -11,6 +10,7 @@ import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.PopulationType;
+import gov.cms.madie.models.measure.TestCase;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.MeasureReport;
@@ -23,7 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import java.util.ArrayList;
+import java.util.Objects;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,25 +41,20 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
 
   private Measure madieMeasure;
 
-  private static final String TEST_CASE_ID = "62fe4466848fd80e1dd3edd0";
+  private TestCase testCase;
 
   @BeforeEach
   public void setUp() throws JsonProcessingException {
     String madieMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
+    testCase = Objects.requireNonNull(madieMeasure).getTestCases().get(0);
     ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
   }
 
   @Test
   void getTestCaseExportBundle() {
-    var response = testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID);
-    Bundle bundle =
-        fhirContext
-            .newJsonParser()
-            .setParserErrorHandler(new StrictErrorHandler())
-            .setPrettyPrint(true)
-            .parseResource(Bundle.class, response);
+    Bundle bundle = testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase);
     assertEquals(5, bundle.getEntry().size());
     MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
     assertEquals("MeasureReport", measureReport.getResourceType().toString());
@@ -67,7 +63,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         measureReport.getMeta().getProfile().get(0).asStringValue());
 
     Parameters parameters = (Parameters) measureReport.getContained().get(0);
-    assertEquals("#test case title-parameters", parameters.getId());
+    assertEquals("test case title-parameters", parameters.getId());
     assertEquals("Patient-1", parameters.getParameter().get(0).getValue().toString());
 
     // Reference to parameter created above
@@ -93,32 +89,25 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
 
     // evaluated resources
     assertEquals(4, measureReport.getEvaluatedResource().size());
-    assertEquals("Patient/Patient-1", measureReport.getEvaluatedResource().get(0).getReference());
+    assertEquals("/Patient/Patient-1", measureReport.getEvaluatedResource().get(0).getReference());
     assertEquals(
-        "Encounter/Encounter-1", measureReport.getEvaluatedResource().get(1).getReference());
+        "/Encounter/Encounter-1", measureReport.getEvaluatedResource().get(1).getReference());
   }
 
   @Test
-  void getTestCaseExportBundleThrowExceptionWhenTestCasesNotFound() {
-    madieMeasure.setTestCases(null);
+  void getTestCaseExportBundleThrowExceptionWhenTestCaseIsNotFound() {
+    testCase = null;
     assertThrows(
-        ResourceNotFoundException.class,
-        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID));
+        InternalServerException.class,
+        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase));
   }
 
   @Test
-  void getTestCaseExportBundleThrowExceptionWhenTestCasesAreEmpty() {
-    madieMeasure.setTestCases(new ArrayList<>());
+  void getTestCaseExportBundleThrowExceptionWhenMeasureIsNotFound() {
+    madieMeasure = null;
     assertThrows(
-        ResourceNotFoundException.class,
-        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID));
-  }
-
-  @Test
-  void getTestCaseExportBundleThrowExceptionWhenTestCaseIdNotFound() {
-    assertThrows(
-        ResourceNotFoundException.class,
-        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, "example_test_case_id"));
+        InternalServerException.class,
+        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase));
   }
 
   @Test
@@ -128,10 +117,10 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
             + "    \"resourceType\": \"Bundle\"\n"
             + "    \"id\": \"bundleWithNoPatientResource\",\n"
             + "}";
-    madieMeasure.getTestCases().get(0).setJson(testCaseJson);
+    testCase.setJson(testCaseJson);
     assertThrows(
         InternalServerException.class,
-        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID));
+        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase));
   }
 
   @Test
@@ -152,27 +141,21 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
             + "      }\n"
             + "    ]\n"
             + "    }";
-    madieMeasure.getTestCases().get(0).setJson(testCaseBundleJson);
+    testCase.setJson(testCaseBundleJson);
     assertThrows(
         ResourceNotFoundException.class,
-        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID));
+        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase));
   }
 
   @Test
   void getTestCaseExportBundleHandlesNullExpectedValues() {
     // setting the expected values for initial population of 1st group to be null
-    madieMeasure.getTestCases().get(0).getGroupPopulations().get(0).getPopulationValues().stream()
+    testCase.getGroupPopulations().get(0).getPopulationValues().stream()
         .filter(p -> PopulationType.INITIAL_POPULATION.equals(p.getName()))
         .findFirst()
         .ifPresent(p -> p.setExpected(null));
 
-    var response = testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID);
-    Bundle bundle =
-        fhirContext
-            .newJsonParser()
-            .setParserErrorHandler(new StrictErrorHandler())
-            .setPrettyPrint(true)
-            .parseResource(Bundle.class, response);
+    Bundle bundle = testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase);
     MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
     measureReport.getGroup().get(0).getPopulation().stream()
         .filter(
@@ -184,18 +167,12 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
   @Test
   void getTestCaseExportBundleHandlesIntegerExpectedValues() {
     // setting the expected values for initial population of 1st group to be 3
-    madieMeasure.getTestCases().get(0).getGroupPopulations().get(0).getPopulationValues().stream()
+    testCase.getGroupPopulations().get(0).getPopulationValues().stream()
         .filter(p -> PopulationType.INITIAL_POPULATION.equals(p.getName()))
         .findFirst()
         .ifPresent(p -> p.setExpected(3));
 
-    var response = testCaseBundleService.getTestCaseExportBundle(madieMeasure, TEST_CASE_ID);
-    Bundle bundle =
-        fhirContext
-            .newJsonParser()
-            .setParserErrorHandler(new StrictErrorHandler())
-            .setPrettyPrint(true)
-            .parseResource(Bundle.class, response);
+    Bundle bundle = testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase);
     MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
     measureReport.getGroup().get(0).getPopulation().stream()
         .filter(

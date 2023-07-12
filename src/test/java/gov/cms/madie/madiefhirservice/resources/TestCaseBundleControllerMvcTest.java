@@ -1,21 +1,31 @@
 package gov.cms.madie.madiefhirservice.resources;
 
+import ca.uhn.fhir.context.FhirContext;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.services.TestCaseBundleService;
+import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.TestCase;
+import org.hl7.fhir.r4.model.Bundle;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -31,14 +41,38 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
 
   @Autowired private MockMvc mockMvc;
 
+  private Bundle testCaseBundle;
+
+  private String madieMeasureJson;
+
+  @BeforeEach
+  public void setUp() {
+    madieMeasureJson = getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String testCaseJson = getStringFromTestResource("/testCaseBundles/validTestCase.json");
+    testCaseBundle =
+        FhirContext.forR4().newJsonParser().parseResource(Bundle.class, testCaseJson);
+  }
+
+  @Test
+  void getTestCaseExportBundleThrowExceptionWhenTestCasesNotFound() throws Exception {
+    madieMeasureJson = getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure_no_test_cases.json");
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/test-cases/example-test-case-id/exports")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(madieMeasureJson)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isNotFound());
+  }
+
   @Test
   void getTestCaseExportBundle() throws Exception {
     Principal principal = mock(Principal.class);
     when(principal.getName()).thenReturn(TEST_USER_ID);
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
-    String testCaseBundle = getStringFromTestResource("/testCaseBundles/validTestCase.json");
-    when(testCaseBundleService.getTestCaseExportBundle(any(Measure.class), anyString()))
+
+    when(testCaseBundleService.getTestCaseExportBundle(any(Measure.class), any(TestCase.class)))
         .thenReturn(testCaseBundle);
     mockMvc
         .perform(
@@ -54,6 +88,22 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
         .andExpect(jsonPath("$.entry[0].resource.resourceType").value("Encounter"))
         .andExpect(jsonPath("$.entry[1].resource.resourceType").value("Patient"));
     verify(testCaseBundleService, times(1))
-        .getTestCaseExportBundle(any(Measure.class), anyString());
+        .getTestCaseExportBundle(any(Measure.class), any(TestCase.class));
   }
+
+  @Test
+  void getTestCaseExportBundleThrowExceptionWhenTestCasesAreEmpty() {
+//    madieMeasure.setTestCases(new ArrayList<>());
+//    assertThrows(
+//        ResourceNotFoundException.class,
+//        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCase));
+  }
+
+  //  @Test
+  //  void getTestCaseExportBundleThrowExceptionWhenTestCaseIdNotFound() {
+  //    assertThrows(
+  //        ResourceNotFoundException.class,
+  //        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure,
+  // "example_test_case_id"));
+  //  }
 }

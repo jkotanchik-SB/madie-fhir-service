@@ -1,10 +1,19 @@
 package gov.cms.madie.madiefhirservice.resources;
 
+import ca.uhn.fhir.context.FhirContext;
+import gov.cms.madie.madiefhirservice.exceptions.BundleOperationException;
+import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.services.TestCaseBundleService;
+import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.TestCase;
+import gov.cms.madie.packaging.utils.PackagingUtility;
+import gov.cms.madie.packaging.utils.PackagingUtilityFactory;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.r4.model.Bundle;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,8 +21,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -27,7 +39,7 @@ public class TestCaseBundleController {
   private final TestCaseBundleService testCaseBundleService;
 
   @PutMapping("/{testCaseId}/exports")
-  public ResponseEntity<String> getTestCaseExportBundle(
+  public ResponseEntity<byte[]> getTestCaseExportBundle(
       Principal principal, @RequestBody Measure measure, @PathVariable String testCaseId) {
 
     final String username = principal.getName();
@@ -37,10 +49,38 @@ public class TestCaseBundleController {
         testCaseId,
         measure.getId());
 
-    String exportableTestCaseBundle =
-        testCaseBundleService.getTestCaseExportBundle(measure, testCaseId);
-    return ResponseEntity.ok()
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(exportableTestCaseBundle);
+    TestCase testCase =
+        Optional.ofNullable(measure.getTestCases())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("test cases", "measure", measure.getId()))
+            .stream()
+            .filter(tc -> tc.getId().equals(testCaseId))
+            .findFirst()
+            .orElseThrow(
+                () -> new ResourceNotFoundException("test case resource", "test case", testCaseId));
+
+    Bundle exportableTestCaseBundle =
+        testCaseBundleService.getTestCaseExportBundle(measure, testCase);
+
+    try {
+      String exportFileName = ExportFileNamesUtil.getTestCaseExportFileName(measure, testCase);
+      PackagingUtility utility = PackagingUtilityFactory.getInstance(measure.getModel());
+      return ResponseEntity.ok()
+          .header(
+              HttpHeaders.CONTENT_DISPOSITION,
+              "attachment;filename=\"" + ExportFileNamesUtil.getTestCaseExportZipName(measure) + ".zip\"")
+          .contentType(MediaType.APPLICATION_OCTET_STREAM)
+          .body(utility.getZipBundle(exportableTestCaseBundle, exportFileName));
+    } catch (RestClientException
+        | IllegalArgumentException
+        | InstantiationException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NoSuchMethodException
+        | SecurityException
+        | ClassNotFoundException ex) {
+      log.error("An error occurred while bundling measure {}", measure.getId(), ex);
+      throw new BundleOperationException("Measure", measure.getId(), ex);
+    }
   }
 }
