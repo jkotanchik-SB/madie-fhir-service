@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import gov.cms.madie.madiefhirservice.constants.ValueConstants;
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.UseContextUtil;
 import gov.cms.madie.models.common.Organization;
 import gov.cms.madie.models.measure.*;
@@ -46,9 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MeasureTranslatorService {
   public static final String UNKNOWN = "UNKNOWN";
 
-  @Value("${fhir-base-url}")
-  private String fhirBaseUrl;
-
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure) {
     Organization steward = madieMeasure.getMeasureMetaData().getSteward();
     String copyright = madieMeasure.getMeasureMetaData().getCopyright();
@@ -63,7 +61,7 @@ public class MeasureTranslatorService {
         .setTitle(madieMeasure.getMeasureName())
         .setIdentifier(buildMeasureIdentifiers(madieMeasure))
         .setExperimental(madieMeasure.getMeasureMetaData().isExperimental())
-        .setUrl(fhirBaseUrl + "/Measure/" + madieMeasure.getCqlLibraryName())
+        .setUrl(FhirResourceHelpers.buildMeasureUrl(madieMeasure))
         .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
             getPeriodFromDates(
@@ -79,7 +77,7 @@ public class MeasureTranslatorService {
         .setRationale(rationale)
         .setLibrary(
             Collections.singletonList(
-                new CanonicalType(fhirBaseUrl + "/Library/" + madieMeasure.getCqlLibraryName())))
+                new CanonicalType(FhirResourceHelpers.buildLibraryUrl(madieMeasure))))
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetail(madieMeasure.getMeasureMetaData().getSteward(), false))
         .setGroup(buildGroups(madieMeasure.getGroups()))

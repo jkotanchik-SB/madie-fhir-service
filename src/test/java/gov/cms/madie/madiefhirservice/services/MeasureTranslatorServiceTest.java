@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.common.Organization;
@@ -55,6 +56,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -62,6 +64,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   @InjectMocks private MeasureTranslatorService measureTranslatorService;
+
+  @Mock private FhirResourceHelpers fhirResourceHelpers;
 
   private Measure madieMeasure;
   private Measure madieRatioMeasure;
@@ -78,12 +82,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     String cvMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_cv_measure.json");
     madieCVMeasure = MeasureTestHelper.createMadieMeasureFromJson(cvMeasureJson);
+    ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
   }
 
   @Test
   public void testCreateFhirMeasureForMadieMeasure() {
-    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
-
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
 
@@ -263,8 +266,6 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @Test
   public void testCreateFhirMeasureForMadieRatioMeasure() {
-    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
-
     madieRatioMeasure
         .getMeasureMetaData()
         .setSteward(Organization.builder().name("testSteward").url("test-steward-url.com").build());
@@ -404,8 +405,6 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @Test
   public void testCreateFhirMeasureForMadieCVMeasure() {
-    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
-
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieCVMeasure);
 
