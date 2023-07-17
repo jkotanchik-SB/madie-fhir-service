@@ -15,13 +15,17 @@ public class ExportFileNamesUtil {
 
   public static String getTestCaseExportFileName(Measure measure, TestCase testCase) {
     if (StringUtils.isEmpty(testCase.getSeries())) {
-      return measure.getEcqmTitle()
+      return testCase.getPatientId()
+          + "/"
+          + measure.getEcqmTitle()
           + "-v"
           + measure.getVersion().toString()
           + "-"
           + testCase.getTitle();
     } else {
-      return measure.getEcqmTitle()
+      return testCase.getPatientId()
+          + "/"
+          + measure.getEcqmTitle()
           + "-v"
           + measure.getVersion().toString()
           + "-"
