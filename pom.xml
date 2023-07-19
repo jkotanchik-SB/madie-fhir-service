@@ -35,32 +35,6 @@
 		</repository>
 	</repositories>
 
-<!--	<dependencyManagement>-->
-<!--		<dependencies>-->
-<!--			<dependency>-->
-<!--				<groupId>ca.uhn.hapi.fhir</groupId>-->
-<!--				<artifactId>org.hl7.fhir.r4</artifactId>-->
-<!--				<version>${fhir_core_version}</version>-->
-<!--			</dependency>-->
-<!--&lt;!&ndash;			<dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;				<groupId>ca.uhn.hapi.fhir</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;				<artifactId>org.hl7.fhir.r4b</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;				<version>${fhir_core_version}</version>&ndash;&gt;-->
-<!--&lt;!&ndash;			</dependency>&ndash;&gt;-->
-<!--			<dependency>-->
-<!--				<groupId>ca.uhn.hapi.fhir</groupId>-->
-<!--				<artifactId>org.hl7.fhir.utilities</artifactId>-->
-<!--				<version>${fhir_core_version}</version>-->
-<!--			</dependency>-->
-<!--			<dependency>-->
-<!--				<groupId>ca.uhn.hapi.fhir</groupId>-->
-<!--				<artifactId>org.hl7.fhir.validation</artifactId>-->
-<!--				<version>${fhir_core_version}</version>-->
-<!--			</dependency>-->
-<!--		</dependencies>-->
-<!--	</dependencyManagement>-->
-
-
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
