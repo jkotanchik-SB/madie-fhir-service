@@ -118,8 +118,6 @@
 			<version>${hapi.fhir.r4.version}</version>
 		</dependency>
 
-
-
 		<!--Provides Feasibility to interact with HAPI FHIR JPA Server-->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
@@ -164,12 +162,12 @@
 		<dependency>
 			<groupId>gov.cms.madie</groupId>
 			<artifactId>madie-java-models</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>0.6.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>gov.cms.madie.packaging</groupId>
 			<artifactId>packaging-utility</artifactId>
-			<version>0.2</version>
+			<version>0.2.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>gov.cms.madie</groupId>

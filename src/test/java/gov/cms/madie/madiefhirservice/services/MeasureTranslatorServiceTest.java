@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.common.Organization;
@@ -55,6 +56,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -62,6 +64,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   @InjectMocks private MeasureTranslatorService measureTranslatorService;
+
+  @Mock private FhirResourceHelpers fhirResourceHelpers;
 
   private Measure madieMeasure;
   private Measure madieRatioMeasure;
@@ -78,12 +82,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     String cvMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_cv_measure.json");
     madieCVMeasure = MeasureTestHelper.createMadieMeasureFromJson(cvMeasureJson);
+    ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
   }
 
   @Test
   public void testCreateFhirMeasureForMadieMeasure() {
-    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
-
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
 
@@ -263,8 +266,6 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @Test
   public void testCreateFhirMeasureForMadieRatioMeasure() {
-    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
-
     madieRatioMeasure
         .getMeasureMetaData()
         .setSteward(Organization.builder().name("testSteward").url("test-steward-url.com").build());
@@ -404,8 +405,6 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @Test
   public void testCreateFhirMeasureForMadieCVMeasure() {
-    ReflectionTestUtils.setField(measureTranslatorService, "fhirBaseUrl", "cms.gov");
-
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieCVMeasure);
 
@@ -707,6 +706,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .cmsId("REAL_CMS_ID")
@@ -746,7 +746,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(2), is(notNullValue()));
     assertThat(output.get(2).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
     assertThat(output.get(2).getSystem(), is(equalTo(URN_IETF_RFC_3986)));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     assertThat(output.get(2).getType(), is(notNullValue()));
     assertThat(
         output.get(2).getType().getCodingFirstRep().getSystem(),
@@ -784,6 +784,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .cmsId("REAL_CMS_ID")
@@ -799,7 +800,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     // CMS ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getValue(), is(equalTo("REAL_CMS_ID")));
@@ -810,6 +811,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .measureMetaData(
@@ -830,7 +832,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     // NQF ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getValue(), is(equalTo("NQF1234")));
@@ -841,6 +843,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     final Measure madieMeasure =
         Measure.builder()
             .id("MEASURE_ID_1")
+            .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
             .measureMetaData(
@@ -860,7 +863,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_ID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
   }
 
   @Test
