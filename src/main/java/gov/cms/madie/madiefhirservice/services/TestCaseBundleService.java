@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
 @Slf4j
@@ -162,6 +163,9 @@ public class TestCaseBundleService {
 
   private List<MeasureReport.MeasureReportGroupComponent> buildMeasureReportGroupComponents(
       TestCase testCase) {
+    if (CollectionUtils.isEmpty(testCase.getGroupPopulations())) {
+      return List.of();
+    }
     return testCase.getGroupPopulations().stream()
         .map(
             population -> {
