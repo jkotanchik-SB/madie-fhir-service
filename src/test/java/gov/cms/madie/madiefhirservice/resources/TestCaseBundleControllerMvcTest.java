@@ -54,10 +54,11 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     String testCaseJson = getStringFromTestResource("/testCaseBundles/validTestCase.json");
     testCaseBundle = FhirContext.forR4().newJsonParser().parseResource(Bundle.class, testCaseJson);
-    dto = ExportDTO.builder()
-                    .measure(mapper.readValue(madieMeasureJson, Measure.class))
-                    .testCaseIds(asList(TEST_CASE_ID, TEST_CASE_ID_2))
-                    .build();
+    dto =
+        ExportDTO.builder()
+            .measure(mapper.readValue(madieMeasureJson, Measure.class))
+            .testCaseIds(asList(TEST_CASE_ID, TEST_CASE_ID_2))
+            .build();
   }
 
   @Test
@@ -66,8 +67,10 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
     when(principal.getName()).thenReturn(TEST_USER_ID);
 
     Map<String, Bundle> testCaseBundleMap = new HashMap<>();
-    testCaseBundleMap.put(dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
-    testCaseBundleMap.put(dto.getMeasure().getTestCases().get(1).getPatientId().toString(), testCaseBundle);
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(1).getPatientId().toString(), testCaseBundle);
     when(testCaseBundleService.getTestCaseExportBundle(any(Measure.class), any(List.class)))
         .thenReturn(testCaseBundleMap);
     mockMvc
@@ -86,36 +89,36 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
   @Test
   void getTestCaseExportAllThrowExceptionWhenTestCasesAreNotFoundInMeasure() throws Exception {
     var madieMeasureWithNoTestCases =
-            getStringFromTestResource(
-                    "/measures/SimpleFhirMeasureLib/madie_measure_no_test_cases.json");
+        getStringFromTestResource(
+            "/measures/SimpleFhirMeasureLib/madie_measure_no_test_cases.json");
 
     ExportDTO dto =
-            ExportDTO.builder()
-                    .measure(mapper.readValue(madieMeasureWithNoTestCases, Measure.class))
-                    .build();
+        ExportDTO.builder()
+            .measure(mapper.readValue(madieMeasureWithNoTestCases, Measure.class))
+            .build();
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
-                            .with(user(TEST_USER_ID))
-                            .with(csrf())
-                            .header(HttpHeaders.AUTHORIZATION, "test-okta")
-                            .content(mapper.writeValueAsString(dto))
-                            .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isNotFound());
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(mapper.writeValueAsString(dto))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isNotFound());
   }
 
   @Test
   void getTestCaseExportAllThrowExceptionWhenTestCaseIsNotFound() throws Exception {
     dto.setTestCaseIds(null);
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
-                            .with(user(TEST_USER_ID))
-                            .with(csrf())
-                            .header(HttpHeaders.AUTHORIZATION, "test-okta")
-                            .content(mapper.writeValueAsString(dto))
-                            .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isNotFound());
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(mapper.writeValueAsString(dto))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -124,19 +127,20 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
     when(principal.getName()).thenReturn(TEST_USER_ID);
 
     Map<String, Bundle> testCaseBundleMap = new HashMap<>();
-    testCaseBundleMap.put(dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
     when(testCaseBundleService.getTestCaseExportBundle(any(Measure.class), any(List.class)))
-            .thenReturn(testCaseBundleMap);
+        .thenReturn(testCaseBundleMap);
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
-                            .with(user(TEST_USER_ID))
-                            .with(csrf())
-                            .header(HttpHeaders.AUTHORIZATION, "test-okta")
-                            .content(mapper.writeValueAsString(dto))
-                            .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().is(206));
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(mapper.writeValueAsString(dto))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().is(206));
     verify(testCaseBundleService, times(1))
-            .getTestCaseExportBundle(any(Measure.class), any(List.class));
+        .getTestCaseExportBundle(any(Measure.class), any(List.class));
   }
 }

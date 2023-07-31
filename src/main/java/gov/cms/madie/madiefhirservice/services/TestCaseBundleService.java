@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
 @Slf4j
@@ -162,6 +163,9 @@ public class TestCaseBundleService {
 
   private List<MeasureReport.MeasureReportGroupComponent> buildMeasureReportGroupComponents(
       TestCase testCase) {
+    if (CollectionUtils.isEmpty(testCase.getGroupPopulations())) {
+      return List.of();
+    }
     return testCase.getGroupPopulations().stream()
         .map(
             population -> {
@@ -256,10 +260,10 @@ public class TestCaseBundleService {
   /**
    * Combines the zip from Packaging Utility and a generated ReadMe file for the testcases
    *
-   * @param measure
-   * @param exportableTestCaseBundle
-   * @param testCases
-   * @return
+   * @param measure MADiE Measure
+   * @param exportableTestCaseBundle Exportable TestCase bundles that includes measure report
+   * @param testCases List of test cases to be exported, used to generate ReadMe
+   * @return zipped content
    */
   public byte[] zipTestCaseContents(
       Measure measure, Map<String, Bundle> exportableTestCaseBundle, List<TestCase> testCases) {

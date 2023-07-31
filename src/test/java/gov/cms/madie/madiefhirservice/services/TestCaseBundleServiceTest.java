@@ -208,6 +208,20 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, singletonList(testCase)));
   }
 
+  @Test
+  void getTestCaseExportBundleReturnsMeasureReportWithNoGroupPopulations() {
+    madieMeasure.getTestCases().get(0).setGroupPopulations(null);
+    Map<String, Bundle> exportMap =
+        testCaseBundleService.getTestCaseExportBundle(madieMeasure, madieMeasure.getTestCases());
+    assertEquals(2, exportMap.size());
+
+    Bundle bundle =
+        exportMap.get(
+            "285d114d-9c36-4d66-b0a0-06f395bbf23d/title-v0.0.000-test case series-test case title");
+    MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
+    assertEquals(0, measureReport.getGroup().size());
+  }
+
   @Disabled
   @Test
   void zipTestCaseContents() throws IOException {
