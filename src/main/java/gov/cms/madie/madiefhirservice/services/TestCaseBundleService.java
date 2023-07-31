@@ -260,10 +260,10 @@ public class TestCaseBundleService {
   /**
    * Combines the zip from Packaging Utility and a generated ReadMe file for the testcases
    *
-   * @param measure
-   * @param exportableTestCaseBundle
-   * @param testCases
-   * @return
+   * @param measure MADiE Measure
+   * @param exportableTestCaseBundle Exportable TestCase bundles that includes measure report
+   * @param testCases List of test cases to be exported, used to generate ReadMe
+   * @return zipped content
    */
   public byte[] zipTestCaseContents(
       Measure measure, Map<String, Bundle> exportableTestCaseBundle, List<TestCase> testCases) {
