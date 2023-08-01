@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
 @Slf4j
@@ -38,35 +39,6 @@ import org.springframework.web.client.RestClientException;
 public class TestCaseBundleService {
 
   private final FhirContext fhirContext;
-
-  public Bundle getTestCaseExportBundle(Measure measure, TestCase testCase) {
-    if (measure == null || testCase == null) {
-      throw new InternalServerException("Unable to find Measure and/or test case");
-    }
-
-    IParser parser =
-        fhirContext
-            .newJsonParser()
-            .setParserErrorHandler(new StrictErrorHandler())
-            .setPrettyPrint(true);
-
-    Bundle testCaseBundle;
-
-    try {
-      testCaseBundle = parser.parseResource(Bundle.class, testCase.getJson());
-    } catch (DataFormatException | ClassCastException ex) {
-      log.error(
-          "Unable to parse test case bundle resource for test case [{}] from Measure [{}]",
-          testCase.getId(),
-          measure.getId());
-      throw new InternalServerException("An error occurred while parsing the resource");
-    }
-
-    var measureReport = buildMeasureReport(testCase, measure, testCaseBundle);
-    var bundleEntryComponent = FhirResourceHelpers.getBundleEntryComponent(measureReport);
-    testCaseBundle.getEntry().add(bundleEntryComponent);
-    return testCaseBundle;
-  }
 
   public Map<String, Bundle> getTestCaseExportBundle(Measure measure, List<TestCase> testCases) {
     if (measure == null || testCases == null || testCases.isEmpty()) {
@@ -82,12 +54,31 @@ public class TestCaseBundleService {
     Map<String, Bundle> testCaseBundle = new HashMap<>();
 
     for (TestCase testCase : testCases) {
-      Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
+      Bundle bundle;
+      try {
+        // If the test case is empty or malformed skip adding it to the map
+        if (testCase.getJson() == null || testCase.getJson().isEmpty()) {
+          throw new DataFormatException("TestCase Json is empty");
+        }
+        bundle = parser.parseResource(Bundle.class, testCase.getJson());
+      } catch (DataFormatException | ClassCastException ex) {
+        log.error(
+            "Unable to parse test case bundle resource for test case [{}] from Measure [{}]",
+            testCase.getId(),
+            measure.getId());
+        continue;
+      }
+
       String fileName = ExportFileNamesUtil.getTestCaseExportFileName(measure, testCase);
       var measureReport = buildMeasureReport(testCase, measure, bundle);
       var bundleEntryComponent = FhirResourceHelpers.getBundleEntryComponent(measureReport);
       bundle.getEntry().add(bundleEntryComponent);
       testCaseBundle.put(fileName, bundle);
+    }
+
+    // Don't return an empty zip file
+    if (testCaseBundle.isEmpty()) {
+      throw new ResourceNotFoundException("test cases", "measure", measure.getId());
     }
 
     return testCaseBundle;
@@ -172,6 +163,9 @@ public class TestCaseBundleService {
 
   private List<MeasureReport.MeasureReportGroupComponent> buildMeasureReportGroupComponents(
       TestCase testCase) {
+    if (CollectionUtils.isEmpty(testCase.getGroupPopulations())) {
+      return List.of();
+    }
     return testCase.getGroupPopulations().stream()
         .map(
             population -> {
@@ -266,10 +260,10 @@ public class TestCaseBundleService {
   /**
    * Combines the zip from Packaging Utility and a generated ReadMe file for the testcases
    *
-   * @param measure
-   * @param exportableTestCaseBundle
-   * @param testCases
-   * @return
+   * @param measure MADiE Measure
+   * @param exportableTestCaseBundle Exportable TestCase bundles that includes measure report
+   * @param testCases List of test cases to be exported, used to generate ReadMe
+   * @return zipped content
    */
   public byte[] zipTestCaseContents(
       Measure measure, Map<String, Bundle> exportableTestCaseBundle, List<TestCase> testCases) {
