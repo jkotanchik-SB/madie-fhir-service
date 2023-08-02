@@ -42,6 +42,8 @@ public class HapiFhirConfig {
     NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(fhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.core-3.1.0.tgz");
+    npmPackageSupport.loadPackageFromClasspath(
+        "classpath:packages/hl7.fhir.xver-extensions-0.0.13.tgz");
 
     UnknownCodeSystemWarningValidationSupport unknownCodeSystemWarningValidationSupport =
         new UnknownCodeSystemWarningValidationSupport(fhirContext);

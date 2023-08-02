@@ -149,6 +149,7 @@ public class MeasureBundleService {
   private void setNarrativeText(DomainResource resource, String humanReadable) {
     Narrative narrative = new Narrative();
     narrative.setStatus(Narrative.NarrativeStatus.EXTENSIONS);
+
     narrative.setDivAsString(humanReadable);
     resource.setText(narrative);
   }
