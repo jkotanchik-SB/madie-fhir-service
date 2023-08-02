@@ -72,6 +72,11 @@ public class TestCaseBundleService {
       String fileName = ExportFileNamesUtil.getTestCaseExportFileName(measure, testCase);
       var measureReport = buildMeasureReport(testCase, measure, bundle);
       var bundleEntryComponent = FhirResourceHelpers.getBundleEntryComponent(measureReport);
+      bundleEntryComponent.setFullUrl(
+          "https://madie.cms.gov/MeasureReport/"
+              + measure.getId()
+              + "/"
+              + testCase.getPatientId().toString());
       bundle.getEntry().add(bundleEntryComponent);
       testCaseBundle.put(fileName, bundle);
     }
