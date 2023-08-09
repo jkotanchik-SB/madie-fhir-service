@@ -9,6 +9,16 @@ hapi:
 
 fhir-base-url: ${FHIR_BASE_URL:http://ecqi.healthit.gov/ecqms}
 
+madie:
+  cql-elm:
+    service:
+      base-url: ${ELM_TRANSLATOR_SERVICE_URL:http://localhost:8084/api}
+      effective-data-requirements-uri: /effective-data-requirements
+  library:
+    service:
+      baseUrl: ${CQL_LIBRARY_SERVICE_URL:http://localhost:8082/api}
+      versioned:
+        uri: /cql-libraries/versioned
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}
@@ -21,3 +31,8 @@ okta:
   oauth2:
     issuer: ${OKTA_ISSUER:https://dev-18092578.okta.com/oauth2/default}
     audience: ${OKTA_AUDIENCE:api://default}
+
+caching:
+  spring:
+    libraries:
+      ttlMillis: 3600000
