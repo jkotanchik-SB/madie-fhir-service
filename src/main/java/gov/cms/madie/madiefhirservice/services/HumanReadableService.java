@@ -15,10 +15,11 @@ import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r5.model.Expression;
 import org.hl7.fhir.r5.model.Extension;
+import org.hl7.fhir.r5.model.RelatedArtifact;
 import org.hl7.fhir.r5.model.StringType;
 import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import static org.springframework.web.util.HtmlUtils.htmlEscape;
 
 @Slf4j
@@ -28,16 +29,14 @@ public class HumanReadableService extends ResourceUtils {
 
   private final LiquidEngine liquidEngine;
 
-//  make sure string isn't null.
-  public String escapeStr(String val){
-      if (val != null && !val.isEmpty()) {
-        return htmlEscape(val);
-      }
-      return val;
+  public String escapeStr(String val) {
+    if (val != null && !val.isEmpty()) {
+      return htmlEscape(val);
+    }
+    return val;
   }
 
-
-  public org.hl7.fhir.r5.model.Measure escapeMeasure(org.hl7.fhir.r5.model.Measure measure){
+  public org.hl7.fhir.r5.model.Measure escapeMeasure(org.hl7.fhir.r5.model.Measure measure) {
     measure.setPublisher(escapeStr(measure.getPublisher()));
     measure.setDescription(escapeStr(measure.getDescription()));
     measure.setPurpose(escapeStr(measure.getPurpose()));
@@ -45,54 +44,83 @@ public class HumanReadableService extends ResourceUtils {
     measure.setCopyright(escapeStr(measure.getCopyright()));
     measure.setDisclaimer(escapeStr(measure.getDisclaimer()));
     measure.setGuidance(escapeStr(measure.getGuidance()));
-    measure.setClinicalRecommendationStatement(escapeStr(measure.getClinicalRecommendationStatement()));
+    measure.setClinicalRecommendationStatement(
+        escapeStr(measure.getClinicalRecommendationStatement()));
     //  supplemental data Elements
-    measure.getSupplementalData().forEach(supplementalData -> {
-      supplementalData.setDescription(escapeStr(supplementalData.getDescription()));
-      Expression criteria = supplementalData.getCriteria();
-        criteria.setExpression(escapeStr(criteria.getExpression()));
-        criteria.setDescription(escapeStr(criteria.getDescription()));
-    });
+    measure
+        .getSupplementalData()
+        .forEach(
+            supplementalData -> {
+              supplementalData.setDescription(escapeStr(supplementalData.getDescription()));
+              Expression criteria = supplementalData.getCriteria();
+              criteria.setExpression(escapeStr(criteria.getExpression()));
+              criteria.setDescription(escapeStr(criteria.getDescription()));
+            });
     //  logic definitions, effective data requirements
-    org.hl7.fhir.r5.model.Library contained = (org.hl7.fhir.r5.model.Library) measure.getContained();
-    contained.getExtension().forEach(extension -> {
-      extension.getExtension().forEach(innerExtension -> {
-        innerExtension.setValue(new StringType(escapeStr(innerExtension.getValue().primitiveValue())));
-      });
-    });
-    //  population criteria
-    contained.getRelatedArtifact().forEach(relatedArtifact -> {
-      relatedArtifact.setLabel(escapeStr(relatedArtifact.getLabel()));
-      relatedArtifact.setCitation(escapeStr(relatedArtifact.getCitation()));
-      relatedArtifact.setDisplay(escapeStr(relatedArtifact.getDisplay()));
-      relatedArtifact.setResource(escapeStr(relatedArtifact.getResource()));
-    });
-
+    measure
+        .getContained()
+        .forEach(
+            contained -> {
+              org.hl7.fhir.r5.model.Library lib = (org.hl7.fhir.r5.model.Library) contained;
+              List<RelatedArtifact> relatedArtifacts = lib.getRelatedArtifact();
+              lib.getExtension()
+                  .forEach(
+                      extension -> {
+                        extension
+                            .getExtension()
+                            .forEach(
+                                innerExtension -> {
+                                  innerExtension.setValue(
+                                      new StringType(
+                                          escapeStr(innerExtension.getValue().primitiveValue())));
+                                });
+                      });
+              //  population criteria
+              relatedArtifacts.forEach(
+                  relatedArtifact -> {
+                    relatedArtifact.setLabel(escapeStr(relatedArtifact.getLabel()));
+                    relatedArtifact.setCitation(escapeStr(relatedArtifact.getCitation()));
+                    relatedArtifact.setDisplay(escapeStr(relatedArtifact.getDisplay()));
+                    relatedArtifact.setResource(escapeStr(relatedArtifact.getResource()));
+                  });
+            });
 
     // risk factors and supplemental data guidance
-    measure.getExtension().forEach(topLevelExtension -> {
-      topLevelExtension.getExtension().forEach(secondLevelExtension -> {
-        if (secondLevelExtension.getValue() instanceof StringType){
-          secondLevelExtension.setValue(new StringType(escapeStr(secondLevelExtension.getValue().primitiveValue())));
-        }
-        });
-      });
-
+    measure
+        .getExtension()
+        .forEach(
+            topLevelExtension -> {
+              topLevelExtension
+                  .getExtension()
+                  .forEach(
+                      secondLevelExtension -> {
+                        if (secondLevelExtension.getValue() instanceof StringType) {
+                          secondLevelExtension.setValue(
+                              new StringType(
+                                  escapeStr(secondLevelExtension.getValue().primitiveValue())));
+                        }
+                      });
+            });
 
     // population criteria descriptions
-    measure.getGroup().forEach(group -> {
-      // top level description for population criteria
-      group.setDescription(escapeStr(group.getDescription()));
-      group.getPopulation().forEach(population -> {
-      // update each population description
-        population.setDescription(escapeStr(population.getDescription()));
-        Expression criteria = population.getCriteria();
-        criteria.setExpression(escapeStr(criteria.getExpression()));
-      });
-    });
+    measure
+        .getGroup()
+        .forEach(
+            group -> {
+              // top level description for population criteria
+              group.setDescription(escapeStr(group.getDescription()));
+              group
+                  .getPopulation()
+                  .forEach(
+                      population -> {
+                        // update each population description
+                        population.setDescription(escapeStr(population.getDescription()));
+                        Expression criteria = population.getCriteria();
+                        criteria.setExpression(escapeStr(criteria.getExpression()));
+                      });
+            });
     return measure;
   }
-
 
   public String generateMeasureHumanReadable(
       Measure madieMeasure,
