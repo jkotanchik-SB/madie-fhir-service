@@ -167,13 +167,13 @@
         {% if Measure.publisher.exists() %}
             <tr>
                 <th scope="row"><b>Publisher: </b></th>
-                <td style="padding-left: 4px;">{{Measure.publisher.escape('html')}}</td>
+                <td style="padding-left: 4px;">{{Measure.publisher}}</td>
             </tr>
         {% endif %}
         {% if Measure.description.exists() %}
             <tr>
                 <th scope="row"><b>Description: </b></th>
-                <td style="padding-left: 4px;">{{Measure.description.escape('html')}}</td>
+                <td style="padding-left: 4px;">{{Measure.description}}</td>
             </tr>
         {% endif %}
         {% if Measure.extension.where(url = 'http://hl7.org/fhir/uv/cpg/StructureDefinition/cpg-knowledgeCapability').exists() %}
@@ -223,25 +223,25 @@
         {% if Measure.purpose.exists() %}
             <tr>
                 <th scope="row"><b>Purpose: </b></th>
-                <td style="padding-left: 4px;">{{Measure.purpose.escape('html')}}</td>
+                <td style="padding-left: 4px;">{{Measure.purpose}}</td>
             </tr>
         {% endif %}
         {% if Measure.usage.exists() %}
             <tr>
                 <th scope="row"><b>Guidance (Usage): </b></th>
-                <td style="padding-left: 4px;">{{Measure.usage.escape('html')}}</td>
+                <td style="padding-left: 4px;">{{Measure.usage}}</td>
             </tr>
         {% endif %}
         {% if Measure.copyright.exists() %}
             <tr>
                 <th scope="row"><b>Copyright: </b></th>
-                <td style="padding-left: 25px;">{{Measure.copyright.escape('html')}}</td>
+                <td style="padding-left: 25px;">{{Measure.copyright}}</td>
             </tr>
         {% endif %}
         {% if Measure.disclaimer.exists() %}
             <tr>
                 <th scope="row"><b>Disclaimer: </b></th>
-                <td style="padding-left: 25px;">{{Measure.disclaimer.escape('html')}}</td>
+                <td style="padding-left: 25px;">{{Measure.disclaimer}}</td>
             </tr>
         {% endif %}
         {% if Measure.approvalDate.exists() %}
@@ -277,7 +277,7 @@
                                 {% for population in group.population %}
                                     <tr>
                                         <td>{{population.code.coding[0].display}}: </td>
-                                        <td>{{population.description.escape('html')}}</td>
+                                        <td>{{population.description}}</td>
                                     </tr>
                                 {% endfor %}
                             </table>
@@ -353,7 +353,7 @@
         {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-supplementalDataGuidance') %}
             <tr>
                 <th scope="row"><b> {{iif(extension.extension.where(url = 'usage').value.text.exists(), extension.extension.where(url = 'usage').value.text, iif(extension.extension.where(url = 'usage').coding.first().display.exists(), extension.extension.where(url = 'usage').coding.first().display, extension.extension.where(url = 'usage').coding.first().code))}}: </b></th>
-                <td style="padding-left: 4px;"> {{extension.extension.where(url = 'guidance').value.escape('html')}} </td>
+                <td style="padding-left: 4px;"> {{extension.extension.where(url = 'guidance').value}} </td>
             </tr>
         {% endfor %}
         {% if Measure.supplementalData.usage.coding.where(code = 'supplemental-data').exists() %}
@@ -365,14 +365,14 @@
                             {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                         {% else %}
                             {%if supplementalData.description.exists() %}
-                                {{supplementalData.description.escape('html')}}
+                                {{supplementalData.description}}
                             {% else %}
                                 {%if supplementalData.criteria.description.exists() %}
-                                    {{supplementalData.criteria.description.escape('html')}}
+                                    {{supplementalData.criteria.description}}
                                 {% else %}
                                     {{supplementalData.criteria.expression}}
                                 {% endif %}
-                            {% endif %}
+                            {% endif %} g
                         {% endif %}
                     {% endfor %}
                 </td>
@@ -388,10 +388,10 @@
                             {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                         {% else %}
                             {%if supplementalData.description.exists() %}
-                                {{supplementalData.description.escape('html')}}
+                                {{supplementalData.description}}
                             {% else %}
                                 {%if supplementalData.criteria.description.exists() %}
-                                    {{supplementalData.criteria.description.escape('html')}}
+                                    {{supplementalData.criteria.description}}
                                 {% else %}
                                     {{supplementalData.criteria.expression}}
                                 {% endif %}
@@ -521,7 +521,7 @@
                                                     <td>{{ population.code.first().coding.first().display }}</td>
                                                     <td>
                                                         {% if population.criteria.expression %}
-                                                        <pre><code class="language-cql">{{ (Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value).escape('html') }}</code></pre>
+                                                        <pre><code class="language-cql">{{ (Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value) }}</code></pre>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
@@ -545,7 +545,7 @@
                                     <tr>
                                         {% for statementExtension in extension.extension.where(url = 'statement') %}
                                             <td></td>
-                                        <td><pre class="highlight language-cql"><code data-lang="cql"  class="language-cql">{{statementExtension.value.escape('html')}}</code></pre></td>
+                                        <td><pre class="highlight language-cql"><code data-lang="cql"  class="language-cql">{{statementExtension.value}}</code></pre></td>
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
@@ -631,7 +631,7 @@
 		                                    <td>{{population.code.first().coding.first().display}}</td>
 		                                    <td>
 		                                        {% if population.description %}
-		                                            {{(population.description.escape('html'))}}
+		                                            {{(population.description)}}
 		                                        {% endif %}
 		                                    </td>
 		                                 </tr>
@@ -700,7 +700,7 @@
                                     </tr>
                                 </table>
                                 {% for statementExtension in extension.extension.where(url = 'statement') %}
-                                    <pre class="highlight language-cql"><code data-lang="cql" class="language-cql">{{statementExtension.value.escape('html')}}</code></pre>
+                                    <pre class="highlight language-cql"><code data-lang="cql" class="language-cql">{{statementExtension.value}}</code></pre>
                                 {% endfor %}
                                 <br/><br/>
                             {% endfor %}
