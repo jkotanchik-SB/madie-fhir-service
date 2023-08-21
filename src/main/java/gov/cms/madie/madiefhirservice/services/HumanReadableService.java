@@ -36,7 +36,7 @@ public class HumanReadableService extends ResourceUtils {
     return val;
   }
 
-  public org.hl7.fhir.r5.model.Measure escapeMeasure(org.hl7.fhir.r5.model.Measure measure) {
+  public void ecapeTopLevelProperties(org.hl7.fhir.r5.model.Measure measure) {
     measure.setPublisher(escapeStr(measure.getPublisher()));
     measure.setDescription(escapeStr(measure.getDescription()));
     measure.setPurpose(escapeStr(measure.getPurpose()));
@@ -46,6 +46,9 @@ public class HumanReadableService extends ResourceUtils {
     measure.setGuidance(escapeStr(measure.getGuidance()));
     measure.setClinicalRecommendationStatement(
         escapeStr(measure.getClinicalRecommendationStatement()));
+  }
+
+  public void escapeSupplementalProperties(org.hl7.fhir.r5.model.Measure measure) {
     //  supplemental data Elements
     measure
         .getSupplementalData()
@@ -56,7 +59,9 @@ public class HumanReadableService extends ResourceUtils {
               criteria.setExpression(escapeStr(criteria.getExpression()));
               criteria.setDescription(escapeStr(criteria.getDescription()));
             });
-    //  logic definitions, effective data requirements
+  }
+
+  public void escapeContainedProperties(org.hl7.fhir.r5.model.Measure measure) {
     measure
         .getContained()
         .forEach(
@@ -84,7 +89,13 @@ public class HumanReadableService extends ResourceUtils {
                     relatedArtifact.setResource(escapeStr(relatedArtifact.getResource()));
                   });
             });
+  }
 
+  public org.hl7.fhir.r5.model.Measure escapeMeasure(org.hl7.fhir.r5.model.Measure measure) {
+    ecapeTopLevelProperties(measure);
+    escapeSupplementalProperties(measure);
+    escapeContainedProperties(measure);
+    //  logic definitions, effective data requirements
     // risk factors and supplemental data guidance
     measure
         .getExtension()
