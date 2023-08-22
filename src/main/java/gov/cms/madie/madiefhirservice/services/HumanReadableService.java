@@ -29,14 +29,14 @@ public class HumanReadableService extends ResourceUtils {
 
   private final LiquidEngine liquidEngine;
 
-  public String escapeStr(String val) {
+  private String escapeStr(String val) {
     if (val != null && !val.isEmpty()) {
       return htmlEscape(val);
     }
     return val;
   }
 
-  public void ecapeTopLevelProperties(org.hl7.fhir.r5.model.Measure measure) {
+  private void escapeTopLevelProperties(org.hl7.fhir.r5.model.Measure measure) {
     measure.setPublisher(escapeStr(measure.getPublisher()));
     measure.setDescription(escapeStr(measure.getDescription()));
     measure.setPurpose(escapeStr(measure.getPurpose()));
@@ -48,7 +48,7 @@ public class HumanReadableService extends ResourceUtils {
         escapeStr(measure.getClinicalRecommendationStatement()));
   }
 
-  public void escapeSupplementalProperties(org.hl7.fhir.r5.model.Measure measure) {
+  private void escapeSupplementalProperties(org.hl7.fhir.r5.model.Measure measure) {
     //  supplemental data Elements
     measure
         .getSupplementalData()
@@ -92,7 +92,7 @@ public class HumanReadableService extends ResourceUtils {
   }
 
   public org.hl7.fhir.r5.model.Measure escapeMeasure(org.hl7.fhir.r5.model.Measure measure) {
-    ecapeTopLevelProperties(measure);
+    escapeTopLevelProperties(measure);
     escapeSupplementalProperties(measure);
     escapeContainedProperties(measure);
     //  logic definitions, effective data requirements
