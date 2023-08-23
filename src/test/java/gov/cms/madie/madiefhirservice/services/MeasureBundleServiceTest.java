@@ -88,8 +88,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
 
-    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class), isNull()))
-        .thenReturn(library);
+    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
 
     doAnswer(
             invocation -> {
@@ -128,8 +127,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
 
-    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class), isNull()))
-        .thenReturn(library);
+    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
 
     doThrow(new CqlLibraryNotFoundException("FHIRHelpers", "4.0.001"))
         .when(libraryService)
@@ -167,8 +165,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
 
-    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class), isNull()))
-        .thenReturn(library);
+    when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
 
     doAnswer(
             invocation -> {

@@ -119,7 +119,7 @@ public class MeasureBundleService {
    */
   public Library getMeasureLibraryResourceForMadieMeasure(Measure madieMeasure) {
     CqlLibrary cqlLibrary = createCqlLibraryForMadieMeasure(madieMeasure);
-    return libraryTranslatorService.convertToFhirLibrary(cqlLibrary, null);
+    return libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
   }
 
   /**
