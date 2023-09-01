@@ -19,6 +19,8 @@ madie:
       baseUrl: ${CQL_LIBRARY_SERVICE_URL:http://localhost:8082/api}
       versioned:
         uri: /cql-libraries/versioned
+  url: ${MADIE_URL:https://madie.cms.gov}
+
 #springdoc:
 #  swagger-ui:
 #    path: ${SWAGGER_PATH:/swagger}

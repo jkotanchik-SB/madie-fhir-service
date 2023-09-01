@@ -108,7 +108,11 @@ public class MeasureBundleService {
 
   /** Creates BundleEntryComponent for given resource */
   public Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
-    return new Bundle.BundleEntryComponent().setResource(resource);
+    Bundle.HTTPVerb bundleVerb = Bundle.HTTPVerb.fromCode("PUT");
+    String url = resource.getResourceType() + "/" + resource.getId();
+    Bundle.BundleEntryRequestComponent requestComponent =
+        new Bundle.BundleEntryRequestComponent().setMethod(bundleVerb).setUrl(url);
+    return new Bundle.BundleEntryComponent().setResource(resource).setRequest(requestComponent);
   }
 
   /**
