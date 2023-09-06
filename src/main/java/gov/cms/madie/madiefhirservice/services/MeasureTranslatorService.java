@@ -91,8 +91,9 @@ public class MeasureTranslatorService {
         .setClinicalRecommendationStatement(
             madieMeasure.getMeasureMetaData().getClinicalRecommendation())
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
-        .setMeta(buildMeasureMeta());
-    measure.setId(madieMeasure.getCqlLibraryName());
+        .setMeta(buildMeasureMeta())
+        .setId(madieMeasure.getCqlLibraryName());
+
     for (Extension ext : buildExtensions(madieMeasure)) {
       measure.addExtension(ext);
     }
