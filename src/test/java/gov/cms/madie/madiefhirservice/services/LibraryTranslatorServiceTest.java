@@ -57,10 +57,11 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     Identifier identifier = new Identifier();
     identifier.setUse(IdentifierUse.OFFICIAL);
     identifier.setSystem("https://madie.cms.gov/login");
-    identifier.setValue(library.getId());
+    identifier.setValue(cqlLibrary.getId());
     assertThat(library.getIdentifier().get(0).getValue(), is(equalTo(identifier.getValue())));
     assertThat(library.getIdentifier().get(0).getSystem(), is(equalTo(identifier.getSystem())));
     assertThat(library.getIdentifier().get(0).getUse(), is(equalTo(identifier.getUse())));
+    assertThat(library.getId(), is(equalTo(cqlLibrary.getCqlLibraryName())));
   }
 
   @Test

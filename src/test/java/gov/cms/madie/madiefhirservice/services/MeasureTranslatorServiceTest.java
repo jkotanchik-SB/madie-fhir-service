@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
@@ -83,6 +82,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_cv_measure.json");
     madieCVMeasure = MeasureTestHelper.createMadieMeasureFromJson(cvMeasureJson);
     ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
+    ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
+    ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "https://madie.cms.gov");
   }
 
   @Test
@@ -96,7 +97,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
         measure.getRationale(), is(equalTo(madieMeasure.getMeasureMetaData().getRationale())));
     assertThat(measure.getPublisher(), is(equalTo("UNKNOWN")));
     assertThat(
-        measure.getUrl(), is(equalTo("cms.gov/Measure/" + madieMeasure.getCqlLibraryName())));
+        measure.getUrl(),
+        is(equalTo("https://madie.cms.gov/Measure/" + madieMeasure.getCqlLibraryName())));
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
         is(equalTo("01/01/2023")));
@@ -282,7 +284,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getCopyright(), is(equalTo("testCopyright")));
     assertThat(measure.getDisclaimer(), is(equalTo("testDisclaimer")));
     assertThat(
-        measure.getUrl(), is(equalTo("cms.gov/Measure/" + madieRatioMeasure.getCqlLibraryName())));
+        measure.getUrl(),
+        is(equalTo("https://madie.cms.gov/Measure/" + madieRatioMeasure.getCqlLibraryName())));
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
         is(equalTo("01/01/2023")));
@@ -408,7 +411,8 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         measure.getRationale(), is(equalTo(madieCVMeasure.getMeasureMetaData().getRationale())));
     assertThat(
-        measure.getUrl(), is(equalTo("cms.gov/Measure/" + madieCVMeasure.getCqlLibraryName())));
+        measure.getUrl(),
+        is(equalTo("https://madie.cms.gov/Measure/" + madieCVMeasure.getCqlLibraryName())));
     assertThat(
         DateFormatUtils.format(measure.getEffectivePeriod().getStart(), "MM/dd/yyyy"),
         is(equalTo("01/01/2022")));

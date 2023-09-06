@@ -1,7 +1,6 @@
 package gov.cms.madie.madiefhirservice.utils;
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
-import gov.cms.madie.models.measure.Measure;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -17,10 +16,16 @@ import java.util.Date;
 public class FhirResourceHelpers {
 
   private static String fhirBaseUrl;
+  private static String madieUrl;
 
   @Value("${fhir-base-url}")
   public void setFhirBaseUrl(String url) {
     FhirResourceHelpers.fhirBaseUrl = url;
+  }
+
+  @Value("${madie.url}")
+  public void setMadieUrl(String url) {
+    FhirResourceHelpers.madieUrl = url;
   }
 
   public static Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
@@ -44,11 +49,22 @@ public class FhirResourceHelpers {
     return new Coding().setCode(code).setSystem(system).setDisplay(display);
   }
 
-  public static String buildMeasureUrl(Measure measure) {
-    return fhirBaseUrl + "/Measure/" + measure.getCqlLibraryName();
+  public static String buildMeasureUrl(String measureLibraryName) {
+    return madieUrl + "/Measure/" + measureLibraryName;
   }
 
-  public static String buildLibraryUrl(Measure measure) {
-    return fhirBaseUrl + "/Library/" + measure.getCqlLibraryName();
+  public static String buildLibraryUrl(String libraryName) {
+    return fhirBaseUrl + "/Library/" + libraryName;
+  }
+
+  public static String getFullUrl(Resource resource) {
+    String resourceType = String.valueOf(resource.getResourceType());
+    if ("Measure".equals(resourceType)) {
+      return buildMeasureUrl(resource.getIdPart());
+    } else if ("Library".equals(resourceType)) {
+      return buildLibraryUrl(resource.getIdPart());
+    } else {
+      return null;
+    }
   }
 }

@@ -61,6 +61,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
     testCase = Objects.requireNonNull(madieMeasure).getTestCases().get(0);
     ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
+    ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "madie.cms.gov");
   }
 
   @Test
@@ -73,12 +74,10 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         exportMap.get(
             "285d114d-9c36-4d66-b0a0-06f395bbf23d/title-v0.0.000-testcaseseries-testcasetitle");
     assertEquals(5, bundle.getEntry().size());
-    assertEquals(
-        "https://madie.cms.gov/MeasureReport/"
-            + madieMeasure.getId()
-            + "/285d114d-9c36-4d66-b0a0-06f395bbf23d",
-        bundle.getEntry().get(4).getFullUrl());
     MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
+    assertEquals(
+        "https://madie.cms.gov/MeasureReport/" + measureReport.getIdPart(),
+        bundle.getEntry().get(4).getFullUrl());
     assertEquals("MeasureReport", measureReport.getResourceType().toString());
     assertEquals(
         UriConstants.CqfTestCases.CQFM_TEST_CASES,
@@ -93,7 +92,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     assertEquals("#test case title-parameters", reference.getReference());
     assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, measureReport.getStatus());
     assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, measureReport.getType());
-    assertEquals("cms.gov/Measure/SimpleFhirMeasureLib", measureReport.getMeasure());
+    assertEquals("madie.cms.gov/Measure/SimpleFhirMeasureLib", measureReport.getMeasure());
 
     assertEquals(
         "01/01/2023", DateFormatUtils.format(measureReport.getPeriod().getStart(), "MM/dd/yyyy"));
@@ -143,7 +142,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     assertEquals("#test case title-parameters", reference.getReference());
     assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, measureReport.getStatus());
     assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, measureReport.getType());
-    assertEquals("cms.gov/Measure/SimpleFhirMeasureLib", measureReport.getMeasure());
+    assertEquals("madie.cms.gov/Measure/SimpleFhirMeasureLib", measureReport.getMeasure());
 
     assertEquals(
         "01/01/2023", DateFormatUtils.format(measureReport.getPeriod().getStart(), "MM/dd/yyyy"));

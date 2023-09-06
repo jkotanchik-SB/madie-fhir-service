@@ -33,7 +33,6 @@ import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.*;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
@@ -45,9 +44,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MeasureTranslatorService {
   public static final String UNKNOWN = "UNKNOWN";
-
-  @Value("${madie.url}")
-  private String madieUrl;
 
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure) {
     Organization steward = madieMeasure.getMeasureMetaData().getSteward();
@@ -63,7 +59,7 @@ public class MeasureTranslatorService {
         .setTitle(madieMeasure.getMeasureName())
         .setIdentifier(buildMeasureIdentifiers(madieMeasure))
         .setExperimental(madieMeasure.getMeasureMetaData().isExperimental())
-        .setUrl(FhirResourceHelpers.buildMeasureUrl(madieMeasure))
+        .setUrl(FhirResourceHelpers.buildMeasureUrl(madieMeasure.getCqlLibraryName()))
         .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
             getPeriodFromDates(
@@ -79,7 +75,8 @@ public class MeasureTranslatorService {
         .setRationale(rationale)
         .setLibrary(
             Collections.singletonList(
-                new CanonicalType(FhirResourceHelpers.buildLibraryUrl(madieMeasure))))
+                new CanonicalType(
+                    FhirResourceHelpers.buildLibraryUrl(madieMeasure.getCqlLibraryName()))))
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetail(madieMeasure.getMeasureMetaData().getSteward(), false))
         .setGroup(buildGroups(madieMeasure.getGroups()))
@@ -96,7 +93,6 @@ public class MeasureTranslatorService {
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
         .setMeta(buildMeasureMeta());
     measure.setId(madieMeasure.getCqlLibraryName());
-    measure.setUrl(madieUrl + "/Measure/" + madieMeasure.getCqlLibraryName());
     for (Extension ext : buildExtensions(madieMeasure)) {
       measure.addExtension(ext);
     }

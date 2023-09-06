@@ -35,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -120,6 +119,15 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     assertThat(measureLibrary.getName(), is(equalTo(madieMeasure.getCqlLibraryName())));
     assertThat(measureLibrary.getContent(), is(notNullValue()));
     assertThat(measureLibrary.getContent().size(), is(equalTo(2)));
+    Bundle.BundleEntryRequestComponent measureEntryRequest = bundle.getEntry().get(0).getRequest();
+    assertThat(
+        measureEntryRequest.getUrl(), is(equalTo("Measure/" + madieMeasure.getCqlLibraryName())));
+    assertThat(measureEntryRequest.getMethod(), is(equalTo(Bundle.HTTPVerb.PUT)));
+
+    Bundle.BundleEntryRequestComponent libraryEntryRequest = bundle.getEntry().get(1).getRequest();
+    assertThat(
+        libraryEntryRequest.getUrl(), is(equalTo("Library/" + madieMeasure.getCqlLibraryName())));
+    assertThat(libraryEntryRequest.getMethod(), is(equalTo(Bundle.HTTPVerb.PUT)));
   }
 
   @Test
