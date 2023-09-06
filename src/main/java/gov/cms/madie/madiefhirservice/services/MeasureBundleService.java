@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
@@ -108,7 +109,14 @@ public class MeasureBundleService {
 
   /** Creates BundleEntryComponent for given resource */
   public Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
-    return new Bundle.BundleEntryComponent().setResource(resource);
+    Bundle.BundleEntryRequestComponent requestComponent =
+        new Bundle.BundleEntryRequestComponent()
+            .setMethod(Bundle.HTTPVerb.PUT)
+            .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
+    return new Bundle.BundleEntryComponent()
+        .setFullUrl(FhirResourceHelpers.getFullUrl(resource))
+        .setResource(resource)
+        .setRequest(requestComponent);
   }
 
   /**

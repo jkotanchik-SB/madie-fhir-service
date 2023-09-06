@@ -59,7 +59,7 @@ public class MeasureTranslatorService {
         .setTitle(madieMeasure.getMeasureName())
         .setIdentifier(buildMeasureIdentifiers(madieMeasure))
         .setExperimental(madieMeasure.getMeasureMetaData().isExperimental())
-        .setUrl(FhirResourceHelpers.buildMeasureUrl(madieMeasure))
+        .setUrl(FhirResourceHelpers.buildMeasureUrl(madieMeasure.getCqlLibraryName()))
         .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
             getPeriodFromDates(
@@ -75,7 +75,8 @@ public class MeasureTranslatorService {
         .setRationale(rationale)
         .setLibrary(
             Collections.singletonList(
-                new CanonicalType(FhirResourceHelpers.buildLibraryUrl(madieMeasure))))
+                new CanonicalType(
+                    FhirResourceHelpers.buildLibraryUrl(madieMeasure.getCqlLibraryName()))))
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetail(madieMeasure.getMeasureMetaData().getSteward(), false))
         .setGroup(buildGroups(madieMeasure.getGroups()))
@@ -90,7 +91,8 @@ public class MeasureTranslatorService {
         .setClinicalRecommendationStatement(
             madieMeasure.getMeasureMetaData().getClinicalRecommendation())
         .setDate(Date.from(madieMeasure.getLastModifiedAt()))
-        .setMeta(buildMeasureMeta());
+        .setMeta(buildMeasureMeta())
+        .setId(madieMeasure.getCqlLibraryName());
 
     for (Extension ext : buildExtensions(madieMeasure)) {
       measure.addExtension(ext);

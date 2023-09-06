@@ -49,7 +49,7 @@ public class LibraryTranslatorService {
   public Library convertToFhirLibrary(CqlLibrary cqlLibrary) {
     var visitor = libCqlVisitorFactory.visit(cqlLibrary.getCql());
     Library library = new Library();
-    library.setId(cqlLibrary.getId());
+    library.setId(cqlLibrary.getCqlLibraryName());
     library.setLanguage("en");
     library.setName(cqlLibrary.getCqlLibraryName());
     library.setVersion(cqlLibrary.getVersion().toString());
@@ -75,9 +75,6 @@ public class LibraryTranslatorService {
     identifier.setSystem("https://madie.cms.gov/login");
     identifier.setValue(cqlLibrary.getId());
     library.setIdentifier(List.of(identifier));
-
-    // TODO: probably have to revisit this. Human Readable feature is not yet ready
-    // result.setText(findHumanReadable(lib.getMeasureId()));
     return library;
   }
 
