@@ -36,18 +36,18 @@
                "populationValues":[
                   {
                      "name":"initialPopulation",
-                     "expected":false,
-                     "actual":false
+                     "expected":null,
+                     "actual":null
                   },
                   {
                      "name":"initialPopulation",
-                     "expected":false,
-                     "actual":false
+                     "expected":" ",
+                     "actual":null
                   },
                   {
                      "name":"denominator",
-                     "expected":true,
-                     "actual":false
+                     "expected":0,
+                     "actual":0
                   },
                   {
                      "name":"denominatorExclusion",
