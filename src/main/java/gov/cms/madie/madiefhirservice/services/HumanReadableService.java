@@ -1,20 +1,19 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import gov.cms.madie.madiefhirservice.constants.UriConstants.CqfMeasures;
-import gov.cms.madie.madiefhirservice.exceptions.HumanReadableGenerationException;
-import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
-import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
-import gov.cms.madie.models.measure.Measure;
-import gov.cms.madie.models.measure.Stratification;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import static org.springframework.web.util.HtmlUtils.htmlEscape;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
 import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r5.model.DataRequirement;
 import org.hl7.fhir.r5.model.Enumerations.FHIRTypes;
 import org.hl7.fhir.r5.model.Expression;
 import org.hl7.fhir.r5.model.Extension;
@@ -24,19 +23,19 @@ import org.hl7.fhir.r5.model.StringType;
 import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.springframework.web.util.HtmlUtils.htmlEscape;
+import gov.cms.madie.madiefhirservice.constants.UriConstants.CqfMeasures;
+import gov.cms.madie.madiefhirservice.exceptions.HumanReadableGenerationException;
+import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
+import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
+import gov.cms.madie.models.measure.Measure;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class HumanReadableService extends ResourceUtils {
-  private final MeasureTranslatorService measureTranslatorService;
+  
 
   private final LiquidEngine liquidEngine;
 
