@@ -14,6 +14,7 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r5.model.ParameterDefinition;
 import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -124,6 +126,43 @@ class HumanReadableServiceTest implements ResourceFileUtil {
     when(liquidEngine.evaluate(
             any(LiquidEngine.LiquidDocument.class),
             any(org.hl7.fhir.r5.model.Measure.class),
+            any()))
+        .thenReturn(hrText);
+
+    String generatedHumanReadable =
+        humanReadableService.generateMeasureHumanReadable(
+            madieMeasure, bundle, effectiveDataRequirements);
+    assertNotNull(generatedHumanReadable);
+    assertTrue(generatedHumanReadable.contains(hrText));
+  }
+
+  @Test
+  public void generateMeasureHumanReadableOrdered() {
+    Bundle.BundleEntryComponent measureBundleEntryComponent = getBundleEntryComponent(measure);
+    Bundle.BundleEntryComponent libraryBundleEntryComponent = getBundleEntryComponent(library);
+    Bundle bundle =
+        new Bundle()
+            .setType(Bundle.BundleType.TRANSACTION)
+            .addEntry(measureBundleEntryComponent)
+            .addEntry(libraryBundleEntryComponent);
+
+    String hrText = "<div>Human Readable for Measure: " + madieMeasure.getMeasureName() + "</div>";
+
+    when(liquidEngine.parse(anyString(), anyString()))
+        .thenReturn(new LiquidEngine.LiquidDocument());
+
+    when(liquidEngine.evaluate(
+            any(LiquidEngine.LiquidDocument.class),
+            argThat(
+                (measure) -> {
+                  org.hl7.fhir.r5.model.Measure m = (org.hl7.fhir.r5.model.Measure) measure;
+
+                  org.hl7.fhir.r5.model.Library library =
+                      (org.hl7.fhir.r5.model.Library) m.getContained().get(0);
+                  ParameterDefinition paramDef = library.getParameter().get(0);
+
+                  return "Period".equals(paramDef.getType().toCode());
+                }),
             any()))
         .thenReturn(hrText);
 

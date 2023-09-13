@@ -134,19 +134,20 @@
     "display": "Library FHIRHelpers",
     "resource": "Library/FHIRHelpers|4.1.000"
   } ],
-  "parameter": [ {
-    "name": "Measurement Period",
-    "use": "in",
-    "min": 0,
-    "max": "1",
-    "type": "Period"
-  }, {
+  "parameter": [  {
     "name": "boolDenom",
     "use": "out",
     "min": 0,
     "max": "1",
     "type": "boolean"
-  }, {
+  },{
+    "name": "Measurement Period",
+    "use": "in",
+    "min": 0,
+    "max": "1",
+    "type": "Period"
+  },
+   {
     "name": "ex",
     "use": "out",
     "min": 0,
