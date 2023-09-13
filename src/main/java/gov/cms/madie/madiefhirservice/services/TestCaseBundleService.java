@@ -27,6 +27,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
@@ -204,7 +206,7 @@ public class TestCaseBundleService {
    * @return an equivalent integer
    */
   private int getExpectedValue(Object expectedValue) {
-    if (expectedValue == null) {
+    if (expectedValue == null || StringUtils.isBlank(expectedValue.toString())) {
       return 0;
     } else if (expectedValue instanceof Boolean) {
       return (Boolean) expectedValue ? 1 : 0;
