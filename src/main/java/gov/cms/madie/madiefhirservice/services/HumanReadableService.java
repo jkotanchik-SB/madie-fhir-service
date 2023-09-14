@@ -1,5 +1,28 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import static org.springframework.web.util.HtmlUtils.htmlEscape;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
+import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Library;
+import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r5.model.Enumerations.FHIRTypes;
+import org.hl7.fhir.r5.model.Expression;
+import org.hl7.fhir.r5.model.Extension;
+import org.hl7.fhir.r5.model.ParameterDefinition;
+import org.hl7.fhir.r5.model.RelatedArtifact;
+import org.hl7.fhir.r5.model.StringType;
+import org.hl7.fhir.r5.utils.LiquidEngine;
+import org.springframework.stereotype.Service;
+
 import gov.cms.madie.madiefhirservice.constants.UriConstants.CqfMeasures;
 import gov.cms.madie.madiefhirservice.exceptions.HumanReadableGenerationException;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
@@ -7,25 +30,12 @@ import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
-import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
-import org.hl7.fhir.exceptions.FHIRException;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r5.model.Expression;
-import org.hl7.fhir.r5.model.Extension;
-import org.hl7.fhir.r5.model.RelatedArtifact;
-import org.hl7.fhir.r5.model.StringType;
-import org.hl7.fhir.r5.utils.LiquidEngine;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import static org.springframework.web.util.HtmlUtils.htmlEscape;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class HumanReadableService extends ResourceUtils {
+  
 
   private final LiquidEngine liquidEngine;
 
@@ -49,7 +59,7 @@ public class HumanReadableService extends ResourceUtils {
   }
 
   private void escapeSupplementalProperties(org.hl7.fhir.r5.model.Measure measure) {
-    //  supplemental data Elements
+    // supplemental data Elements
     measure
         .getSupplementalData()
         .forEach(
@@ -80,7 +90,7 @@ public class HumanReadableService extends ResourceUtils {
                                           escapeStr(innerExtension.getValue().primitiveValue())));
                                 });
                       });
-              //  population criteria
+              // population criteria
               relatedArtifacts.forEach(
                   relatedArtifact -> {
                     relatedArtifact.setLabel(escapeStr(relatedArtifact.getLabel()));
@@ -95,7 +105,7 @@ public class HumanReadableService extends ResourceUtils {
     escapeTopLevelProperties(measure);
     escapeSupplementalProperties(measure);
     escapeContainedProperties(measure);
-    //  logic definitions, effective data requirements
+    // logic definitions, effective data requirements
     // risk factors and supplemental data guidance
     measure
         .getExtension()
@@ -153,8 +163,10 @@ public class HumanReadableService extends ResourceUtils {
       var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
       org.hl7.fhir.r5.model.Measure r5Measure =
           (org.hl7.fhir.r5.model.Measure) versionConvertor_40_50.convertResource(measureResource);
-
+      // sort effectiveDataRequirements.parameters
+      sortParameters(madieMeasure, effectiveDataRequirements);
       r5Measure.addContained(effectiveDataRequirements);
+
       r5Measure.getExtension().add(createEffectiveDataRequirementExtension());
       // escape html
       org.hl7.fhir.r5.model.Measure escapedR5Measure = escapeMeasure(r5Measure);
@@ -169,6 +181,75 @@ public class HumanReadableService extends ResourceUtils {
           fhirException);
       throw new HumanReadableGenerationException("measure", madieMeasure.getId());
     }
+  }
+
+  private void sortParameters(
+      Measure madieMeasure, org.hl7.fhir.r5.model.Library effectiveDataRequirements) {
+    List<String> suppDataDefs =
+        madieMeasure.getSupplementalData().stream()
+            .map((s) -> s.getDefinition())
+            .collect(Collectors.toList());
+    List<String> riskAdjDefs =
+        madieMeasure.getRiskAdjustments().stream()
+            .map((s) -> s.getDefinition())
+            .collect(Collectors.toList());
+    List<String> strats = new ArrayList<String>();
+    if (madieMeasure.getGroups() != null) {
+      madieMeasure.getGroups().stream()
+          .forEach(
+              (g) ->
+                  strats.addAll(
+                      g.getStratifications().stream()
+                          .map(s -> s.getCqlDefinition())
+                          .collect(Collectors.toList())));
+    }
+
+    Collections.sort(
+        effectiveDataRequirements.getParameter(),
+        new Comparator<ParameterDefinition>() {
+
+          @Override
+          public int compare(ParameterDefinition o1, ParameterDefinition o2) {
+
+            int ord1 = determineOrd(o1, suppDataDefs, riskAdjDefs, strats);
+            int ord2 = determineOrd(o2, suppDataDefs, riskAdjDefs, strats);
+
+            int result = ord1 - ord2;
+            return result;
+          }
+        });
+  }
+
+  private int determineOrd(
+      ParameterDefinition paramDef,
+      List<String> suppDataDefs,
+      List<String> riskAdjDefs,
+      List<String> strats) {
+    int result = 1; // default = 1
+
+    // if paramDef is a period, then ord = 0
+    if (paramDef != null
+        && paramDef.getType() != null
+        && paramDef.getType().toCode().equals(FHIRTypes.PERIOD.toCode())) {
+      result = 0;
+    }
+    // if paramDef is a supp data then ord = 2
+    if (paramDef != null && suppDataDefs.contains(paramDef.getName())) {
+      result = 2;
+    }
+
+    // if paramDef is a risk adjustment data then ord = 3
+    if (paramDef != null && riskAdjDefs.contains(paramDef.getName())) {
+      result = 3;
+    }
+
+    // if paramDef is a stratification data then ord = 4
+    if (paramDef != null && strats.contains(paramDef.getName())) {
+      result = 4;
+    }
+
+    // if paramDef is anything else then ord = 1
+    return result;
   }
 
   /**
