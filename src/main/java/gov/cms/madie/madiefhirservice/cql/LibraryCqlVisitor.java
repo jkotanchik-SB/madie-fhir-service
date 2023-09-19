@@ -119,11 +119,6 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
 
   @Override
   public String visitCodeDefinition(cqlParser.CodeDefinitionContext ctx) {
-
-    RelatedArtifact relatedArtifact = new RelatedArtifact();
-    relatedArtifact.setDisplay(getUnquotedFullText(ctx.identifier()));
-
-    relatedArtifact.setId(getUnquotedFullText(ctx.codeId()));
     String codeSystemName = getUnquotedFullText(ctx.codesystemIdentifier());
     String code = getUnquotedFullText(ctx.codeId());
     String codeName = getUnquotedFullText(ctx.identifier());
@@ -135,7 +130,6 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
               String csName = getUnquotedFullText(cs.identifier());
               String csUri = getUnquotedFullText(cs.codesystemId());
               String csVersionUri = getUnquotedFullText(cs.versionSpecifier());
-              relatedArtifact.setUrl(csUri);
               readableArtifacts
                   .getTerminologyCodeModels()
                   .add(
@@ -148,7 +142,6 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
                           .isCodesystemVersionIncluded(csVersionUri != null)
                           .datatype(null)
                           .build());
-              relatedArtifacts.add(relatedArtifact);
             },
             () ->
                 log.error(
