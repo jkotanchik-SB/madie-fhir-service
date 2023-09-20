@@ -1,7 +1,6 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
@@ -23,8 +22,6 @@ import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
-import ca.uhn.fhir.rest.api.MethodOutcome;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +34,6 @@ public class MeasureBundleService {
   private final MeasureTranslatorService measureTranslatorService;
   private final LibraryTranslatorService libraryTranslatorService;
   private final LibraryService libraryService;
-  private final HapiFhirServer hapiFhirServer;
   private final ElmTranslatorClient elmTranslatorClient;
   private final HumanReadableService humanReadableService;
 
@@ -147,10 +143,6 @@ public class MeasureBundleService {
         .elmJson(madieMeasure.getElmJson())
         .elmXml(madieMeasure.getElmXml())
         .build();
-  }
-
-  public MethodOutcome saveMeasureBundle(String measureBundle) {
-    return hapiFhirServer.createResourceAsString(measureBundle);
   }
 
   private void setNarrativeText(DomainResource resource, String humanReadable) {

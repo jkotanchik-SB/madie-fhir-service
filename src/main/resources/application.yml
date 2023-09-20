@@ -3,10 +3,6 @@ server:
   servlet:
     context-path: /api
 
-hapi:
-  fhir:
-    url: ${HAPI_FHIR_URL:http://localhost:8080/fhir}
-
 fhir-base-url: ${FHIR_BASE_URL:http://ecqi.healthit.gov/ecqms}
 
 madie:
