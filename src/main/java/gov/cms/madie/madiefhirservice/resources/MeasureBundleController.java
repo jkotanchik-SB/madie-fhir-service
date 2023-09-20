@@ -65,39 +65,6 @@ public class MeasureBundleController {
         .body(fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
   }
 
-  @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> saveMeasure(
-      HttpServletRequest request,
-      @RequestHeader("Authorization") String accessToken,
-      @RequestBody @Validated(Measure.ValidationSequence.class) Measure measure) {
-    log.debug("Entering saveMeasure()");
-
-    Bundle bundle =
-        measureBundleService.createMeasureBundle(
-            measure,
-            request.getUserPrincipal(),
-            BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT,
-            accessToken);
-    bundle.setType(Bundle.BundleType.DOCUMENT);
-    String serialized =
-        fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
-    MethodOutcome outcome = measureBundleService.saveMeasureBundle(serialized);
-
-    if (outcome != null && outcome.getCreated()) {
-      log.debug(
-          "Successfully saved MADiE measure in HAPI FHIR. MADiE measure id = "
-              + measure.getId()
-              + " HAPI FHIR id = "
-              + outcome.getId().toString());
-      return ResponseEntity.status(HttpStatus.CREATED).body(outcome.getId().toString());
-    } else {
-      String errorMsg =
-          "Error saving versioned measure in HAPI FHIR! MADiE measure id = " + measure.getId();
-      log.error(errorMsg);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMsg);
-    }
-  }
-
   @PutMapping(
       value = "/export",
       produces = {
