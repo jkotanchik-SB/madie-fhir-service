@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.exceptions.CqlLibraryNotFoundException;
-import gov.cms.madie.madiefhirservice.hapi.HapiFhirServer;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
@@ -49,7 +48,6 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   @Mock private LibraryService libraryService;
   @Mock private HumanReadableService humanReadableService;
   @Mock private ElmTranslatorClient elmTranslatorClient;
-  @Mock private HapiFhirServer hapiFhirServer;
   @Mock MethodOutcome methodOutcome;
   @Mock IIdType iidType;
 
@@ -153,19 +151,6 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     assertThat(
         exception.getMessage(),
         is(equalTo("Cannot find a CQL Library with name: FHIRHelpers, version: 4.0.001")));
-  }
-
-  @Test
-  public void testSaveMeasure() {
-    when(methodOutcome.getCreated()).thenReturn(true);
-    when(methodOutcome.getId()).thenReturn(iidType);
-    when(iidType.toString()).thenReturn("testId");
-    when(hapiFhirServer.createResourceAsString(anyString())).thenReturn(methodOutcome);
-
-    MethodOutcome outcome = measureBundleService.saveMeasureBundle("test");
-
-    assertTrue(outcome.getCreated());
-    assertEquals("testId", outcome.getId().toString());
   }
 
   @Test
