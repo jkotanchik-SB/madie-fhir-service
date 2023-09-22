@@ -23,14 +23,13 @@ public class FhirResourceHelpers {
   }
 
   public static Bundle.BundleEntryComponent getBundleEntryComponent(
-      Resource resource, String type) {
+      Resource resource, String bundleType) {
     Bundle.BundleEntryComponent entryComponent =
         new Bundle.BundleEntryComponent()
-            .setFullUrl(
-                FhirResourceHelpers.buildResourceFullUrl(resource.fhirType(), resource.getIdPart()))
+            .setFullUrl(buildResourceFullUrl(resource.fhirType(), resource.getIdPart()))
             .setResource(resource);
     // for the transaction bundles, add request object to the entry
-    if ("Transaction".equalsIgnoreCase(type)) {
+    if ("Transaction".equalsIgnoreCase(bundleType)) {
       Bundle.BundleEntryRequestComponent requestComponent =
           new Bundle.BundleEntryRequestComponent()
               .setMethod(Bundle.HTTPVerb.POST)
