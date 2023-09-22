@@ -98,7 +98,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
             .setName(madieMeasure.getCqlLibraryName())
             .setTitle(madieMeasure.getMeasureName())
             .setExperimental(true)
-            .setUrl("fhirBaseUrl/Measure/" + madieMeasure.getCqlLibraryName())
+            .setUrl("baseUrl/Measure/" + madieMeasure.getCqlLibraryName())
             .setVersion(madieMeasure.getVersion().toString())
             .setEffectivePeriod(
                 getPeriodFromDates(

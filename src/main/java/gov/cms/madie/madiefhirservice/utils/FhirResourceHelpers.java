@@ -15,21 +15,29 @@ import java.util.Date;
 @Component
 public class FhirResourceHelpers {
 
-  private static String fhirBaseUrl;
   private static String madieUrl;
-
-  @Value("${fhir-base-url}")
-  public void setFhirBaseUrl(String url) {
-    FhirResourceHelpers.fhirBaseUrl = url;
-  }
 
   @Value("${madie.url}")
   public void setMadieUrl(String url) {
     FhirResourceHelpers.madieUrl = url;
   }
 
-  public static Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
-    return new Bundle.BundleEntryComponent().setResource(resource);
+  public static Bundle.BundleEntryComponent getBundleEntryComponent(
+      Resource resource, String type) {
+    Bundle.BundleEntryComponent entryComponent =
+        new Bundle.BundleEntryComponent()
+            .setFullUrl(
+                FhirResourceHelpers.buildResourceFullUrl(resource.fhirType(), resource.getIdPart()))
+            .setResource(resource);
+    // for the transaction bundles, add request object to the entry
+    if ("Transaction".equalsIgnoreCase(type)) {
+      Bundle.BundleEntryRequestComponent requestComponent =
+          new Bundle.BundleEntryRequestComponent()
+              .setMethod(Bundle.HTTPVerb.POST)
+              .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
+      entryComponent.setRequest(requestComponent);
+    }
+    return entryComponent;
   }
 
   public static Period getPeriodFromDates(Date startDate, Date endDate) {
@@ -49,22 +57,7 @@ public class FhirResourceHelpers {
     return new Coding().setCode(code).setSystem(system).setDisplay(display);
   }
 
-  public static String buildMeasureUrl(String measureLibraryName) {
-    return madieUrl + "/Measure/" + measureLibraryName;
-  }
-
-  public static String buildLibraryUrl(String libraryName) {
-    return fhirBaseUrl + "/Library/" + libraryName;
-  }
-
-  public static String getFullUrl(Resource resource) {
-    String resourceType = String.valueOf(resource.getResourceType());
-    if ("Measure".equals(resourceType)) {
-      return buildMeasureUrl(resource.getIdPart());
-    } else if ("Library".equals(resourceType)) {
-      return buildLibraryUrl(resource.getIdPart());
-    } else {
-      return null;
-    }
+  public static String buildResourceFullUrl(String resourceType, String resourceName) {
+    return madieUrl + "/" + resourceType + "/" + resourceName;
   }
 }

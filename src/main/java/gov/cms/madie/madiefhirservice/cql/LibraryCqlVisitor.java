@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.cql;
 
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -35,13 +36,8 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private final Map<Integer, Library> libraryCacheMap = new HashMap<>();
   private final Map<String, String> valueSetNameUri = new HashMap<>();
   private final List<Pair<String, String>> includedLibraries = new ArrayList<>();
-  private String fhirBaseUrl;
   private String name;
   private String version;
-
-  public LibraryCqlVisitor(String fhirBaseUrl) {
-    this.fhirBaseUrl = fhirBaseUrl;
-  }
 
   /**
    * Stores off lib name and version.
@@ -70,7 +66,11 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
       RelatedArtifact relatedArtifact = new RelatedArtifact();
       relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
       var nameVersion = getNameVersionFromInclude(ctx);
-      relatedArtifact.setUrl(fhirBaseUrl + "/Library/" + nameVersion.getLeft());
+      String url =
+          FhirResourceHelpers.buildResourceFullUrl("Library", nameVersion.getLeft())
+              + "|"
+              + nameVersion.getRight();
+      relatedArtifact.setUrl(url);
       relatedArtifacts.add(relatedArtifact);
       includedLibraries.add(nameVersion);
       includes.add(ctx);

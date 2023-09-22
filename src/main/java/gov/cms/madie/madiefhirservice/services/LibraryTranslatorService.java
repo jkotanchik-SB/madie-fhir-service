@@ -2,6 +2,7 @@ package gov.cms.madie.madiefhirservice.services;
 
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.cql.LibraryCqlVisitorFactory;
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.common.Version;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,6 @@ import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.RelatedArtifact;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,9 +38,6 @@ public class LibraryTranslatorService {
   public static final String UNKNOWN_VALUE = "UNKNOWN";
 
   private final LibraryCqlVisitorFactory libCqlVisitorFactory;
-
-  @Value("${fhir-base-url}")
-  private String fhirBaseUrl;
 
   public LibraryTranslatorService(LibraryCqlVisitorFactory libCqlVisitorFactory) {
     this.libCqlVisitorFactory = libCqlVisitorFactory;
@@ -64,7 +61,8 @@ public class LibraryTranslatorService {
     library.setContent(
         createContent(cqlLibrary.getCql(), cqlLibrary.getElmJson(), cqlLibrary.getElmXml()));
     library.setType(createType(UriConstants.LIBRARY_SYSTEM_TYPE_URI, SYSTEM_CODE));
-    library.setUrl(fhirBaseUrl + "/Library/" + cqlLibrary.getCqlLibraryName());
+    library.setUrl(
+        FhirResourceHelpers.buildResourceFullUrl("Library", cqlLibrary.getCqlLibraryName()));
     library.setDataRequirement(distinctDataRequirements(visitor.getDataRequirements()));
     library.setRelatedArtifact(distinctArtifacts(visitor.getRelatedArtifacts()));
     library.setMeta(createLibraryMeta());

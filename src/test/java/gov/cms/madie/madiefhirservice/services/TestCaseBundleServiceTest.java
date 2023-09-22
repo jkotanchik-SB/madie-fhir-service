@@ -60,7 +60,6 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
     testCase = Objects.requireNonNull(madieMeasure).getTestCases().get(0);
-    ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
     ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "madie.cms.gov");
   }
 
@@ -76,7 +75,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     assertEquals(5, bundle.getEntry().size());
     MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
     assertEquals(
-        "https://madie.cms.gov/MeasureReport/" + measureReport.getIdPart(),
+        "madie.cms.gov/MeasureReport/" + measureReport.getIdPart(),
         bundle.getEntry().get(4).getFullUrl());
     assertEquals("MeasureReport", measureReport.getResourceType().toString());
     assertEquals(

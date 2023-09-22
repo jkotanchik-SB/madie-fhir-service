@@ -81,7 +81,6 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     String cvMeasureJson =
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_cv_measure.json");
     madieCVMeasure = MeasureTestHelper.createMadieMeasureFromJson(cvMeasureJson);
-    ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
     ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "madie.cms.gov");
   }
 
