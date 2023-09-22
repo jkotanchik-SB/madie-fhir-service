@@ -70,7 +70,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
           FhirResourceHelpers.buildResourceFullUrl("Library", nameVersion.getLeft())
               + "|"
               + nameVersion.getRight();
-      relatedArtifact.setUrl(url);
+      relatedArtifact.setResource(url);
       relatedArtifacts.add(relatedArtifact);
       includedLibraries.add(nameVersion);
       includes.add(ctx);
@@ -94,7 +94,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
         .add(new ValuesetModel(vsName, uri, null, null));
     RelatedArtifact relatedArtifact = new RelatedArtifact();
     relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
-    relatedArtifact.setUrl(uri);
+    relatedArtifact.setResource(uri);
     relatedArtifacts.add(relatedArtifact);
 
     // need to be polished once we human readable file
@@ -108,7 +108,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
     codeSystems.add(ctx);
     RelatedArtifact relatedArtifact = new RelatedArtifact();
     relatedArtifact.setType(RelatedArtifact.RelatedArtifactType.DEPENDSON);
-    relatedArtifact.setUrl(
+    relatedArtifact.setResource(
         getUnquotedFullText(ctx.codesystemId())
             + (ctx.versionSpecifier() != null
                 ? "|" + getUnquotedFullText(ctx.versionSpecifier())

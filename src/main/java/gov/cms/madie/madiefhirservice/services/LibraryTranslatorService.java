@@ -146,7 +146,7 @@ public class LibraryTranslatorService {
             result.add(a);
           }
         });
-    result.sort(Comparator.comparing(RelatedArtifact::getUrl));
+    result.sort(Comparator.comparing(RelatedArtifact::getResource));
     return result;
   }
 
