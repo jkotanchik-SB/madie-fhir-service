@@ -14,7 +14,6 @@ import java.util.Date;
 
 @Component
 public class FhirResourceHelpers {
-
   private static String madieUrl;
 
   @Value("${madie.url}")
