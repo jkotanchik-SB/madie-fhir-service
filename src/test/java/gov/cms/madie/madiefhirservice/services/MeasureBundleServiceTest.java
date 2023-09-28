@@ -29,8 +29,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -120,12 +118,12 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     Bundle.BundleEntryRequestComponent measureEntryRequest = bundle.getEntry().get(0).getRequest();
     assertThat(
         measureEntryRequest.getUrl(), is(equalTo("Measure/" + madieMeasure.getCqlLibraryName())));
-    assertThat(measureEntryRequest.getMethod(), is(equalTo(Bundle.HTTPVerb.PUT)));
+    assertThat(measureEntryRequest.getMethod(), is(equalTo(Bundle.HTTPVerb.POST)));
 
     Bundle.BundleEntryRequestComponent libraryEntryRequest = bundle.getEntry().get(1).getRequest();
     assertThat(
         libraryEntryRequest.getUrl(), is(equalTo("Library/" + madieMeasure.getCqlLibraryName())));
-    assertThat(libraryEntryRequest.getMethod(), is(equalTo(Bundle.HTTPVerb.PUT)));
+    assertThat(libraryEntryRequest.getMethod(), is(equalTo(Bundle.HTTPVerb.POST)));
   }
 
   @Test

@@ -73,9 +73,9 @@ public class TestCaseBundleService {
 
       String fileName = ExportFileNamesUtil.getTestCaseExportFileName(measure, testCase);
       var measureReport = buildMeasureReport(testCase, measure, bundle);
-      var bundleEntryComponent = FhirResourceHelpers.getBundleEntryComponent(measureReport);
-      bundleEntryComponent.setFullUrl(
-          "https://madie.cms.gov/MeasureReport/" + measureReport.getId());
+      var bundleEntryComponent =
+          FhirResourceHelpers.getBundleEntryComponent(
+              measureReport, String.valueOf(bundle.getType()));
       bundle.getEntry().add(bundleEntryComponent);
       testCaseBundle.put(fileName, bundle);
     }
@@ -98,7 +98,8 @@ public class TestCaseBundleService {
     measureReport.setModifierExtension(buildModifierExtension());
     measureReport.setStatus(MeasureReport.MeasureReportStatus.COMPLETE);
     measureReport.setType(MeasureReport.MeasureReportType.INDIVIDUAL);
-    measureReport.setMeasure(FhirResourceHelpers.buildMeasureUrl(measure.getCqlLibraryName()));
+    measureReport.setMeasure(
+        FhirResourceHelpers.buildResourceFullUrl("Measure", measure.getCqlLibraryName()));
     measureReport.setPeriod(
         FhirResourceHelpers.getPeriodFromDates(
             getUTCDates(measure.getMeasurementPeriodStart()),

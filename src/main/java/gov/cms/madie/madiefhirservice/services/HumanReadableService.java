@@ -197,14 +197,13 @@ public class HumanReadableService extends ResourceUtils {
     if (madieMeasure.getGroups() != null) {
       madieMeasure.getGroups().stream()
           .forEach(
-              (g) ->
-              {
-                  if (CollectionUtils.isNotEmpty(g.getStratifications())) {
-                      strats.addAll(
-                              g.getStratifications().stream()
-                                      .map(s -> s.getCqlDefinition())
-                                      .collect(Collectors.toList()));
-                  }
+              (g) -> {
+                if (CollectionUtils.isNotEmpty(g.getStratifications())) {
+                  strats.addAll(
+                      g.getStratifications().stream()
+                          .map(s -> s.getCqlDefinition())
+                          .collect(Collectors.toList()));
+                }
               });
     }
 

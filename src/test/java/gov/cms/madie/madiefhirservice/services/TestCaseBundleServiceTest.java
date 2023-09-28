@@ -60,7 +60,6 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
     testCase = Objects.requireNonNull(madieMeasure).getTestCases().get(0);
-    ReflectionTestUtils.setField(fhirResourceHelpers, "fhirBaseUrl", "cms.gov");
     ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "madie.cms.gov");
   }
 
@@ -70,13 +69,18 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         testCaseBundleService.getTestCaseExportBundle(madieMeasure, madieMeasure.getTestCases());
     assertEquals(2, exportMap.size());
 
+    // first test case bundle(collection)
     Bundle bundle =
         exportMap.get(
             "285d114d-9c36-4d66-b0a0-06f395bbf23d/title-v0.0.000-testcaseseries-testcasetitle");
     assertEquals(5, bundle.getEntry().size());
-    MeasureReport measureReport = (MeasureReport) bundle.getEntry().get(4).getResource();
+    assertEquals(bundle.getType(), Bundle.BundleType.COLLECTION);
+    Bundle.BundleEntryComponent bundleEntry = bundle.getEntry().get(4);
+    assertNull(bundleEntry.getRequest().getMethod());
+    assertNull(bundleEntry.getRequest().getUrl());
+    MeasureReport measureReport = (MeasureReport) bundleEntry.getResource();
     assertEquals(
-        "https://madie.cms.gov/MeasureReport/" + measureReport.getIdPart(),
+        "madie.cms.gov/MeasureReport/" + measureReport.getIdPart(),
         bundle.getEntry().get(4).getFullUrl());
     assertEquals("MeasureReport", measureReport.getResourceType().toString());
     assertEquals(
@@ -113,6 +117,18 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     assertEquals("Patient/Patient-1", measureReport.getEvaluatedResource().get(0).getReference());
     assertEquals(
         "Encounter/Encounter-1", measureReport.getEvaluatedResource().get(1).getReference());
+
+    // second test case bundle(transactional)
+    bundle =
+        exportMap.get(
+            "0ec1197a-4895-43ed-b2eb-27971f8fb95b/title-v0.0.000-testcaseseries-testcasetitle1");
+    assertEquals(5, bundle.getEntry().size());
+    assertEquals(bundle.getType(), Bundle.BundleType.TRANSACTION);
+    bundleEntry = bundle.getEntry().get(4);
+    assertEquals(bundleEntry.getRequest().getMethod(), Bundle.HTTPVerb.POST);
+    assertEquals(
+        bundleEntry.getRequest().getUrl(),
+        "MeasureReport/" + bundleEntry.getResource().getIdPart());
   }
 
   @Test

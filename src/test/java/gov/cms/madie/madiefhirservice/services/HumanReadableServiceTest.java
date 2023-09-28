@@ -60,19 +60,20 @@ class HumanReadableServiceTest implements ResourceFileUtil {
 
   @BeforeEach
   void setUp() {
-    Group measureGroup1 = Group.builder()
+    Group measureGroup1 =
+        Group.builder()
             .id("GroupId1")
             .groupDescription("some random group")
             .measureGroupTypes(List.of(MeasureGroupTypes.OUTCOME))
             .scoring(MeasureScoring.COHORT.toString())
-            .populations(List.of(
+            .populations(
+                List.of(
                     Population.builder()
-                            .id("PopId1")
-                            .name(PopulationType.INITIAL_POPULATION)
-                            .definition("Initial Population")
-                            .description(null)
-                            .build()
-            ))
+                        .id("PopId1")
+                        .name(PopulationType.INITIAL_POPULATION)
+                        .definition("Initial Population")
+                        .description(null)
+                        .build()))
             .build();
     measureGroup1.setStratifications(null);
 
@@ -98,7 +99,7 @@ class HumanReadableServiceTest implements ResourceFileUtil {
             .setName(madieMeasure.getCqlLibraryName())
             .setTitle(madieMeasure.getMeasureName())
             .setExperimental(true)
-            .setUrl("fhirBaseUrl/Measure/" + madieMeasure.getCqlLibraryName())
+            .setUrl("baseUrl/Measure/" + madieMeasure.getCqlLibraryName())
             .setVersion(madieMeasure.getVersion().toString())
             .setEffectivePeriod(
                 getPeriodFromDates(
