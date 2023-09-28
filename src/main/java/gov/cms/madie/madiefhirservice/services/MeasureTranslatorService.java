@@ -59,7 +59,8 @@ public class MeasureTranslatorService {
         .setTitle(madieMeasure.getMeasureName())
         .setIdentifier(buildMeasureIdentifiers(madieMeasure))
         .setExperimental(madieMeasure.getMeasureMetaData().isExperimental())
-        .setUrl(FhirResourceHelpers.buildMeasureUrl(madieMeasure.getCqlLibraryName()))
+        .setUrl(
+            FhirResourceHelpers.buildResourceFullUrl("Measure", madieMeasure.getCqlLibraryName()))
         .setVersion(madieMeasure.getVersion().toString())
         .setEffectivePeriod(
             getPeriodFromDates(
@@ -76,7 +77,8 @@ public class MeasureTranslatorService {
         .setLibrary(
             Collections.singletonList(
                 new CanonicalType(
-                    FhirResourceHelpers.buildLibraryUrl(madieMeasure.getCqlLibraryName()))))
+                    FhirResourceHelpers.buildResourceFullUrl(
+                        "Library", madieMeasure.getCqlLibraryName()))))
         .setPurpose(UNKNOWN)
         .setContact(buildContactDetail(madieMeasure.getMeasureMetaData().getSteward(), false))
         .setGroup(buildGroups(madieMeasure.getGroups()))

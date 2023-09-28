@@ -3,8 +3,6 @@ server:
   servlet:
     context-path: /api
 
-fhir-base-url: ${FHIR_BASE_URL:http://ecqi.healthit.gov/ecqms}
-
 madie:
   cql-elm:
     service:

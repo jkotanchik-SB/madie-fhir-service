@@ -19,7 +19,6 @@ import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Narrative;
 import org.hl7.fhir.r4.model.Reference;
-import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -50,7 +49,8 @@ public class MeasureBundleService {
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
 
     // Bundle entry for Measure resource
-    Bundle.BundleEntryComponent measureEntryComponent = getBundleEntryComponent(measure);
+    Bundle.BundleEntryComponent measureEntryComponent =
+        FhirResourceHelpers.getBundleEntryComponent(measure, "Transaction");
     Bundle bundle =
         new Bundle().setType(Bundle.BundleType.TRANSACTION).addEntry(measureEntryComponent);
     // Bundle entries for all the library resources of a MADiE Measure
@@ -90,29 +90,18 @@ public class MeasureBundleService {
   public List<Bundle.BundleEntryComponent> createBundleComponentsForLibrariesOfMadieMeasure(
       Measure madieMeasure, final String bundleType, final String accessToken) {
     Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
-    Bundle.BundleEntryComponent mainLibraryBundleComponent = getBundleEntryComponent(library);
+    Bundle.BundleEntryComponent mainLibraryBundleComponent =
+        FhirResourceHelpers.getBundleEntryComponent(library, "Transaction");
     Map<String, Library> includedLibraryMap = new HashMap<>();
     libraryService.getIncludedLibraries(
         madieMeasure.getCql(), includedLibraryMap, bundleType, accessToken);
     List<Bundle.BundleEntryComponent> libraryBundleComponents =
         includedLibraryMap.values().stream()
-            .map(this::getBundleEntryComponent)
+            .map((lib) -> FhirResourceHelpers.getBundleEntryComponent(lib, "Transaction"))
             .collect(Collectors.toList());
     // add main library first in the list
     libraryBundleComponents.add(0, mainLibraryBundleComponent);
     return libraryBundleComponents;
-  }
-
-  /** Creates BundleEntryComponent for given resource */
-  public Bundle.BundleEntryComponent getBundleEntryComponent(Resource resource) {
-    Bundle.BundleEntryRequestComponent requestComponent =
-        new Bundle.BundleEntryRequestComponent()
-            .setMethod(Bundle.HTTPVerb.PUT)
-            .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
-    return new Bundle.BundleEntryComponent()
-        .setFullUrl(FhirResourceHelpers.getFullUrl(resource))
-        .setResource(resource)
-        .setRequest(requestComponent);
   }
 
   /**
