@@ -27,6 +27,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -34,6 +36,8 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
+
+import com.jayway.jsonpath.JsonPath;
 
 @Slf4j
 @Service
@@ -86,6 +90,54 @@ public class TestCaseBundleService {
     }
 
     return testCaseBundle;
+  }
+
+  public void updateEntry(TestCase testCase) {
+
+    // Convert Test case JSON to a BUndle
+    // modify the bundle
+    // bundle to json
+    // test case set Json
+    String json =
+        JsonPath.parse(testCase.getJson())
+            .map(
+                "$.type",
+                ((curVal, config) -> {
+                  return "transaction";
+                }))
+            .map(
+                "$.entry",
+                (curVal, config) -> {
+                  log.info("Entries ", curVal);
+                  JSONArray entryArr = (JSONArray) curVal;
+
+                  entryArr.forEach(
+                      entry -> {
+                        JSONObject request = new JSONObject();
+
+                        request.put("method", "PUT");
+                        String resourceType =
+                            (String)
+                                ((LinkedHashMap<String, LinkedHashMap>) entry)
+                                    .get("resource")
+                                    .get("resourceType");
+                        String id =
+                            (String)
+                                ((LinkedHashMap<String, LinkedHashMap>) entry)
+                                    .get("resource")
+                                    .get("id");
+                        // ((LinkedHashMap<String, Object>) entry)
+                        request.put("url", String.format("%s/%s", resourceType, id));
+
+                        ((LinkedHashMap<String, Object>) entry).put("request", request);
+                        log.info("Entry ${}", entry);
+                      });
+
+                  return entryArr;
+                })
+            .jsonString();
+
+    testCase.setJson(json);
   }
 
   private MeasureReport buildMeasureReport(
