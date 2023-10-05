@@ -1,5 +1,43 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.hl7.fhir.r4.model.BooleanType;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Bundle.BundleType;
+import org.hl7.fhir.r4.model.Bundle.HTTPVerb;
+import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.MarkdownType;
+import org.hl7.fhir.r4.model.MeasureReport;
+import org.hl7.fhir.r4.model.Meta;
+import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.StringType;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
@@ -14,30 +52,8 @@ import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
 import gov.cms.madie.packaging.utils.PackagingUtility;
 import gov.cms.madie.packaging.utils.PackagingUtilityFactory;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.hl7.fhir.r4.model.*;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestClientException;
-
-import com.jayway.jsonpath.JsonPath;
 
 @Slf4j
 @Service
@@ -95,47 +111,26 @@ public class TestCaseBundleService {
   public void updateEntry(TestCase testCase) {
 
     // Convert Test case JSON to a BUndle
+    IParser parser =
+        fhirContext
+            .newJsonParser()
+            .setParserErrorHandler(new StrictErrorHandler())
+            .setPrettyPrint(true);
+    Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
+
     // modify the bundle
+    bundle.setType(BundleType.TRANSACTION);
+    bundle.getEntry().stream()
+        .map(
+            entry -> {
+              String resourceType = entry.getResource().getResourceType().toString();
+              String idPart = entry.getResource().getIdPart();
+              entry.getRequest().setMethod(HTTPVerb.PUT);
+              entry.getRequest().setUrl(String.format("%s/%s", resourceType, idPart));
+              return entry;
+            });
     // bundle to json
-    // test case set Json
-    String json =
-        JsonPath.parse(testCase.getJson())
-            .map(
-                "$.type",
-                ((curVal, config) -> {
-                  return "transaction";
-                }))
-            .map(
-                "$.entry",
-                (curVal, config) -> {
-                  log.info("Entries ", curVal);
-                  JSONArray entryArr = (JSONArray) curVal;
-
-                  entryArr.forEach(
-                      entry -> {
-                        JSONObject request = new JSONObject();
-
-                        request.put("method", "PUT");
-                        String resourceType =
-                            (String)
-                                ((LinkedHashMap<String, LinkedHashMap>) entry)
-                                    .get("resource")
-                                    .get("resourceType");
-                        String id =
-                            (String)
-                                ((LinkedHashMap<String, LinkedHashMap>) entry)
-                                    .get("resource")
-                                    .get("id");
-                        // ((LinkedHashMap<String, Object>) entry)
-                        request.put("url", String.format("%s/%s", resourceType, id));
-
-                        ((LinkedHashMap<String, Object>) entry).put("request", request);
-                        log.info("Entry ${}", entry);
-                      });
-
-                  return entryArr;
-                })
-            .jsonString();
+    String json = parser.encodeResourceToString(bundle);
 
     testCase.setJson(json);
   }
