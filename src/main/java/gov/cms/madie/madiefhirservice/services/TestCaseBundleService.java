@@ -321,7 +321,6 @@ public class TestCaseBundleService {
    */
   public byte[] zipTestCaseContents(
       Measure measure, Map<String, Bundle> exportableTestCaseBundle, List<TestCase> testCases) {
-    log.error("############## We got here 6");
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
       PackagingUtility utility = PackagingUtilityFactory.getInstance(measure.getModel());
