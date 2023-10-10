@@ -120,15 +120,17 @@ public class TestCaseBundleService {
 
     // modify the bundle
     bundle.setType(BundleType.TRANSACTION);
-    bundle.getEntry().stream()
-        .map(
-            entry -> {
-              String resourceType = entry.getResource().getResourceType().toString();
-              String idPart = entry.getResource().getIdPart();
-              entry.getRequest().setMethod(HTTPVerb.PUT);
-              entry.getRequest().setUrl(String.format("%s/%s", resourceType, idPart));
-              return entry;
-            });
+    bundle.setEntry(
+        bundle.getEntry().stream()
+            .map(
+                entry -> {
+                  String resourceType = entry.getResource().getResourceType().toString();
+                  String idPart = entry.getResource().getIdPart();
+                  entry.getRequest().setMethod(HTTPVerb.PUT);
+                  entry.getRequest().setUrl(String.format("%s/%s", resourceType, idPart));
+                  return entry;
+                })
+            .collect(Collectors.toList()));
     // bundle to json
     String json = parser.encodeResourceToString(bundle);
 
@@ -319,14 +321,14 @@ public class TestCaseBundleService {
    */
   public byte[] zipTestCaseContents(
       Measure measure, Map<String, Bundle> exportableTestCaseBundle, List<TestCase> testCases) {
-
+    log.error("############## We got here 6");
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
       PackagingUtility utility = PackagingUtilityFactory.getInstance(measure.getModel());
       byte[] bytes = utility.getZipBundle(exportableTestCaseBundle, null);
 
       try (ZipOutputStream zos = new ZipOutputStream(baos);
-          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes))) {
+          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes)); ) {
 
         // Add the README file to the zip
         String readme = generateReadMe(testCases);
@@ -334,7 +336,6 @@ public class TestCaseBundleService {
         entry.setSize(readme.length());
         zos.putNextEntry(entry);
         zos.write(readme.getBytes());
-
         // Add the TestCases back the zip
         ZipEntry zipEntry = zis.getNextEntry();
         while (zipEntry != null) {
@@ -342,9 +343,8 @@ public class TestCaseBundleService {
           zos.write(zis.readAllBytes());
           zipEntry = zis.getNextEntry();
         }
-        zis.closeEntry();
-        zos.closeEntry();
       }
+
       // return after the zip streams are closed
       return baos.toByteArray();
     } catch (RestClientException
@@ -356,6 +356,8 @@ public class TestCaseBundleService {
         | SecurityException
         | ClassNotFoundException
         | IOException ex) {
+      log.error("##### Did this happen?");
+      ex.printStackTrace();
       log.error("An error occurred while bundling testcases for measure {}", measure.getId(), ex);
       throw new BundleOperationException("Measure", measure.getId(), ex);
     }

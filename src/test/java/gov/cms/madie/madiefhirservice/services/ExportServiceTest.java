@@ -10,13 +10,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.Principal;
 import java.time.Instant;
 
 import org.hl7.fhir.r4.model.Bundle;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +52,11 @@ class ExportServiceTest implements ResourceFileUtil {
   @BeforeAll
   public static void staticSetup() {
     factory = Mockito.mockStatic(PackagingUtilityFactory.class);
+  }
+
+  @AfterAll
+  public static void close() {
+    factory.close();
   }
 
   @BeforeEach
