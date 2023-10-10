@@ -5,41 +5,62 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doReturn;
 
-import ca.uhn.fhir.context.FhirContext;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
-import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
-import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
-import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
-import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
-import gov.cms.madie.models.measure.Measure;
-import gov.cms.madie.models.measure.TestCase;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.hl7.fhir.dstu2.model.Bundle.HTTPVerb;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.hl7.fhir.r4.model.Parameters;
 import org.hl7.fhir.r4.model.Reference;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.parser.StrictErrorHandler;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
+import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
+import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
+import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
+import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.common.BundleType;
+import gov.cms.madie.models.measure.Measure;
+import gov.cms.madie.models.measure.TestCase;
+import gov.cms.madie.packaging.utils.PackagingUtilityFactory;
+import gov.cms.madie.packaging.utils.qicore411.PackagingUtilityImpl;
 
 @ExtendWith(MockitoExtension.class)
 class TestCaseBundleServiceTest implements ResourceFileUtil {
@@ -53,6 +74,17 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
   private Measure madieMeasure;
 
   private TestCase testCase;
+  private static MockedStatic<PackagingUtilityFactory> factory;
+
+  @BeforeAll
+  public static void staticSetup() {
+    factory = Mockito.mockStatic(PackagingUtilityFactory.class);
+  }
+
+  @AfterAll
+  public static void close() {
+    factory.close();
+  }
 
   @BeforeEach
   public void setUp() throws JsonProcessingException {
@@ -61,6 +93,46 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
     testCase = Objects.requireNonNull(madieMeasure).getTestCases().get(0);
     ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "madie.cms.gov");
+  }
+
+  @Test
+  void updateEntryTest() {
+    IParser parser =
+        fhirContext
+            .newJsonParser()
+            .setParserErrorHandler(new StrictErrorHandler())
+            .setPrettyPrint(true);
+    Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
+    assertNull(bundle.getEntry().get(0).getRequest().getMethod());
+    testCaseBundleService.updateEntry(testCase, BundleType.TRANSACTION);
+
+    bundle = parser.parseResource(Bundle.class, testCase.getJson());
+    assertEquals(
+        bundle.getEntry().get(0).getRequest().getMethod().toString(), HTTPVerb.POST.toString());
+  }
+
+  @Test
+  void zipTestCaseContentsTest() {
+
+    PackagingUtilityImpl utility = Mockito.mock(PackagingUtilityImpl.class);
+
+    factory.when(() -> PackagingUtilityFactory.getInstance("QI-Core v4.1.1")).thenReturn(utility);
+    doReturn("THis is a test".getBytes()).when(utility).getZipBundle(any(), isNull());
+    IParser parser =
+        fhirContext
+            .newJsonParser()
+            .setParserErrorHandler(new StrictErrorHandler())
+            .setPrettyPrint(true);
+
+    Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
+    Map<String, Bundle> exportableTestCaseBundle = new HashMap<>();
+    exportableTestCaseBundle.put("Test", bundle);
+    List<TestCase> testCaseList = new ArrayList<>();
+    testCaseList.add(testCase);
+    byte[] results =
+        testCaseBundleService.zipTestCaseContents(
+            madieMeasure, exportableTestCaseBundle, testCaseList);
+    assertNotNull(results);
   }
 
   @Test
@@ -230,6 +302,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
 
   @Test
   void getTestCaseExportBundleReturnsMeasureReportWithNoGroupPopulations() {
+
     madieMeasure.getTestCases().get(0).setGroupPopulations(null);
     Map<String, Bundle> exportMap =
         testCaseBundleService.getTestCaseExportBundle(madieMeasure, madieMeasure.getTestCases());

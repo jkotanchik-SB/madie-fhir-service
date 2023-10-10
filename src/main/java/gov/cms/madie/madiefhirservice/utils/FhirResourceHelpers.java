@@ -29,14 +29,18 @@ public class FhirResourceHelpers {
             .setResource(resource);
     // for the transaction bundles, add request object to the entry
     if ("Transaction".equalsIgnoreCase(bundleType)) {
-      Bundle.BundleEntryRequestComponent requestComponent =
+      setResourceEntry(resource, entryComponent);
+    }
+    return entryComponent;
+  }
+
+public static void setResourceEntry(Resource resource, Bundle.BundleEntryComponent entryComponent) {
+	Bundle.BundleEntryRequestComponent requestComponent =
           new Bundle.BundleEntryRequestComponent()
               .setMethod(Bundle.HTTPVerb.POST)
               .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
       entryComponent.setRequest(requestComponent);
-    }
-    return entryComponent;
-  }
+}
 
   public static Period getPeriodFromDates(Date startDate, Date endDate) {
     return new Period()

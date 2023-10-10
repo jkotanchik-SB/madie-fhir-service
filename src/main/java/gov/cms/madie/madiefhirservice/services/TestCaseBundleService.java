@@ -1,5 +1,43 @@
 package gov.cms.madie.madiefhirservice.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.hl7.fhir.r4.model.BooleanType;
+import org.hl7.fhir.r4.model.Bundle;
+
+import org.hl7.fhir.r4.model.Bundle.HTTPVerb;
+import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.MarkdownType;
+import org.hl7.fhir.r4.model.MeasureReport;
+import org.hl7.fhir.r4.model.Meta;
+import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.StringType;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
@@ -10,30 +48,14 @@ import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
+import gov.cms.madie.models.common.BundleType;
+import gov.cms.madie.models.dto.ExportDTO;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
 import gov.cms.madie.packaging.utils.PackagingUtility;
 import gov.cms.madie.packaging.utils.PackagingUtilityFactory;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.hl7.fhir.r4.model.*;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestClientException;
 
 @Slf4j
 @Service
@@ -86,6 +108,41 @@ public class TestCaseBundleService {
     }
 
     return testCaseBundle;
+  }
+
+  public void updateEntry(TestCase testCase, BundleType bundleType) {
+
+    // Convert Test case JSON to a BUndle
+    IParser parser =
+        fhirContext
+            .newJsonParser()
+            .setParserErrorHandler(new StrictErrorHandler())
+            .setPrettyPrint(true);
+    Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
+
+    // modify the bundle
+    org.hl7.fhir.r4.model.Bundle.BundleType fhirBundleType =
+        org.hl7.fhir.r4.model.Bundle.BundleType.valueOf(bundleType.toString().toUpperCase());
+    bundle.setType(fhirBundleType);
+    bundle.setEntry(
+        bundle.getEntry().stream()
+            .map(
+                entry -> {
+                  if (bundleType == BundleType.TRANSACTION) {
+
+                    
+                    FhirResourceHelpers.setResourceEntry(entry.getResource(), entry);
+                    return entry;
+                  } else if (bundleType == BundleType.COLLECTION) {
+                    entry.setRequest(null);
+                  }
+                  return entry;
+                })
+            .collect(Collectors.toList()));
+    // bundle to json
+    String json = parser.encodeResourceToString(bundle);
+
+    testCase.setJson(json);
   }
 
   private MeasureReport buildMeasureReport(
@@ -262,6 +319,26 @@ public class TestCaseBundleService {
     return readMe;
   }
 
+  public void setExportBundleType(ExportDTO exportDTO, Measure measure) {
+    if (exportDTO.getBundleType() != null) {
+      BundleType bundleType = BundleType.valueOf(exportDTO.getBundleType().name());
+      switch (bundleType) {
+        case COLLECTION:
+          log.debug("You're exporting a Collection");
+          // update bundle type for each entry MAT 6405
+          break;
+        case TRANSACTION:
+          log.debug("You're exporting a Transaction");
+          // update bundle type and add entry.request for each entry
+          if (measure.getTestCases() != null) {
+            measure.getTestCases().stream().forEach(testCase -> updateEntry(testCase, bundleType));
+          }
+          break;
+        default:
+      }
+    }
+  }
+
   /**
    * Combines the zip from Packaging Utility and a generated ReadMe file for the testcases
    *
@@ -272,14 +349,13 @@ public class TestCaseBundleService {
    */
   public byte[] zipTestCaseContents(
       Measure measure, Map<String, Bundle> exportableTestCaseBundle, List<TestCase> testCases) {
-
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
       PackagingUtility utility = PackagingUtilityFactory.getInstance(measure.getModel());
       byte[] bytes = utility.getZipBundle(exportableTestCaseBundle, null);
 
       try (ZipOutputStream zos = new ZipOutputStream(baos);
-          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes))) {
+          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes)); ) {
 
         // Add the README file to the zip
         String readme = generateReadMe(testCases);
@@ -287,7 +363,6 @@ public class TestCaseBundleService {
         entry.setSize(readme.length());
         zos.putNextEntry(entry);
         zos.write(readme.getBytes());
-
         // Add the TestCases back the zip
         ZipEntry zipEntry = zis.getNextEntry();
         while (zipEntry != null) {
@@ -295,9 +370,8 @@ public class TestCaseBundleService {
           zos.write(zis.readAllBytes());
           zipEntry = zis.getNextEntry();
         }
-        zis.closeEntry();
-        zos.closeEntry();
       }
+
       // return after the zip streams are closed
       return baos.toByteArray();
     } catch (RestClientException
@@ -309,6 +383,7 @@ public class TestCaseBundleService {
         | SecurityException
         | ClassNotFoundException
         | IOException ex) {
+
       log.error("An error occurred while bundling testcases for measure {}", measure.getId(), ex);
       throw new BundleOperationException("Measure", measure.getId(), ex);
     }

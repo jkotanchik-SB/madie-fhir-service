@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.cms.madie.madiefhirservice.services.TestCaseBundleService;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.common.BundleType;
 import gov.cms.madie.models.dto.ExportDTO;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
@@ -58,6 +59,7 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
         ExportDTO.builder()
             .measure(mapper.readValue(madieMeasureJson, Measure.class))
             .testCaseIds(asList(TEST_CASE_ID, TEST_CASE_ID_2))
+            .bundleType(BundleType.COLLECTION)
             .build();
   }
 
@@ -67,6 +69,59 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
     when(principal.getName()).thenReturn(TEST_USER_ID);
 
     Map<String, Bundle> testCaseBundleMap = new HashMap<>();
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(1).getPatientId().toString(), testCaseBundle);
+    when(testCaseBundleService.getTestCaseExportBundle(any(Measure.class), any(List.class)))
+        .thenReturn(testCaseBundleMap);
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(mapper.writeValueAsString(dto))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk());
+    verify(testCaseBundleService, times(1))
+        .getTestCaseExportBundle(any(Measure.class), any(List.class));
+  }
+
+  @Test
+  void getTestCaseExportBundleMultiWithBundleTypeCollection() throws Exception {
+
+    Principal principal = mock(Principal.class);
+    when(principal.getName()).thenReturn(TEST_USER_ID);
+
+    Map<String, Bundle> testCaseBundleMap = new HashMap<>();
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
+    testCaseBundleMap.put(
+        dto.getMeasure().getTestCases().get(1).getPatientId().toString(), testCaseBundle);
+    when(testCaseBundleService.getTestCaseExportBundle(any(Measure.class), any(List.class)))
+        .thenReturn(testCaseBundleMap);
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/fhir/test-cases/export-all")
+                .with(user(TEST_USER_ID))
+                .with(csrf())
+                .header(HttpHeaders.AUTHORIZATION, "test-okta")
+                .content(mapper.writeValueAsString(dto))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk());
+    verify(testCaseBundleService, times(1))
+        .getTestCaseExportBundle(any(Measure.class), any(List.class));
+  }
+
+  @Test
+  void getTestCaseExportBundleMultiWithBundleTypeTransaction() throws Exception {
+
+    Principal principal = mock(Principal.class);
+    when(principal.getName()).thenReturn(TEST_USER_ID);
+
+    Map<String, Bundle> testCaseBundleMap = new HashMap<>();
+    dto.setBundleType(BundleType.TRANSACTION);
     testCaseBundleMap.put(
         dto.getMeasure().getTestCases().get(0).getPatientId().toString(), testCaseBundle);
     testCaseBundleMap.put(
