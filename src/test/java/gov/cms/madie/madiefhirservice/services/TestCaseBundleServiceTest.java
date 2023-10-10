@@ -56,11 +56,11 @@ import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
+import gov.cms.madie.models.common.BundleType;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
 import gov.cms.madie.packaging.utils.PackagingUtilityFactory;
 import gov.cms.madie.packaging.utils.qicore411.PackagingUtilityImpl;
-
 
 @ExtendWith(MockitoExtension.class)
 class TestCaseBundleServiceTest implements ResourceFileUtil {
@@ -104,11 +104,11 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
             .setPrettyPrint(true);
     Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
     assertNull(bundle.getEntry().get(0).getRequest().getMethod());
-    testCaseBundleService.updateEntry(testCase);
+    testCaseBundleService.updateEntry(testCase, BundleType.TRANSACTION);
 
     bundle = parser.parseResource(Bundle.class, testCase.getJson());
     assertEquals(
-        bundle.getEntry().get(0).getRequest().getMethod().toString(), HTTPVerb.PUT.toString());
+        bundle.getEntry().get(0).getRequest().getMethod().toString(), HTTPVerb.POST.toString());
   }
 
   @Test

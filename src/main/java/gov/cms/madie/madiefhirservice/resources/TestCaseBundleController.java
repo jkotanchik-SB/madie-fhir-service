@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Bundle.BundleType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +41,6 @@ public class TestCaseBundleController {
       Principal principal, @RequestBody ExportDTO exportDTO) {
     Measure measure = exportDTO.getMeasure();
 
-    determineExportBundleType(exportDTO, measure);
     List<String> testCaseId = exportDTO.getTestCaseIds();
     final String username = principal.getName();
     log.info(
@@ -52,6 +50,10 @@ public class TestCaseBundleController {
     if (testCaseId == null || testCaseId.isEmpty()) {
       throw new ResourceNotFoundException("test cases", "measure", measure.getId());
     }
+    //MAT-6204 Here we're modifying the bundle based on export choice, 
+    // but we don't want to modify it permanently
+    testCaseBundleService.setExportBundleType(exportDTO, measure);
+
     List<TestCase> testCases =
         Optional.ofNullable(measure.getTestCases())
             .orElseThrow(
@@ -91,26 +93,5 @@ public class TestCaseBundleController {
         .body(
             testCaseBundleService.zipTestCaseContents(
                 measure, exportableTestCaseBundle, testCases));
-  }
-
-  private void determineExportBundleType(ExportDTO exportDTO, Measure measure) {
-    if (exportDTO.getBundleType() != null) {
-      BundleType bundleType = BundleType.valueOf(exportDTO.getBundleType().name());
-      switch (bundleType) {
-        case COLLECTION:
-          log.debug("You're exporting a Collection");
-          // update bundle type for each entry MAT 6405
-          break;
-        case TRANSACTION:
-          log.debug("You're exporting a Transaction");
-          // update bundle type and add entry.request for each entry
-          if (measure.getTestCases() != null) {
-            measure.getTestCases().stream()
-                .forEach(testCase -> testCaseBundleService.updateEntry(testCase));
-          }
-          break;
-        default:
-      }
-    }
   }
 }

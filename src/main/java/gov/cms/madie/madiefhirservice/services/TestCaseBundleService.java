@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Bundle.BundleType;
+
 import org.hl7.fhir.r4.model.Bundle.HTTPVerb;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.MarkdownType;
@@ -48,6 +48,8 @@ import gov.cms.madie.madiefhirservice.exceptions.InternalServerException;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.ExportFileNamesUtil;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
+import gov.cms.madie.models.common.BundleType;
+import gov.cms.madie.models.dto.ExportDTO;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.TestCase;
 import gov.cms.madie.packaging.utils.PackagingUtility;
@@ -108,7 +110,7 @@ public class TestCaseBundleService {
     return testCaseBundle;
   }
 
-  public void updateEntry(TestCase testCase) {
+  public void updateEntry(TestCase testCase, BundleType bundleType) {
 
     // Convert Test case JSON to a BUndle
     IParser parser =
@@ -119,15 +121,21 @@ public class TestCaseBundleService {
     Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
 
     // modify the bundle
-    bundle.setType(BundleType.TRANSACTION);
+    org.hl7.fhir.r4.model.Bundle.BundleType fhirBundleType =
+        org.hl7.fhir.r4.model.Bundle.BundleType.valueOf(bundleType.toString().toUpperCase());
+    bundle.setType(fhirBundleType);
     bundle.setEntry(
         bundle.getEntry().stream()
             .map(
                 entry -> {
-                  String resourceType = entry.getResource().getResourceType().toString();
-                  String idPart = entry.getResource().getIdPart();
-                  entry.getRequest().setMethod(HTTPVerb.PUT);
-                  entry.getRequest().setUrl(String.format("%s/%s", resourceType, idPart));
+                  if (bundleType == BundleType.TRANSACTION) {
+
+                    
+                    FhirResourceHelpers.setResourceEntry(entry.getResource(), entry);
+                    return entry;
+                  } else if (bundleType == BundleType.COLLECTION) {
+                    entry.setRequest(null);
+                  }
                   return entry;
                 })
             .collect(Collectors.toList()));
@@ -311,6 +319,26 @@ public class TestCaseBundleService {
     return readMe;
   }
 
+  public void setExportBundleType(ExportDTO exportDTO, Measure measure) {
+    if (exportDTO.getBundleType() != null) {
+      BundleType bundleType = BundleType.valueOf(exportDTO.getBundleType().name());
+      switch (bundleType) {
+        case COLLECTION:
+          log.debug("You're exporting a Collection");
+          // update bundle type for each entry MAT 6405
+          break;
+        case TRANSACTION:
+          log.debug("You're exporting a Transaction");
+          // update bundle type and add entry.request for each entry
+          if (measure.getTestCases() != null) {
+            measure.getTestCases().stream().forEach(testCase -> updateEntry(testCase, bundleType));
+          }
+          break;
+        default:
+      }
+    }
+  }
+
   /**
    * Combines the zip from Packaging Utility and a generated ReadMe file for the testcases
    *
@@ -355,8 +383,7 @@ public class TestCaseBundleService {
         | SecurityException
         | ClassNotFoundException
         | IOException ex) {
-      log.error("##### Did this happen?");
-      ex.printStackTrace();
+
       log.error("An error occurred while bundling testcases for measure {}", measure.getId(), ex);
       throw new BundleOperationException("Measure", measure.getId(), ex);
     }
