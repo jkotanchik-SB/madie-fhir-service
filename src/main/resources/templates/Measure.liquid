@@ -39,9 +39,9 @@
                     <b>
                         {% if identifier.type.coding.exists() %}
                             {% if identifier.type.coding.display.exists() %}
-                                {{identifier.type.coding.display}}
+                                {{identifier.type.coding.display}}{% if identifier.assigner.display.exists() %} ({{identifier.assigner.display}}){% endif %} Identifier:
                             {% else %}
-                                {{identifier.type.coding}}
+                                {{identifier.type.coding.code}}{% if identifier.assigner.display.exists() %} ({{identifier.assigner.display}}){% endif %} identifier:
                             {% endif %}
                         {% else %}
                             {{identifier.use}}
@@ -52,7 +52,7 @@
                 <td style="padding-left: 4px;">
                     {% if identifier.value.exists() %}
                         <p style="margin-bottom: 5px;">
-                            <b>value: </b> <span>{{identifier.value}}</span>
+                            <span>{{identifier.value}}</span>
                         </p>
                     {% endif %}
                 </td>
@@ -62,7 +62,8 @@
         {% if Measure.effectivePeriod.exists() %}
             <tr>
                 <th scope="row"><b>Effective Period: </b></th>
-                <td style="padding-left: 4px;">{{Measure.effectivePeriod.start}}..{{Measure.effectivePeriod.end}}</td>
+                <td style="padding-left: 4px;">{{Measure.effectivePeriod.start}}
+                    ..{{Measure.effectivePeriod.end}}</td>
             </tr>
         {% endif %}
 
@@ -125,7 +126,7 @@
         {% if Measure.subject.exists() %}
             <tr>
                 <th scope="row"><b>Subject: </b></th>
-                {%if Measure.subject is CodeableConcept %}
+                {% if Measure.subject is CodeableConcept %}
                     <td style="padding-left: 4px;">
                         {% if Measure.subject.coding.exists() %}
                             {% for coding in Measure.subject.coding %}
@@ -220,10 +221,10 @@
                             {% if supplementalData.code.exists() %}
                                 {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                             {% else %}
-                                {%if supplementalData.description.exists() %}
+                                {% if supplementalData.description.exists() %}
                                     {{supplementalData.description}}
                                 {% else %}
-                                    {%if supplementalData.criteria.description.exists() %}
+                                    {% if supplementalData.criteria.description.exists() %}
                                         {{supplementalData.criteria.description}}
                                     {% else %}
                                         {{supplementalData.criteria.expression}}
@@ -282,8 +283,12 @@
                                 {% endif %}
                                 {% for population in group.population %}
                                     <tr>
-                                        <td>{{population.code.coding[0].display}}: </td>
-                                        <td>{{population.description}}</td>
+                                        <td>{{population.code.coding[0].display}}:</td>
+                                        {% if population.description.exists() %}
+                                            <td>{{population.description}}</td>
+                                        {% else %}
+                                            <td>None</td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </table>
@@ -295,7 +300,9 @@
 
         {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-supplementalDataGuidance') %}
             <tr>
-                <th scope="row"><b> {{iif(extension.extension.where(url = 'usage').value.text.exists(), extension.extension.where(url = 'usage').value.text, iif(extension.extension.where(url = 'usage').coding.first().display.exists(), extension.extension.where(url = 'usage').coding.first().display, extension.extension.where(url = 'usage').coding.first().code))}}: </b></th>
+                <th scope="row">
+                    <b> {{iif(extension.extension.where(url = 'usage').value.text.exists(), extension.extension.where(url = 'usage').value.text, iif(extension.extension.where(url = 'usage').coding.first().display.exists(), extension.extension.where(url = 'usage').coding.first().display, extension.extension.where(url = 'usage').coding.first().code))}}
+                        : </b></th>
                 <td style="padding-left: 4px;"> {{extension.extension.where(url = 'guidance').value}} </td>
             </tr>
         {% endfor %}
@@ -308,10 +315,10 @@
                         {% if supplementalData.code.exists() %}
                             {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                         {% else %}
-                            {%if supplementalData.description.exists() %}
+                            {% if supplementalData.description.exists() %}
                                 {{supplementalData.description}}
                             {% else %}
-                                {%if supplementalData.criteria.description.exists() %}
+                                {% if supplementalData.criteria.description.exists() %}
                                     {{supplementalData.criteria.description}}
                                 {% else %}
                                     {{supplementalData.criteria.expression}}
@@ -329,7 +336,9 @@
                 <td style="padding-left: 4px;">
                     <table class="grid-dict">
                         {% for library in Measure.library %}
-                            <tr><td>{{library}}</td></tr>
+                            <tr>
+                                <td>{{library}}</td>
+                            </tr>
                         {% endfor %}
                     </table>
                 </td>
@@ -357,7 +366,7 @@
                         </ul>
                     {% endif %}
                     {% if Measure.relatedArtifact.where(type = 'depends-on').exists() and
-                            Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements').exists().not  %}
+                            Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements').exists().not %}
                         <p><b>Dependencies</b></p>
                         <ul>
                             {% for artifact in Measure.relatedArtifact.where(type = 'depends-on') %}
@@ -407,7 +416,7 @@
         <tr>
             <th scope="row"><b>Related Artifact Dependencies: </b></th>
             <td style="padding-left: 4px;">
-                {% for relatedArtifact in contained.relatedArtifact.where(type= 'depends-on') %}
+                {% for relatedArtifact in contained.relatedArtifact.where(type = 'depends-on') %}
                     <li>{{relatedArtifact.resource}}</li>
                 {% endfor %}
             </td>
@@ -416,7 +425,13 @@
             <th scope="row"><b>Parameters:</b></th>
             <td style="padding-left: 4px;">
                 <table class="grid-dict">
-                    <tr><th><b>name</b></th><th><b>use</b></th><th><b>min</b></th><th><b>max</b></th><th><b>type</b></th></tr>
+                    <tr>
+                        <th><b>name</b></th>
+                        <th><b>use</b></th>
+                        <th><b>min</b></th>
+                        <th><b>max</b></th>
+                        <th><b>type</b></th>
+                    </tr>
                     {% for parameter in contained.parameter %}
                         <tr>
                             <td>{{parameter.name}}</td>
@@ -434,22 +449,27 @@
             <th scope="row"><b>DataRequirements:</b></th>
             <td style="padding-left: 4px;">
                 <table class="grid-dict">
-                    <tr><th><b>Type</b></th><th><b>Elements</b></th><th><b>Valueset Name</b></th><th><b>Valueset</b></th></tr>
+                    <tr>
+                        <th><b>Type</b></th>
+                        <th><b>Elements</b></th>
+                        <th><b>Valueset Name</b></th>
+                        <th><b>Valueset</b></th>
+                    </tr>
                     {% for dataRequirement in contained.dataRequirement %}
                         <tr>
                             <td>{{dataRequirement.type}}</td>
                             <td>
                                 {% for mustSupport in dataRequirement.mustSupport %}
-                                    {{ mustSupport }}
+                                    {{mustSupport}}
                                 {% endfor %}
                             </td>
                             <td>
                                 {% for relatedArtifact in contained.relatedArtifact.where(resource = dataRequirement.codeFilter.first().valueSet) %}
-                                    {%  if relatedArtifact.display.startsWith('Value set ') %}
-                                        {{ relatedArtifact.display.substring(9).replace(' &', ',') }}
+                                    {% if relatedArtifact.display.startsWith('Value set ') %}
+                                        {{relatedArtifact.display.substring(9).replace(' &', ',')}}
                                     {% else %}
-                                        {{ relatedArtifact.display.replace(' &', ',') }}
-                                    {%  endif %}
+                                        {{relatedArtifact.display.replace(' &', ',')}}
+                                    {% endif %}
                                 {% endfor %}
                             </td>
                             <td>{{dataRequirement.codeFilter.first().valueSet}}</td>
@@ -463,7 +483,11 @@
                 <th scope="row"><b>Direct Reference Codes:</b></th>
                 <td style="padding-left: 4px;">
                     <table class="grid-dict">
-                        <tr><th><b>display</b></th><th><b>code</b></th><th><b>system</b></th></tr>
+                        <tr>
+                            <th><b>display</b></th>
+                            <th><b>code</b></th>
+                            <th><b>system</b></th>
+                        </tr>
                         {% for extension in contained.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode') %}
                             <tr>
                                 <td>{{extension.value.display}}</td>
@@ -482,16 +506,19 @@
                 {% if Measure.group.exists() %}
                 <table class="grid-dict">
                     <tr>
-                        <th><b>Group</b></th><th><b>Scoring</b></th><th><b>Population Criteria</b></th><th><b>Expression</b></th>
+                        <th><b>Group</b></th>
+                        <th><b>Scoring</b></th>
+                        <th><b>Population Criteria</b></th>
+                        <th><b>Expression</b></th>
                     </tr>
                     <tr>
                         {% for group in Measure.group %}
-                        <td> {{  group.id }} </td>
+                        <td> {{group.id}} </td>
                         <td>
                             {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring').exists() %}
                                 <b>Group scoring:</b>
                                 {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring') %}
-                                    <span>  {{ extension.value.coding.code }} </span>
+                                    <span>  {{extension.value.coding.code}} </span>
                                 {% endfor %}
                             {% endif %}
                             {% if Measure.scoring.exists() %}
@@ -507,22 +534,27 @@
                     <tr>
                         <td/>
                         <td/>
-                        <td>{{ population.code.first().coding.first().display }}</td>
+                        <td>{{population.code.first().coding.first().display}}</td>
                         <td>
                             {% if population.criteria.expression %}
-                                <pre><code class="language-cql">{{ (Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value) }}</code></pre>
+                                <pre><code class="language-cql">{{(Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
+                            {% else %}
+                                None
                             {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
 
-                    {%  endfor %}
+                    {% endfor %}
         </tr>
     </table>
     {% endif %}
     <table class="grid-dict">
         {% for extension in contained.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition') %}
-            <tr><th><b>Library Name</b></th><th><b>Name</b></th></tr>
+            <tr>
+                <th><b>Library Name</b></th>
+                <th><b>Name</b></th>
+            </tr>
             <tr>
                 {% for lNameExtension in extension.extension.where(url = 'libraryName') %}
                     <td>{{lNameExtension.value}}</td>
@@ -534,7 +566,10 @@
             <tr>
                 {% for statementExtension in extension.extension.where(url = 'statement') %}
                     <td></td>
-                    <td><pre class="highlight language-cql"><code class="language-cql">{{statementExtension.value}}</code></pre></td>
+                    <td>
+                        <pre class="highlight language-cql"><code
+                                    class="language-cql">{{statementExtension.value}}</code></pre>
+                    </td>
                 {% endfor %}
             </tr>
         {% endfor %}
@@ -638,16 +673,16 @@
                         {% if Measure.group.exists() %}
                             <table class="grid-dict">
                                 <tr>
-                                    <th><b>Group</b></th><th><b>Scoring</b></th><th><b>Population Criteria</b></th><th><b>Expression</b></th>
+                                        <th><b>Group</b></th><th><b>Scoring</b></th><th><b>Population Criteria</b></th><th><b>Expression</b></th>
                                 </tr>
                                 <tr>
                                     {% for group in Measure.group %}
-                                        <td> {{  group.id }} </td>
+                                        <td> {{group.id}} </td>
                                         <td>
                                             {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring').exists() %}
                                                 <b>Group scoring:</b>
                                                 {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring') %}
-                                                <span>  {{ extension.value.coding.code }} </span>
+                                                <span>  {{extension.value.coding.code}} </span>
                                                 {% endfor %}
                                             {% endif %}
                                             {% if Measure.scoring.exists() %}
@@ -660,13 +695,16 @@
                                             {% endif %}
                                         </td>
                                         {% for population in group.population %}
-                                            <tr>
+                                           <tr>
+                                                <td>Should be empty</td>
                                                 <td/>
-                                                <td/>
-                                                <td>{{ population.code.first().coding.first().display }}</td>
+                                                    <td/>
+                                                    <td>{{population.code.first().coding.first().display}}</td>
                                                 <td>
                                                     {% if population.criteria.expression %}
-                                                    <pre><code class="language-cql">{{ (Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value) }}</code></pre>
+                                                        <pre><code class="language-cql">{{(Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
+                                                    {% else %}
+                                                        None
                                                     {% endif %}
                                                 </td>
                                             </tr>
@@ -723,7 +761,10 @@
             <th scope="row"><b>Use Context: </b></th>
             <td style="padding-left: 4px;">
                 <table class="grid-dict">
-                    <tr><th><b>code</b></th><th><b>value</b></th></tr>
+                    <tr>
+                        <th><b>code</b></th>
+                        <th><b>value</b></th>
+                    </tr>
                     {% for useContext in Measure.useContext %}
                         <tr>
                             <td>{{useContext.code.code}}</td>
