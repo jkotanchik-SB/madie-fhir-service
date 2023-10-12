@@ -24,8 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
-
-import org.hl7.fhir.r4.model.Bundle.HTTPVerb;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.MarkdownType;
 import org.hl7.fhir.r4.model.MeasureReport;
@@ -130,7 +128,6 @@ public class TestCaseBundleService {
                 entry -> {
                   if (bundleType == BundleType.TRANSACTION) {
 
-                    
                     FhirResourceHelpers.setResourceEntry(entry.getResource(), entry);
                     return entry;
                   } else if (bundleType == BundleType.COLLECTION) {
