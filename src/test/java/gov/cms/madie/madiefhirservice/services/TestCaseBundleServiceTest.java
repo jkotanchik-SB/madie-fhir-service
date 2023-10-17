@@ -160,12 +160,11 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         measureReport.getMeta().getProfile().get(0).asStringValue());
 
     Parameters parameters = (Parameters) measureReport.getContained().get(0);
-    assertEquals("test case title-parameters", parameters.getId());
     assertEquals("Patient-1", parameters.getParameter().get(0).getValue().toString());
 
     // Reference to parameter created above
     Reference reference = (Reference) measureReport.getExtension().get(0).getValue();
-    assertEquals("#test case title-parameters", reference.getReference());
+    assertEquals("#" + parameters.getId(), reference.getReference());
     assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, measureReport.getStatus());
     assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, measureReport.getType());
     assertEquals("madie.cms.gov/Measure/SimpleFhirMeasureLib", measureReport.getMeasure());
@@ -222,12 +221,11 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
         measureReport.getMeta().getProfile().get(0).asStringValue());
 
     Parameters parameters = (Parameters) measureReport.getContained().get(0);
-    assertEquals("test case title-parameters", parameters.getId());
     assertEquals("Patient-1", parameters.getParameter().get(0).getValue().toString());
 
     // Reference to parameter created above
     Reference reference = (Reference) measureReport.getExtension().get(0).getValue();
-    assertEquals("#test case title-parameters", reference.getReference());
+    assertEquals("#" + parameters.getId(), reference.getReference());
     assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, measureReport.getStatus());
     assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, measureReport.getType());
     assertEquals("madie.cms.gov/Measure/SimpleFhirMeasureLib", measureReport.getMeasure());

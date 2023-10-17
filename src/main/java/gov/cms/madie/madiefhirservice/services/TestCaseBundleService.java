@@ -130,7 +130,6 @@ public class TestCaseBundleService {
                 entry -> {
                   if (bundleType == BundleType.TRANSACTION) {
 
-                    
                     FhirResourceHelpers.setResourceEntry(entry.getResource(), entry);
                     return entry;
                   } else if (bundleType == BundleType.COLLECTION) {
@@ -151,7 +150,7 @@ public class TestCaseBundleService {
     measureReport.setId(UUID.randomUUID().toString());
     measureReport.setMeta(new Meta().addProfile(UriConstants.CqfTestCases.CQFM_TEST_CASES));
     measureReport.setContained(buildContained(testCase, testCaseBundle));
-    measureReport.setExtension(buildExtensions(testCase));
+    measureReport.setExtension(buildExtensions(testCase, measureReport));
     measureReport.setModifierExtension(buildModifierExtension());
     measureReport.setStatus(MeasureReport.MeasureReportStatus.COMPLETE);
     measureReport.setType(MeasureReport.MeasureReportType.INDIVIDUAL);
@@ -186,7 +185,7 @@ public class TestCaseBundleService {
               .setName("subject")
               .setValue(new StringType(patientResource.get().getResource().getIdPart()));
       var parameters =
-          new Parameters().addParameter(parameter).setId(testCase.getTitle() + "-parameters");
+          new Parameters().addParameter(parameter).setId(UUID.randomUUID() + "-parameters");
       return Collections.singletonList(parameters);
     } else {
       log.error(
@@ -202,11 +201,11 @@ public class TestCaseBundleService {
    *     parameter created in "Contained", description extension will only be returned if
    *     Description is provided in madie testcase.
    */
-  private List<Extension> buildExtensions(TestCase testCase) {
+  private List<Extension> buildExtensions(TestCase testCase, MeasureReport measureReport) {
     var parametersExtension =
         new Extension()
             .setUrl(UriConstants.CqfTestCases.CQFM_INPUT_PARAMETERS)
-            .setValue(new Reference("#" + testCase.getTitle() + "-parameters"));
+            .setValue(new Reference("#" + measureReport.getContained().get(0).getId()));
     var descriptionExtension =
         new Extension()
             .setUrl(UriConstants.CqfTestCases.CQFM_TEST_CASE_DESCRIPTION)
