@@ -130,7 +130,6 @@ public class TestCaseBundleService {
                 entry -> {
                   if (bundleType == BundleType.TRANSACTION) {
 
-                    
                     FhirResourceHelpers.setResourceEntry(entry.getResource(), entry);
                     return entry;
                   } else if (bundleType == BundleType.COLLECTION) {

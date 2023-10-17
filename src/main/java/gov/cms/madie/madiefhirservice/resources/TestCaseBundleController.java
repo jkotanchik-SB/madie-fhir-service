@@ -50,7 +50,7 @@ public class TestCaseBundleController {
     if (testCaseId == null || testCaseId.isEmpty()) {
       throw new ResourceNotFoundException("test cases", "measure", measure.getId());
     }
-    //MAT-6204 Here we're modifying the bundle based on export choice, 
+    // MAT-6204 Here we're modifying the bundle based on export choice,
     // but we don't want to modify it permanently
     testCaseBundleService.setExportBundleType(exportDTO, measure);
 
