@@ -25,7 +25,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
 
-import org.hl7.fhir.r4.model.Bundle.HTTPVerb;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.MarkdownType;
 import org.hl7.fhir.r4.model.MeasureReport;
@@ -330,7 +329,7 @@ public class TestCaseBundleService {
           log.debug("You're exporting a Transaction");
           // update bundle type and add entry.request for each entry
           if (measure.getTestCases() != null) {
-            measure.getTestCases().stream().forEach(testCase -> updateEntry(testCase, bundleType));
+            measure.getTestCases().forEach(testCase -> updateEntry(testCase, bundleType));
           }
           break;
         default:
@@ -354,7 +353,7 @@ public class TestCaseBundleService {
       byte[] bytes = utility.getZipBundle(exportableTestCaseBundle, null);
 
       try (ZipOutputStream zos = new ZipOutputStream(baos);
-          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes)); ) {
+          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes))) {
 
         // Add the README file to the zip
         String readme = generateReadMe(testCases);
