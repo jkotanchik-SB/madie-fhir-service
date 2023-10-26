@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
+
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.MarkdownType;
 import org.hl7.fhir.r4.model.MeasureReport;
@@ -148,7 +149,7 @@ public class TestCaseBundleService {
     measureReport.setId(UUID.randomUUID().toString());
     measureReport.setMeta(new Meta().addProfile(UriConstants.CqfTestCases.CQFM_TEST_CASES));
     measureReport.setContained(buildContained(testCase, testCaseBundle));
-    measureReport.setExtension(buildExtensions(testCase));
+    measureReport.setExtension(buildExtensions(testCase, measureReport));
     measureReport.setModifierExtension(buildModifierExtension());
     measureReport.setStatus(MeasureReport.MeasureReportStatus.COMPLETE);
     measureReport.setType(MeasureReport.MeasureReportType.INDIVIDUAL);
@@ -183,7 +184,7 @@ public class TestCaseBundleService {
               .setName("subject")
               .setValue(new StringType(patientResource.get().getResource().getIdPart()));
       var parameters =
-          new Parameters().addParameter(parameter).setId(testCase.getTitle() + "-parameters");
+          new Parameters().addParameter(parameter).setId(UUID.randomUUID() + "-parameters");
       return Collections.singletonList(parameters);
     } else {
       log.error(
@@ -199,11 +200,11 @@ public class TestCaseBundleService {
    *     parameter created in "Contained", description extension will only be returned if
    *     Description is provided in madie testcase.
    */
-  private List<Extension> buildExtensions(TestCase testCase) {
+  private List<Extension> buildExtensions(TestCase testCase, MeasureReport measureReport) {
     var parametersExtension =
         new Extension()
             .setUrl(UriConstants.CqfTestCases.CQFM_INPUT_PARAMETERS)
-            .setValue(new Reference("#" + testCase.getTitle() + "-parameters"));
+            .setValue(new Reference("#" + measureReport.getContained().get(0).getId()));
     var descriptionExtension =
         new Extension()
             .setUrl(UriConstants.CqfTestCases.CQFM_TEST_CASE_DESCRIPTION)
@@ -328,7 +329,7 @@ public class TestCaseBundleService {
           log.debug("You're exporting a Transaction");
           // update bundle type and add entry.request for each entry
           if (measure.getTestCases() != null) {
-            measure.getTestCases().stream().forEach(testCase -> updateEntry(testCase, bundleType));
+            measure.getTestCases().forEach(testCase -> updateEntry(testCase, bundleType));
           }
           break;
         default:
@@ -352,7 +353,7 @@ public class TestCaseBundleService {
       byte[] bytes = utility.getZipBundle(exportableTestCaseBundle, null);
 
       try (ZipOutputStream zos = new ZipOutputStream(baos);
-          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes)); ) {
+          ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes))) {
 
         // Add the README file to the zip
         String readme = generateReadMe(testCases);

@@ -64,6 +64,8 @@ public class LibraryTranslatorService {
     library.setUrl(
         FhirResourceHelpers.buildResourceFullUrl("Library", cqlLibrary.getCqlLibraryName()));
     library.setDataRequirement(distinctDataRequirements(visitor.getDataRequirements()));
+
+    library.getExtension().addAll(visitor.getDrcExtensions());
     library.setRelatedArtifact(distinctArtifacts(visitor.getRelatedArtifacts()));
     library.setMeta(createLibraryMeta());
     library.setTitle(cqlLibrary.getCqlLibraryName());
