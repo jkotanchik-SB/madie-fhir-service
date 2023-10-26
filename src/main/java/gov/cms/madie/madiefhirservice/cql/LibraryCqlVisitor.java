@@ -176,9 +176,6 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
    */
   @Override
   public String visitRetrieve(cqlParser.RetrieveContext ctx) {
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-      log.debug("Context {}", ctx.getChild(i).getText());
-    }
     if (matchesPathRetrieve(ctx)) {
       handleDataRequirement(
           trimQuotes(ctx.getChild(1).getText()),
