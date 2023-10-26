@@ -75,6 +75,23 @@ public class LibraryTranslatorServiceTest implements ResourceFileUtil, LibraryHe
     assertThat(library.getName(), is(equalTo(cqlLibrary.getCqlLibraryName())));
     assertThat(library.getContent(), is(notNullValue()));
     assertThat(library.getContent().size(), is(equalTo(3)));
+    assertThat(library.getExtension().size(), is(equalTo(1)));
+  }
+
+  @Test
+  public void testConvertToFhirLibraryIncludesDrcExtension() {
+    String cql = getStringFromTestResource("/test-cql/EXM124v7QICore5.cql");
+    var visitor = new LibraryCqlVisitorFactory().visit(cql);
+    when(libCqlVisitorFactory.visit(anyString())).thenReturn(visitor);
+    CqlLibrary cqlLib = createCqlLibrary(cql);
+    cqlLib.setElmJson("ELMJSON");
+    cqlLib.setElmXml("ELMXML");
+
+    Library library = libraryTranslatorService.convertToFhirLibrary(cqlLib);
+    assertThat(library.getName(), is(equalTo(cqlLib.getCqlLibraryName())));
+    assertThat(library.getContent(), is(notNullValue()));
+    assertThat(library.getContent().size(), is(equalTo(3)));
+    assertThat(library.getExtension().size(), is(equalTo(2)));
   }
 
   @Test
