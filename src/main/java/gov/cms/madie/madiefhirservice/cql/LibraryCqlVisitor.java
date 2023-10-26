@@ -53,7 +53,6 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   @Override
   public String visitLibraryDefinition(cqlParser.LibraryDefinitionContext ctx) {
     name = ctx.qualifiedIdentifier().getText();
-    log.warn("###### library Definition Name {}", name);
     version = trim1(ctx.versionSpecifier().getText());
     return null;
   }
@@ -129,7 +128,6 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
     String codeSystemName = getUnquotedFullText(ctx.codesystemIdentifier());
     String code = getUnquotedFullText(ctx.codeId());
     String codeName = getUnquotedFullText(ctx.identifier());
-    log.warn("###### codeName  {}", codeName);
     codeSystems.stream()
         .filter(cs -> StringUtils.equals(getUnquotedFullText(cs.identifier()), codeSystemName))
         .findFirst()
