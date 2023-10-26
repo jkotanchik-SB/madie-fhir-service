@@ -1,5 +1,6 @@
 package gov.cms.madie.madiefhirservice.cql;
 
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -8,12 +9,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cqframework.cql.gen.cqlBaseVisitor;
 import org.cqframework.cql.gen.cqlParser;
+import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DataRequirement;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.RelatedArtifact;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +35,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   private final List<cqlParser.CodesystemDefinitionContext> codeSystems = new ArrayList<>();
   private final ReadableArtifacts readableArtifacts = new ReadableArtifacts();
   private final List<DataRequirement> dataRequirements = new ArrayList<>();
+  private final List<Extension> drcExtensions = new ArrayList<>();
   private final List<RelatedArtifact> relatedArtifacts = new ArrayList<>();
   private final Map<String, Pair<Library, LibraryCqlVisitor>> libMap = new HashMap<>();
   private final Map<Integer, Library> libraryCacheMap = new HashMap<>();
@@ -48,6 +53,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   @Override
   public String visitLibraryDefinition(cqlParser.LibraryDefinitionContext ctx) {
     name = ctx.qualifiedIdentifier().getText();
+    log.warn("###### library Definition Name {}", name);
     version = trim1(ctx.versionSpecifier().getText());
     return null;
   }
@@ -119,9 +125,11 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
 
   @Override
   public String visitCodeDefinition(cqlParser.CodeDefinitionContext ctx) {
+
     String codeSystemName = getUnquotedFullText(ctx.codesystemIdentifier());
     String code = getUnquotedFullText(ctx.codeId());
     String codeName = getUnquotedFullText(ctx.identifier());
+    log.warn("###### codeName  {}", codeName);
     codeSystems.stream()
         .filter(cs -> StringUtils.equals(getUnquotedFullText(cs.identifier()), codeSystemName))
         .findFirst()
@@ -130,6 +138,12 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
               String csName = getUnquotedFullText(cs.identifier());
               String csUri = getUnquotedFullText(cs.codesystemId());
               String csVersionUri = getUnquotedFullText(cs.versionSpecifier());
+
+              Extension ext = new Extension(UriConstants.CqfMeasures.DIRECT_REFERENCE_CODE_URI);
+
+              ext.setValue(buildCoding(code, csUri, codeName));
+
+              this.getDrcExtensions().add(ext);
               readableArtifacts
                   .getTerminologyCodeModels()
                   .add(
@@ -162,20 +176,20 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
    */
   @Override
   public String visitRetrieve(cqlParser.RetrieveContext ctx) {
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      log.debug("Context {}", ctx.getChild(i).getText());
+    }
     if (matchesPathRetrieve(ctx)) {
       handleDataRequirement(
           trimQuotes(ctx.getChild(1).getText()),
           ctx.getChild(3).getText(),
           trimQuotes(ctx.getChild(5).getText()));
-
     } else if (matchesNonPathRetrieve(ctx)) {
       handleDataRequirement(
           trimQuotes(ctx.getChild(1).getText()), "code", trimQuotes(ctx.getChild(3).getText()));
     } else if (matchesTypeRetrieve(ctx)) {
       handleTypeDataRequirement(trimQuotes(ctx.getChild(1).getText()));
-      log.debug("Added type retrieve: " + ctx.getText());
     }
-
     return null;
   }
 
@@ -191,7 +205,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
    */
   private boolean matchesTypeRetrieve(cqlParser.RetrieveContext ctx) {
     // define FirstInpatientEncounter:
-    //   First([Encounter] E where E.class = 'inpatient' sort by period.start desc)
+    // First([Encounter] E where E.class = 'inpatient' sort by period.start desc)
     return ctx.getChildCount() == 3
         && ctx.getChild(0).getText().equals("[")
         && ctx.getChild(2).getText().equals("]");
@@ -222,7 +236,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
 
   private void handleTypeDataRequirement(String type) {
     // define FirstInpatientEncounter:
-    //   First([Encounter] E where E.class = 'inpatient' sort by period.start desc)
+    // First([Encounter] E where E.class = 'inpatient' sort by period.start desc)
     var result = new DataRequirement();
     result.setType(type);
     dataRequirements.add(result);
@@ -230,13 +244,14 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   }
 
   private void handleDataRequirement(String type, String path, String valueSetOrCodeName) {
+
     var result = new DataRequirement();
     result.setType(type);
     var filter = new DataRequirement.DataRequirementCodeFilterComponent();
     filter.setPath(path);
     result.setCodeFilter(Collections.singletonList(filter));
-
     var hrVs = getValueSetUrl(valueSetOrCodeName);
+
     filter.setValueSet(valueSetNameUri.get(valueSetOrCodeName));
 
     if (hrVs != null) {
@@ -245,11 +260,13 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
           .getDataReqValueSets()
           .add(new ValuesetModel(valueSetOrCodeName, hrVs.getOid(), hrVs.getVersion(), type));
     } else {
+
       CodeModel hrCode = getCode(valueSetOrCodeName);
       if (hrCode != null) {
         filter.setCode(
             Collections.singletonList(
                 new Coding(hrCode.getCodeSystemOid(), hrCode.getOid(), hrCode.getName())));
+
         readableArtifacts
             .getDataReqCodes()
             .add(
@@ -274,6 +291,17 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
     dataRequirements.add(result);
   }
 
+  private CodeableConcept buildCodeableConcept(String code, String system, String display) {
+    CodeableConcept codeableConcept = new CodeableConcept();
+    codeableConcept.setCoding(new ArrayList<>());
+    codeableConcept.getCoding().add(buildCoding(code, system, display));
+    return codeableConcept;
+  }
+
+  private Coding buildCoding(String code, String system, String display) {
+    return new Coding().setCode(code).setSystem(system).setDisplay(display);
+  }
+
   public ValuesetModel getValueSetUrl(String valueSetName) {
     ValuesetModel result = null;
     if (isInIncludeLib(valueSetName)) {
@@ -287,11 +315,12 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
         log.debug("Could not find valueset with name " + valueSetName);
       }
     } /*
-       * else { // Check to see if its a lib reference like TJC."value set id" int periodIndex =
-       * valueSetName.indexOf("."); if (periodIndex != -1) { String alias =
-       * valueSetName.substring(0, periodIndex); String remaining =
-       * trimQuotes(valueSetName.substring(periodIndex + 1)); var childLib = libMap.get(alias); if
-       * (childLib != null) { result = childLib.getRight().getValueSetUrl(remaining); } } }
+       * else { // Check to see if its a lib reference like TJC."value set id" int
+       * periodIndex = valueSetName.indexOf("."); if (periodIndex != -1) { String
+       * alias = valueSetName.substring(0, periodIndex); String remaining =
+       * trimQuotes(valueSetName.substring(periodIndex + 1)); var childLib =
+       * libMap.get(alias); if (childLib != null) { result =
+       * childLib.getRight().getValueSetUrl(remaining); } } }
        */
     return result;
   }
@@ -309,11 +338,11 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
         log.error("Could not find code with code name " + codeName);
       }
     } /*
-       * else { // Check to see if its a lib reference like TJC."value set id" int periodIndex =
-       * codeName.indexOf("."); if (periodIndex != -1) { String alias = codeName.substring(0,
-       * periodIndex); String remaining = codeName.substring(periodIndex + 1); var childLib =
-       * libMap.get(alias); if (childLib != null) { result =
-       * childLib.getRight().getCode(remaining); } } }
+       * else { // Check to see if its a lib reference like TJC."value set id" int
+       * periodIndex = codeName.indexOf("."); if (periodIndex != -1) { String alias =
+       * codeName.substring(0, periodIndex); String remaining =
+       * codeName.substring(periodIndex + 1); var childLib = libMap.get(alias); if
+       * (childLib != null) { result = childLib.getRight().getCode(remaining); } } }
        */
     return result;
   }

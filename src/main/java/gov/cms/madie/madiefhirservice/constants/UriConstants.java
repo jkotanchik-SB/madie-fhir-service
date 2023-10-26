@@ -51,6 +51,9 @@ public final class UriConstants {
 
     public static final String CODE_SYSTEM_MEASURE_DATA_USAGE_URI =
         "http://terminology.hl7.org/CodeSystem/measure-data-usage";
+
+    public static final String DIRECT_REFERENCE_CODE_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode";
   }
 
   public static final class CqfTestCases {
