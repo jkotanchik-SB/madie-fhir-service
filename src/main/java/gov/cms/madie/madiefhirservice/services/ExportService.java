@@ -1,6 +1,5 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 
@@ -44,7 +43,6 @@ public class ExportService {
       throw new InternalServerException(
           "Unexpected error while generating exports for measureID: " + madieMeasure.getId());
     }
-    byte[] result = utility.getZipBundle(bundle, exportFileName);
-    return result;
+    return utility.getZipBundle(bundle, exportFileName);
   }
 }
