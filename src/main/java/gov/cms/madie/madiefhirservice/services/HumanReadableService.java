@@ -3,6 +3,7 @@ package gov.cms.madie.madiefhirservice.services;
 import static org.springframework.web.util.HtmlUtils.htmlEscape;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -270,6 +271,8 @@ public class HumanReadableService extends ResourceUtils {
     var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
     org.hl7.fhir.r5.model.Library r5Library =
         (org.hl7.fhir.r5.model.Library) versionConvertor_40_50.convertResource(library);
+    // escape html
+    escapeLibrary(r5Library);
     String template = getData("/templates/Library.liquid");
     try {
       LiquidEngine.LiquidDocument doc = liquidEngine.parse(template, "libray-hr");
@@ -279,6 +282,40 @@ public class HumanReadableService extends ResourceUtils {
       throw new HumanReadableGenerationException(
           "Error occurred while generating human readable for library: " + library.getName());
     }
+  }
+
+  private void escapeLibrary(org.hl7.fhir.r5.model.Library r5Library) {
+    r5Library.setTitle(escapeStr(r5Library.getTitle()));
+    r5Library.setSubtitle(escapeStr(r5Library.getSubtitle()));
+    r5Library.setPublisher(escapeStr(r5Library.getPublisher()));
+    r5Library.setDescription(escapeStr(r5Library.getDescription()));
+    r5Library.setPurpose(escapeStr(r5Library.getPurpose()));
+    r5Library.setUsage(escapeStr(r5Library.getUsage()));
+    r5Library.setCopyright(escapeStr(r5Library.getCopyright()));
+
+    r5Library
+        .getRelatedArtifact()
+        .forEach(
+            relatedArtifact -> relatedArtifact.setDisplay(escapeStr(relatedArtifact.getDisplay())));
+    r5Library
+        .getDataRequirement()
+        .forEach(
+            dataRequirement ->
+                dataRequirement
+                    .getCodeFilter()
+                    .forEach(
+                        cf ->
+                            cf.getCode()
+                                .forEach(
+                                    coding -> coding.setDisplay(escapeStr(coding.getDisplay())))));
+
+    r5Library.setContent(
+        r5Library.getContent().stream()
+            .filter(content -> content.getContentType().equalsIgnoreCase("text/cql"))
+            .map(
+                content ->
+                    content.setData(escapeStr(Arrays.toString(content.getData())).getBytes()))
+            .collect(Collectors.toList()));
   }
 
   private Extension createEffectiveDataRequirementExtension() {
