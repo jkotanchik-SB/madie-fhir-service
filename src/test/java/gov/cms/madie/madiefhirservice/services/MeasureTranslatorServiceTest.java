@@ -203,7 +203,9 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     }
 
     // numeratorExclusion is not assigned (null), so it is not added to the measure resource.
-    assertNotEquals(measure.getGroup().get(0).getPopulation().size(), madieMeasure.getGroups().get(0).getPopulations().size());
+    assertNotEquals(
+        measure.getGroup().get(0).getPopulation().size(),
+        madieMeasure.getGroups().get(0).getPopulations().size());
     MeasureGroupPopulationComponent groupComponent =
         measure.getGroup().get(0).getPopulation().get(0);
     assertThat(groupComponent.getCriteria().getLanguage(), is(equalTo("text/cql-identifier")));
