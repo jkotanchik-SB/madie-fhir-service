@@ -287,6 +287,7 @@ public class MeasureTranslatorService {
 
   private List<MeasureGroupPopulationComponent> buildPopulations(Group madieGroup) {
     return madieGroup.getPopulations().stream()
+        .filter(population -> population.getDefinition() != null && !population.getDefinition().isEmpty())
         .map(
             population -> {
               String populationCode = population.getName().toCode();

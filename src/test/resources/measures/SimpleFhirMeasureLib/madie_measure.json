@@ -159,7 +159,7 @@
             {
                "id":"7790db4c-0f7f-48dc-8dc2-871b42ab3abf",
                "name":"numeratorExclusion",
-               "definition":"Pap Test with Results",
+               "definition": null,
                "associationType":null
             }
          ],
