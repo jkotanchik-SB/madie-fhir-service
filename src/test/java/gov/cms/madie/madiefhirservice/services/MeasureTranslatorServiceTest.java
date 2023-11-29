@@ -14,10 +14,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
@@ -205,6 +202,10 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
           is("http://terminology.hl7.org/CodeSystem/measure-type"));
     }
 
+    // numeratorExclusion is not assigned (null), so it is not added to the measure resource.
+    assertNotEquals(
+        measure.getGroup().get(0).getPopulation().size(),
+        madieMeasure.getGroups().get(0).getPopulations().size());
     MeasureGroupPopulationComponent groupComponent =
         measure.getGroup().get(0).getPopulation().get(0);
     assertThat(groupComponent.getCriteria().getLanguage(), is(equalTo("text/cql-identifier")));
