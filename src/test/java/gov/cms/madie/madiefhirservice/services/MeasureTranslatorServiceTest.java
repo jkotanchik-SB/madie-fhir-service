@@ -165,6 +165,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
             .getValue()
             .primitiveValue(),
         is(equalTo("Account")));
+    assertEquals(
+        madieMeasure.getGroups().get(0).getRateAggregation(),
+        group1
+            .getExtensionByUrl(UriConstants.CqfMeasures.RATE_AGGREGATION_URI)
+            .getValue()
+            .primitiveValue());
     Extension scoringUnitExt1 = group1.getExtensionByUrl(UriConstants.CqfMeasures.SCORING_UNIT_URI);
     assertThat(scoringUnitExt1, is(notNullValue()));
     assertThat(scoringUnitExt1.getValue(), is(notNullValue()));

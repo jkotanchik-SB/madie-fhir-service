@@ -14,6 +14,7 @@ import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.Population;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.Uri;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.CanonicalType;
@@ -263,6 +264,12 @@ public class MeasureTranslatorService {
     if (types != null) {
       types.forEach(
           type -> element.addExtension(new Extension(UriConstants.CqfMeasures.CQFM_TYPE, type)));
+    }
+    if (StringUtils.isNotBlank(madieGroup.getRateAggregation())) {
+      element.addExtension(
+          new Extension(
+              UriConstants.CqfMeasures.RATE_AGGREGATION_URI,
+              new CodeType(madieGroup.getRateAggregation())));
     }
     return (MeasureGroupComponent) element;
   }

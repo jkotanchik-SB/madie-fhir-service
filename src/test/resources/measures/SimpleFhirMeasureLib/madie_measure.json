@@ -170,7 +170,7 @@
          "measureObservations":null,
          "groupDescription":"test 4495 group 1",
          "improvementNotation":"",
-         "rateAggregation":"",
+         "rateAggregation":"Rate Aggregation Example",
          "scoringUnit":{
             "label":"kg kilogram",
             "value":{
