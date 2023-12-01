@@ -171,6 +171,19 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
             .getExtensionByUrl(UriConstants.CqfMeasures.RATE_AGGREGATION_URI)
             .getValue()
             .primitiveValue());
+
+    Extension improvementNotationExt =
+        group1.getExtensionByUrl(UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_URI);
+    CodeableConcept improvementNotation =
+        improvementNotationExt.getValue().castToCodeableConcept(improvementNotationExt.getValue());
+    assertEquals(
+        madieMeasure.getGroups().get(0).getImprovementNotation(),
+        improvementNotation.getCoding().get(0).getDisplay());
+    assertEquals("increase", improvementNotation.getCoding().get(0).getCode());
+    assertEquals(
+        UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_CODE_SYSTEM_URI,
+        improvementNotation.getCoding().get(0).getSystem());
+
     Extension scoringUnitExt1 = group1.getExtensionByUrl(UriConstants.CqfMeasures.SCORING_UNIT_URI);
     assertThat(scoringUnitExt1, is(notNullValue()));
     assertThat(scoringUnitExt1.getValue(), is(notNullValue()));
@@ -237,6 +250,20 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
             .getValue()
             .primitiveValue(),
         is(equalTo("boolean")));
+    assertNull(group2.getExtensionByUrl(UriConstants.CqfMeasures.RATE_AGGREGATION_URI));
+    Extension improvementNotationExt1 =
+        group2.getExtensionByUrl(UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_URI);
+    CodeableConcept improvementNotation1 =
+        improvementNotationExt1
+            .getValue()
+            .castToCodeableConcept(improvementNotationExt1.getValue());
+    assertEquals(
+        madieMeasure.getGroups().get(1).getImprovementNotation(),
+        improvementNotation1.getCoding().get(0).getDisplay());
+    assertEquals("decrease", improvementNotation1.getCoding().get(0).getCode());
+    assertEquals(
+        UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_CODE_SYSTEM_URI,
+        improvementNotation1.getCoding().get(0).getSystem());
     Extension group2Ex = group2.getExtension().get(0);
     assertThat(group2Ex.getUrl(), is(equalTo(UriConstants.CqfMeasures.SCORING_URI)));
     CodeableConcept group2CodeableConcept = group2Ex.castToCodeableConcept(group2Ex.getValue());
