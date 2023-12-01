@@ -54,6 +54,9 @@ public final class UriConstants {
 
     public static final String DIRECT_REFERENCE_CODE_URI =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode";
+
+    public static final String RATE_AGGREGATION_URI =
+        "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-rateAggregation";
   }
 
   public static final class CqfTestCases {
