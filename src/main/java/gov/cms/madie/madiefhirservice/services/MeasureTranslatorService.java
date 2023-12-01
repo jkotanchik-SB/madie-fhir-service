@@ -519,11 +519,8 @@ public class MeasureTranslatorService {
     codeableConcept.setText("Supplemental Data Guidance");
     Extension ext = new Extension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
     ext.setId("supplementalDataGuidance");
-    String descriptionList =
-        madieMeasure.getSupplementalData().stream()
-            .map(item -> item.getDescription())
-            .collect(Collectors.joining(" "));
-    ext.addExtension(new Extension("guidance", new StringType(descriptionList)));
+    ext.addExtension(
+        new Extension("guidance", new StringType(madieMeasure.getSupplementalDataDescription())));
     ext.addExtension(new Extension("usage", codeableConcept));
 
     return ext;
@@ -553,11 +550,8 @@ public class MeasureTranslatorService {
     codeableConcept.setText("Risk Adjustment Variable Guidance");
     Extension ext = new Extension(UriConstants.CqfMeasures.SUPPLEMENTAL_DATA_GUIDANCE_URI);
     ext.setId("riskAdjustmentVariableGuidance");
-    String descriptionList =
-        madieMeasure.getRiskAdjustments().stream()
-            .map(item -> item.getDescription())
-            .collect(Collectors.joining(" "));
-    ext.addExtension(new Extension("guidance", new StringType(descriptionList)));
+    ext.addExtension(
+        new Extension("guidance", new StringType(madieMeasure.getRiskAdjustmentDescription())));
     ext.addExtension(new Extension("usage", codeableConcept));
 
     return ext;
