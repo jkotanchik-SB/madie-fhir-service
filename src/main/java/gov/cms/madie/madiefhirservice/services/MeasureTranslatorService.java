@@ -271,7 +271,27 @@ public class MeasureTranslatorService {
               UriConstants.CqfMeasures.RATE_AGGREGATION_URI,
               new CodeType(madieGroup.getRateAggregation())));
     }
+    if (StringUtils.isNotBlank(madieGroup.getImprovementNotation())) {
+      element.addExtension(
+          new Extension(
+              UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_URI,
+              buildImprovementNotation(madieGroup.getImprovementNotation())));
+    }
     return (MeasureGroupComponent) element;
+  }
+
+  private CodeableConcept buildImprovementNotation(String improvementNotation) {
+    if ("Increased score indicates improvement".equalsIgnoreCase(improvementNotation)) {
+      return buildCodeableConcept(
+          "increase",
+          UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_CODE_SYSTEM_URI,
+          improvementNotation);
+    } else {
+      return buildCodeableConcept(
+          "decrease",
+          UriConstants.CqfMeasures.IMPROVEMENT_NOTATION_CODE_SYSTEM_URI,
+          improvementNotation);
+    }
   }
 
   private List<CodeableConcept> getMeasureTypes(List<MeasureGroupTypes> measureGroupTypes) {
