@@ -9,20 +9,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
 import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r5.model.Reference;
+import org.hl7.fhir.r5.model.*;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r5.model.Enumerations.FHIRTypes;
-import org.hl7.fhir.r5.model.Expression;
-import org.hl7.fhir.r5.model.Extension;
-import org.hl7.fhir.r5.model.ParameterDefinition;
-import org.hl7.fhir.r5.model.RelatedArtifact;
-import org.hl7.fhir.r5.model.StringType;
 import org.hl7.fhir.r5.utils.LiquidEngine;
 import org.springframework.stereotype.Service;
 
@@ -209,6 +205,10 @@ public class HumanReadableService extends ResourceUtils {
                               return measureGroupStratifierComponent;
                             })
                         .collect(Collectors.toList()));
+              }
+              if (group.hasExtension(CqfMeasures.RATE_AGGREGATION_URI)) {
+                  var extension = group.getExtensionByUrl(CqfMeasures.RATE_AGGREGATION_URI);
+                  extension.setValue(new CodeType(escapeStr(extension.getValue().toString())));
               }
             });
   }
