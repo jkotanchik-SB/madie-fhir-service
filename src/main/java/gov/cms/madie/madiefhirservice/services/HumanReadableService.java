@@ -1,27 +1,5 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import static org.springframework.web.util.HtmlUtils.htmlEscape;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import gov.cms.madie.madiefhirservice.constants.UriConstants;
-import org.apache.commons.collections4.CollectionUtils;
-import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
-import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
-import org.hl7.fhir.exceptions.FHIRException;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r5.model.*;
-import org.hl7.fhir.r4.model.Resource;
-import org.hl7.fhir.r5.model.Enumerations.FHIRTypes;
-import org.hl7.fhir.r5.utils.LiquidEngine;
-import org.springframework.stereotype.Service;
-
 import gov.cms.madie.madiefhirservice.constants.UriConstants.CqfMeasures;
 import gov.cms.madie.madiefhirservice.exceptions.HumanReadableGenerationException;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
@@ -29,6 +7,22 @@ import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
 import gov.cms.madie.models.measure.Measure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.hl7.fhir.convertors.advisors.impl.BaseAdvisor_40_50;
+import org.hl7.fhir.convertors.conv40_50.VersionConvertor_40_50;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Library;
+import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r5.model.*;
+import org.hl7.fhir.r5.model.Enumerations.FHIRTypes;
+import org.hl7.fhir.r5.utils.LiquidEngine;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.web.util.HtmlUtils.htmlEscape;
 
 @Slf4j
 @Service
@@ -207,8 +201,8 @@ public class HumanReadableService extends ResourceUtils {
                         .collect(Collectors.toList()));
               }
               if (group.hasExtension(CqfMeasures.RATE_AGGREGATION_URI)) {
-                  var extension = group.getExtensionByUrl(CqfMeasures.RATE_AGGREGATION_URI);
-                  extension.setValue(new CodeType(escapeStr(extension.getValue().toString())));
+                var extension = group.getExtensionByUrl(CqfMeasures.RATE_AGGREGATION_URI);
+                extension.setValue(new CodeType(escapeStr(extension.getValue().toString())));
               }
             });
   }
