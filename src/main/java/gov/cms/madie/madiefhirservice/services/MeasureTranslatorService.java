@@ -66,8 +66,8 @@ public class MeasureTranslatorService {
         .setEffectivePeriod(
             getPeriodFromDates(
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
-        .setApprovalDate(Date.from(Optional.ofNullable(approvalDate).orElse(Instant.now())))
-        .setLastReviewDate(Date.from(Optional.ofNullable(lastReviewDate).orElse(Instant.now())))
+        .setApprovalDate(approvalDate != null ? Date.from(approvalDate) : null)
+        .setLastReviewDate(lastReviewDate != null ? Date.from(lastReviewDate) : null)
         .setPublisher(
             (steward == null || StringUtils.isBlank(steward.getName()))
                 ? UNKNOWN
