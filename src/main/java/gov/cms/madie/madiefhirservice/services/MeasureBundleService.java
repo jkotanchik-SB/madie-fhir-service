@@ -1,6 +1,7 @@
 package gov.cms.madie.madiefhirservice.services;
 
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.dto.CqlLibraryDetails;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.ResourceUtils;
@@ -22,8 +23,10 @@ import org.hl7.fhir.r4.model.Reference;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,6 +50,7 @@ public class MeasureBundleService {
 
     org.hl7.fhir.r4.model.Measure measure =
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
+    Set<String> expressions = getExpressions(measure);
 
     // Bundle entry for Measure resource
     Bundle.BundleEntryComponent measureEntryComponent =
@@ -55,14 +59,21 @@ public class MeasureBundleService {
         new Bundle().setType(Bundle.BundleType.TRANSACTION).addEntry(measureEntryComponent);
     // Bundle entries for all the library resources of a MADiE Measure
     List<Bundle.BundleEntryComponent> libraryEntryComponents =
-        createBundleComponentsForLibrariesOfMadieMeasure(madieMeasure, bundleType, accessToken);
+        createBundleComponentsForLibrariesOfMadieMeasure(
+            expressions, madieMeasure, bundleType, accessToken);
     libraryEntryComponents.forEach(bundle::addEntry);
 
     if (BundleUtil.MEASURE_BUNDLE_TYPE_EXPORT.equals(bundleType)) {
+      CqlLibraryDetails libraryDetails =
+          CqlLibraryDetails.builder()
+              .libraryName(madieMeasure.getCqlLibraryName())
+              .cql(madieMeasure.getCql())
+              .expressions(expressions)
+              .build();
       // get effective DataRequirements
+      log.info("Getting effective data requirements for measure: {}", measure.getId());
       org.hl7.fhir.r5.model.Library effectiveDataRequirements =
-          elmTranslatorClient.getEffectiveDataRequirements(
-              bundle, madieMeasure.getCqlLibraryName(), madieMeasure.getId(), accessToken);
+          elmTranslatorClient.getEffectiveDataRequirements(libraryDetails, true, accessToken);
       // get human-readable for measure
       String humanReadable =
           humanReadableService.generateMeasureHumanReadable(
@@ -87,8 +98,12 @@ public class MeasureBundleService {
    * @return list of Library BundleEntryComponents
    */
   public List<Bundle.BundleEntryComponent> createBundleComponentsForLibrariesOfMadieMeasure(
-      Measure madieMeasure, final String bundleType, final String accessToken) {
-    Library library = getMeasureLibraryResourceForMadieMeasure(madieMeasure);
+      Set<String> expressions,
+      Measure madieMeasure,
+      final String bundleType,
+      final String accessToken) {
+    Library library =
+        getMeasureLibraryResourceForMadieMeasure(expressions, madieMeasure, accessToken);
     Bundle.BundleEntryComponent mainLibraryBundleComponent =
         FhirResourceHelpers.getBundleEntryComponent(library, "Transaction");
     Map<String, Library> includedLibraryMap = new HashMap<>();
@@ -104,14 +119,28 @@ public class MeasureBundleService {
   }
 
   /**
-   * Creates Library resource for main library of MADiE Measure
+   * Creates a Library resource for main library of MADiE Measure
    *
-   * @param madieMeasure instance of MADiE Measure
-   * @return Library
+   * @param expressions- measure populations, SDEs, Stratification
+   * @param madieMeasure
+   * @param accessToken
+   * @return library- r4 library
    */
-  public Library getMeasureLibraryResourceForMadieMeasure(Measure madieMeasure) {
+  public Library getMeasureLibraryResourceForMadieMeasure(
+      Set<String> expressions, Measure madieMeasure, String accessToken) {
+    log.info("Preparing Measure library resource for measure: {}", madieMeasure.getId());
     CqlLibrary cqlLibrary = createCqlLibraryForMadieMeasure(madieMeasure);
-    return libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
+    CqlLibraryDetails libraryDetails =
+        CqlLibraryDetails.builder()
+            .libraryName(cqlLibrary.getCqlLibraryName())
+            .cql(cqlLibrary.getCql())
+            .expressions(expressions)
+            .build();
+    Library library = libraryTranslatorService.convertToFhirLibrary(cqlLibrary);
+    org.hl7.fhir.r5.model.Library r5moduleDefinition =
+        elmTranslatorClient.getModuleDefinitionLibrary(libraryDetails, false, accessToken);
+    updateLibraryDataRequirements(library, r5moduleDefinition);
+    return library;
   }
 
   /**
@@ -156,5 +185,36 @@ public class MeasureBundleService {
             .setUrl(UriConstants.CqfMeasures.EFFECTIVE_DATA_REQUIREMENT_URL)
             .setValue(new Reference().setReference("#effective-data-requirements"));
     measure.getExtension().add(extension);
+  }
+
+  private Set<String> getExpressions(org.hl7.fhir.r4.model.Measure r5Measure) {
+    Set<String> expressionSet = new HashSet<>();
+    r5Measure
+        .getSupplementalData()
+        .forEach(supData -> expressionSet.add(supData.getCriteria().getExpression()));
+    r5Measure
+        .getGroup()
+        .forEach(
+            groupMember -> {
+              groupMember
+                  .getPopulation()
+                  .forEach(
+                      population -> expressionSet.add(population.getCriteria().getExpression()));
+              groupMember
+                  .getStratifier()
+                  .forEach(
+                      stratifier -> expressionSet.add(stratifier.getCriteria().getExpression()));
+            });
+    return expressionSet;
+  }
+
+  private void updateLibraryDataRequirements(
+      org.hl7.fhir.r4.model.Library library,
+      org.hl7.fhir.r5.model.Library r5moduleDefinitionLibrary) {
+    var versionConvertor_40_50 = new VersionConvertor_40_50(new BaseAdvisor_40_50());
+    org.hl7.fhir.r4.model.Library r4moduleDefinitionLibrary =
+        (org.hl7.fhir.r4.model.Library)
+            versionConvertor_40_50.convertResource(r5moduleDefinitionLibrary);
+    library.setDataRequirement(r4moduleDefinitionLibrary.getDataRequirement());
   }
 }
