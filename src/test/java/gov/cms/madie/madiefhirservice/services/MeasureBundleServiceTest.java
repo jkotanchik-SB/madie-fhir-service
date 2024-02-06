@@ -1,17 +1,15 @@
 package gov.cms.madie.madiefhirservice.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.dto.CqlLibraryDetails;
 import gov.cms.madie.madiefhirservice.exceptions.CqlLibraryNotFoundException;
 import gov.cms.madie.madiefhirservice.utils.BundleUtil;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
 import gov.cms.madie.models.library.CqlLibrary;
 import gov.cms.madie.models.measure.Measure;
-
-import java.security.Principal;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
@@ -23,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.security.Principal;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -30,6 +29,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -84,7 +84,9 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
         .thenReturn(measure);
 
     when(libraryTranslatorService.convertToFhirLibrary(any(CqlLibrary.class))).thenReturn(library);
-
+    when(elmTranslatorClient.getModuleDefinitionLibrary(
+            any(CqlLibraryDetails.class), anyBoolean(), anyString()))
+        .thenReturn(effectiveDataRequirements);
     doAnswer(
             invocation -> {
               Object[] args = invocation.getArguments();
@@ -127,7 +129,7 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  public void testCreateMeasureBundleWhenIncludedLibraryNotFoundInHapi() {
+  public void testCreateMeasureBundleWhenIncludedLibraryNotFound() {
     when(measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure))
         .thenReturn(measure);
 
@@ -136,6 +138,9 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
     doThrow(new CqlLibraryNotFoundException("FHIRHelpers", "4.0.001"))
         .when(libraryService)
         .getIncludedLibraries(anyString(), any(), anyString(), anyString());
+    when(elmTranslatorClient.getModuleDefinitionLibrary(
+            any(CqlLibraryDetails.class), anyBoolean(), anyString()))
+        .thenReturn(effectiveDataRequirements);
     Exception exception =
         Assertions.assertThrows(
             CqlLibraryNotFoundException.class,
@@ -169,8 +174,12 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
         .getIncludedLibraries(anyString(), anyMap(), anyString(), anyString());
 
     when(elmTranslatorClient.getEffectiveDataRequirements(
-            any(Bundle.class), anyString(), anyString(), anyString()))
+            any(CqlLibraryDetails.class), anyBoolean(), anyString()))
         .thenReturn(effectiveDataRequirements);
+    when(elmTranslatorClient.getModuleDefinitionLibrary(
+            any(CqlLibraryDetails.class), anyBoolean(), anyString()))
+        .thenReturn(effectiveDataRequirements);
+
     when(humanReadableService.generateMeasureHumanReadable(
             any(Measure.class), any(Bundle.class), any(org.hl7.fhir.r5.model.Library.class)))
         .thenReturn(humanReadable);
