@@ -19,12 +19,6 @@
                 <th scope="row"><b>Id: </b></th>
                 <td style="padding-left: 4px;">{{Measure.id}}</td>
             </tr>
-            {% if Measure.library.exists() %}
-                <tr>
-                    <th scope="row"><b>Download cql: </b></th>
-                    <td style="padding-left: 4px;"><a href="Library-{{Measure.id}}.cql">{{Measure.id}}.cql</a></td>
-                </tr>
-            {% endif %}
         {% endif %}
 
         {% if Measure.version.exists() %}
@@ -75,7 +69,7 @@
             </tr>
         {% endif %}
 
-        {% if Measure.status.exists() %}
+        {% if Measure.status.exists() and Measure.status.value != 'active' %}
             <tr>
                 <th scope="row"><b>Status: </b></th>
                 <td style="padding-left: 4px;">{{Measure.status.value}}</td>
@@ -96,27 +90,6 @@
             </tr>
         {% endif %}
 
-        {% if Measure.approvalDate.exists() %}
-            <tr>
-                <th scope="row"><b>Approval Date: </b></th>
-                <td style="padding-left: 4px;">{{Measure.approvalDate}}</td>
-            </tr>
-        {% endif %}
-
-        {% if Measure.lastReviewDate.exists() %}
-            <tr>
-                <th scope="row"><b>Last Review Date: </b></th>
-                <td style="padding-left: 4px;">{{Measure.lastReviewDate}}</td>
-            </tr>
-        {% endif %}
-
-        {% if Measure.name.exists() %}
-            <tr>
-                <th scope="row"><b>Name: </b></th>
-                <td style="padding-left: 4px;">{{Measure.name}}</td>
-            </tr>
-        {% endif %}
-
         {% if Measure.publisher.exists() %}
             <tr>
                 <th scope="row"><b>Publisher: </b></th>
@@ -124,18 +97,18 @@
             </tr>
         {% endif %}
 
-        {% if Measure.author.exists() %}
-            <tr>
-                <th scope="row"><b>Author: </b></th>
-                <td style="padding-left: 4px;">{{Measure.author}}</td>
-            </tr>
+        {% if Measure.author.exists() and Measure.author.name.exists() %}
+        <tr>
+            <th scope="row"><b>Author: </b></th>
+            <td style="padding-left: 4px;">{{Measure.author.name}}</td>
+        </tr>
         {% endif %}
 
-        {% if Measure.endorser.exists() %}
-            <tr>
-                <th scope="row"><b>Endorser: </b></th>
-                <td style="padding-left: 4px;">{{Measure.endorser}}</td>
-            </tr>
+        {% if Measure.endorser.exists() and Measure.endorser.name.exists() %}
+        <tr>
+            <th scope="row"><b>Endorser: </b></th>
+            <td style="padding-left: 4px;">{{Measure.endorser.name}}</td>
+        </tr>
         {% endif %}
 
         {% if Measure.description.exists() %}
@@ -261,7 +234,7 @@
             <tr>
                 <th scope="row"><b>Basis: </b></th>
                 <td style="padding-left: 4px;">
-                    {{Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-populationBasis').first().value}}
+                {{Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-populationBasis').first().value}}
                 </td>
             </tr>
         {% endif %}
@@ -322,57 +295,55 @@
             </tr>
         {% endif %}
 
-        {% if Measure.riskAdjustment.exists() %}
+        {% if Measure.supplementalData.usage.coding.where(code = 'risk-adjustment-factor').exists() %}
             <tr>
-                <th scope="row"><b>Risk Adjustment: </b></th>
-                <td style="padding-left: 4px;">{{Measure.riskAdjustment}}</td>
+                <th scope="row"><b>Risk Adjustment Variable: </b></th>
+                <td style="padding-left: 4px;">
+                    {% for supplementalData in Measure.supplementalData.where(usage.coding.where(code = 'risk-adjustment-factor').exists()) %}
+                        {% if supplementalData.code.exists() %}
+                            {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
+                        {% else %}
+                            {% if supplementalData.description.exists() %}
+                                {{supplementalData.description}}
+                            {% else %}
+                                {% if supplementalData.criteria.description.exists() %}
+                                    {{supplementalData.criteria.description}}
+                                {% else %}
+                                    {{supplementalData.criteria.expression}}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </td>
             </tr>
         {% endif %}
 
-        {% if Measure.supplementalData.usage.coding.where(code = 'risk-adjustment-factor').exists() %}
-            {% for supplementalData in Measure.supplementalData.where(usage.coding.where(code = 'risk-adjustment-factor').exists()) %}
-                <tr>
-                    <th scope="row"><b>Risk Adjustment Factor: </b></th>
-                    <td style="padding-left: 4px;">
-                        <p>
-                            {% if supplementalData.code.exists() %}
-                                {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
-                            {% else %}
-                                {% if supplementalData.description.exists() %}
-                                    {{supplementalData.description}}
-                                {% else %}
-                                    {% if supplementalData.criteria.description.exists() %}
-                                        {{supplementalData.criteria.description}}
-                                    {% else %}
-                                        {{supplementalData.criteria.expression}}
-                                    {% endif %}
-                                {% endif %}
-                            {% endif %}
-                        </p>
-                    </td>
-                </tr>
-            {% endfor %}
+        {% if Measure.riskAdjustment.exists() %}
+        <tr>
+            <th scope="row"><b>Risk Adjustment: </b></th>
+            <td style="padding-left: 4px;">{{Measure.riskAdjustment}}</td>
+        </tr>
         {% endif %}
 
         {% if Measure.rateAggregation.exists() %}
-            <tr>
-                <th scope="row"><b>Rate Aggregation: </b></th>
-                <td style="padding-left: 4px;">{{Measure.rateAggregation}}</td>
-            </tr>
+        <tr>
+            <th scope="row"><b>Rate Aggregation: </b></th>
+            <td style="padding-left: 4px;">{{Measure.rateAggregation}}</td>
+        </tr>
         {% endif %}
 
         {% if Measure.rationale.exists() %}
-            <tr>
-                <th scope="row"><b>Rationale: </b></th>
-                <td style="padding-left: 4px;">{{Measure.rationale}}</td>
-            </tr>
+        <tr>
+            <th scope="row"><b>Rationale: </b></th>
+            <td style="padding-left: 4px;">{{Measure.rationale}}</td>
+        </tr>
         {% endif %}
 
         {% if Measure.clinicalRecommendationStatement.exists() %}
-            <tr>
-                <th scope="row"><b>Clinical recommendation statement: </b></th>
-                <td style="padding-left: 4px;">{{Measure.clinicalRecommendationStatement}}</td>
-            </tr>
+        <tr>
+            <th scope="row"><b>Clinical recommendation statement: </b></th>
+            <td style="padding-left: 4px;">{{Measure.clinicalRecommendationStatement}}</td>
+        </tr>
         {% endif %}
 
         {% if Measure.improvementNotation.exists() %}
@@ -423,7 +394,7 @@
                                     </tr>
                                 {% endfor %}
                                 {% if group.stratifier.exists() %}
-                                    <tr><b>Stratifier Criteria: </b></tr>
+                                  <tr><b>Stratifier Criteria: </b></tr>
                                     {% for stratifier in group.stratifier %}
                                         <tr>
                                             <td>{{stratifier.code.coding[0].display}}:</td>
@@ -442,15 +413,6 @@
             {% endif %}
         {% endif %}
 
-        {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-supplementalDataGuidance') %}
-            <tr>
-                <th scope="row">
-                    <b> {{iif(extension.extension.where(url = 'usage').value.text.exists(), extension.extension.where(url = 'usage').value.text, iif(extension.extension.where(url = 'usage').coding.first().display.exists(), extension.extension.where(url = 'usage').coding.first().display, extension.extension.where(url = 'usage').coding.first().code))}}
-                        : </b></th>
-                <td style="padding-left: 4px;"> {{extension.extension.where(url = 'guidance').value}} </td>
-            </tr>
-        {% endfor %}
-
         {% if Measure.supplementalData.usage.coding.where(code = 'supplemental-data').exists() %}
             <tr>
                 <th scope="row"><b> Supplemental Data Elements: </b></th>
@@ -460,12 +422,12 @@
                             {{iif(supplementalData.code.text.exists(), supplementalData.code.text, iif(supplementalData.code.coding.first().display.exists(), supplementalData.code.coding.first().display, supplementalData.code.coding.first().code))}}
                         {% else %}
                             {% if supplementalData.description.exists() %}
-                                {{supplementalData.description}}
+                                <p>{{supplementalData.description}}</p>
                             {% else %}
                                 {% if supplementalData.criteria.description.exists() %}
-                                    {{supplementalData.criteria.description}}
+                                    <p>{{supplementalData.criteria.description}}</p>
                                 {% else %}
-                                    {{supplementalData.criteria.expression}}
+                                    <p>{{supplementalData.criteria.expression}}</p>
                                 {% endif %}
                             {% endif %}
                         {% endif %}
@@ -473,6 +435,15 @@
                 </td>
             </tr>
         {% endif %}
+
+        {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-supplementalDataGuidance') %}
+            <tr>
+                <th scope="row">
+                    <b> {{iif(extension.extension.where(url = 'usage').value.text.exists(), extension.extension.where(url = 'usage').value.text, iif(extension.extension.where(url = 'usage').coding.first().display.exists(), extension.extension.where(url = 'usage').coding.first().display, extension.extension.where(url = 'usage').coding.first().code))}}
+                        : </b></th>
+                <td style="padding-left: 4px;"> {{extension.extension.where(url = 'guidance').value}} </td>
+            </tr>
+        {% endfor %}
 
         {% if Measure.library.exists() %}
             <tr>
@@ -645,45 +616,45 @@
                 {% endif %}
 
                 {% if contained.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition').exists() %}
-                    <tr>
-                        <th scope="row"><b>Logic Definitions:</b></th>
-                        <td style="padding-left: 4px;">
-                            {% if Measure.group.exists() %}
-                                <table class="grid-dict">
-                                    <tr>
-                                        <th><b>Group</b></th>
-                                        <th><b>Scoring</b></th>
-                                        <th><b>Population Criteria</b></th>
-                                        <th><b>Expression</b></th>
-                                    </tr>
-                                    <tr>
-                                        {% for group in Measure.group %}
-                                        <td> {{group.id}} </td>
-                                        <td>
-                                            {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring').exists() %}
-                                                <b>Group scoring:</b>
-                                                {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring') %}
-                                                    <span>  {{extension.value.coding.code}} </span>
-                                                {% endfor %}
-                                            {% endif %}
+                <tr>
+                    <th scope="row"><b>Logic Definitions:</b></th>
+                    <td style="padding-left: 4px;">
+                        {% if Measure.group.exists() %}
+                        <table class="grid-dict">
+                            <tr>
+                                <th><b>Group</b></th>
+                                <th><b>Scoring</b></th>
+                                <th><b>Population Criteria</b></th>
+                                <th><b>Expression</b></th>
+                            </tr>
+                            <tr>
+                                {% for group in Measure.group %}
+                                <td> {{group.id}} </td>
+                                <td>
+                                    {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring').exists() %}
+                                        <b>Group scoring:</b>
+                                        {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring') %}
+                                            <span>  {{extension.value.coding.code}} </span>
+                                        {% endfor %}
+                                    {% endif %}
 
-                                            {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoringUnit').exists() %}
-                                    <tr>
-                                        <th scope="row"><b>Scoring unit: </b></th>
-                                        <td style="padding-left: 4px;">
-                                            {% for scoringUnit in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoringUnit') %}
-                                                {% if scoringUnit.coding.exists() %}
-                                                    {% for coding in scoringUnit.coding %}
-                                                        <p style="margin-bottom: 5px;">
-                                                            <span>{{iif(coding.display.exists(), coding.display, coding.code)}} {{iif(coding.system != 'http://unitsofmeasure.org', '(' + coding.system + ')', '')}}</span>
-                                                        </p>
-                                                    {% endfor %}
-                                                {% endif %}
-                                                {% if scoringUnit.coding.exists().not() and scoringUnit.text.exists() %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                    </tr>
+                                    {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoringUnit').exists() %}
+                                        <tr>
+                                            <th scope="row"><b>Scoring unit: </b></th>
+                                            <td style="padding-left: 4px;">
+                                                {% for scoringUnit in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoringUnit') %}
+                                                    {% if scoringUnit.coding.exists() %}
+                                                        {% for coding in scoringUnit.coding %}
+                                                            <p style="margin-bottom: 5px;">
+                                                                <span>{{iif(coding.display.exists(), coding.display, coding.code)}} {{iif(coding.system != 'http://unitsofmeasure.org', '(' + coding.system + ')', '')}}</span>
+                                                            </p>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    {% if scoringUnit.coding.exists().not() and scoringUnit.text.exists() %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
                                     {% endif %}
 
                                     {% if Measure.scoring.exists() %}
@@ -716,304 +687,304 @@
 
                                     {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-measureType').exists() %}
                                         <tr>
-                                            {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-measureType') %}
-                                                <th scope="row"><b>Type: </b></th>
-                                                <td style="padding-left: 4px;">
-                                                    {% if extension.coding.exists() %}
-                                                        {% for coding in extension.coding %}
-                                                            <p style="margin-bottom: 5px;">
-                                                                <span>{{iif(coding.display.exists(), coding.display, coding.code)}} {{iif(coding.system != 'http://terminology.hl7.org/CodeSystem/measure-type', '(' + coding.system + ')', '')}}</span>
-                                                            </p>
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                    {% if extension.coding.exists().not() and extension.text.exists() %}
-                                                        {{extension.text}}
-                                                    {% endif %}
-                                                </td>
-                                            {% endfor %}
+                                        {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-measureType') %}
+                                            <th scope="row"><b>Type: </b></th>
+                                            <td style="padding-left: 4px;">
+                                                {% if extension.coding.exists() %}
+                                                    {% for coding in extension.coding %}
+                                                        <p style="margin-bottom: 5px;">
+                                                            <span>{{iif(coding.display.exists(), coding.display, coding.code)}} {{iif(coding.system != 'http://terminology.hl7.org/CodeSystem/measure-type', '(' + coding.system + ')', '')}}</span>
+                                                        </p>
+                                                    {% endfor %}
+                                                {% endif %}
+                                                {% if extension.coding.exists().not() and extension.text.exists() %}
+                                                    {{extension.text}}
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
                                         </tr>
                                     {% endif %}
 
                                     {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-riskAdjustment').exists() %}
-                                        <tr>
-                                            <th scope="row"><b>Risk Adjustment: </b></th>
-                                            <td style="padding-left: 4px;">{{group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-riskAdjustment').value}}</td>
-                                        </tr>
+                                    <tr>
+                                        <th scope="row"><b>Risk Adjustment: </b></th>
+                                        <td style="padding-left: 4px;">{{group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-riskAdjustment').value}}</td>
+                                    </tr>
                                     {% endif %}
 
                                     {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-rateAggregation').exists() %}
-                                        <tr>
-                                            <th scope="row"><b>Rate Aggregation: </b></th>
-                                            <td style="padding-left: 4px;">{{group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-rateAggregation').value}}</td>
-                                        </tr>
+                                    <tr>
+                                        <th scope="row"><b>Rate Aggregation: </b></th>
+                                        <td style="padding-left: 4px;" colspan="3">{{group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-rateAggregation').value}}</td>
+                                    </tr>
                                     {% endif %}
 
                                     {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-improvementNotation').exists() %}
                                         <tr>
                                             <th scope="row"><b>Improvement Notation: </b></th>
                                             <td style="padding-left: 4px;">
-                                                {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-improvementNotation') %}
-                                                    {% if extension.coding.exists() %}
-                                                        {% for coding in extension.coding %}
-                                                            <p style="margin-bottom: 5px;">
-                                                                <span>{{iif(coding.display.exists(), coding.display, coding.code)}} {{iif(coding.system != 'http://terminology.hl7.org/CodeSystem/measure-improvement-notation', '(' + coding.system + ')', '')}}</span>
-                                                            </p>
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                    {% if extension.coding.exists().not() and extension.text.exists() %}
-                                                        {{extension.text}}
-                                                    {% endif %}
-                                                {% endfor %}
+                                            {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-improvementNotation') %}
+                                                {% if extension.coding.exists() %}
+                                                    {% for coding in extension.coding %}
+                                                        <p style="margin-bottom: 5px;">
+                                                            <span>{{iif(coding.display.exists(), coding.display, coding.code)}} {{iif(coding.system != 'http://terminology.hl7.org/CodeSystem/measure-improvement-notation', '(' + coding.system + ')', '')}}</span>
+                                                        </p>
+                                                    {% endfor %}
+                                                {% endif %}
+                                                {% if extension.coding.exists().not() and extension.text.exists() %}
+                                                    {{extension.text}}
+                                                {% endif %}
+                                            {% endfor %}
                                             </td>
                                         </tr>
                                     {% endif %}
 
+                                </td>
+                                {% for population in group.population %}
+                                <tr>
+                                    <td/>
+                                    <td/>
+                                    <td>{{population.code.first().coding.first().display}}</td>
+                                    <td>
+                                        {% if population.criteria.expression %}
+                                            <pre><code class="language-cql">{{(Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
+                                        {% else %}
+                                            None
+                                        {% endif %}
                                     </td>
-                                    {% for population in group.population %}
-                                        <tr>
-                                            <td/>
-                                            <td/>
-                                            <td>{{population.code.first().coding.first().display}}</td>
-                                            <td>
-                                                {% if population.criteria.expression %}
-                                                    <pre><code class="language-cql">{{(Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
-                                                {% else %}
-                                                    None
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    {% for stratifier in group.stratifier %}
-                                        <tr>
-                                            <td/>
-                                            <td/>
-                                            <td>{{stratifier.code.first().coding.first().display}}</td>
-                                            <td>
-                                                {% if stratifier.criteria.expression %}
-                                                    <pre><code class="language-cql">{{(Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = stratifier.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
-                                                {% else %}
-                                                    None
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    {% endfor %}
-                                    </tr>
-                                </table>
-                            {% endif %}
+                                </tr>
+                                {% endfor %}
+                                {% for stratifier in group.stratifier %}
+                                <tr>
+                                    <td/>
+                                    <td/>
+                                    <td>{{stratifier.code.first().coding.first().display}}</td>
+                                    <td>
+                                        {% if stratifier.criteria.expression %}
+                                            <pre><code class="language-cql">{{(Measure.contained.where(id = 'effective-data-requirements').extension.where(url = 'http://http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = stratifier.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
+                                        {% else %}
+                                            None
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                            </tr>
+                        </table>
+                {% endif %}
 
-                            <table class="grid-dict">
-                                {% for extension in contained.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition') %}
-                                    <tr>
-                                        <th><b>Library Name</b></th>
-                                        <th><b>Name</b></th>
-                                    </tr>
-                                    <tr>
-                                        {% for lNameExtension in extension.extension.where(url = 'libraryName') %}
-                                            <td>{{lNameExtension.value}}</td>
-                                        {% endfor %}
-                                        {% for nameExtension in extension.extension.where(url = 'name') %}
-                                            <td>{{nameExtension.value}}</td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for statementExtension in extension.extension.where(url = 'statement') %}
-                                            <td></td>
-                                            <td>
+                <table class="grid-dict">
+                    {% for extension in contained.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition') %}
+                        <tr>
+                            <th><b>Library Name</b></th>
+                            <th><b>Name</b></th>
+                        </tr>
+                        <tr>
+                            {% for lNameExtension in extension.extension.where(url = 'libraryName') %}
+                                <td>{{lNameExtension.value}}</td>
+                            {% endfor %}
+                            {% for nameExtension in extension.extension.where(url = 'name') %}
+                                <td>{{nameExtension.value}}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            {% for statementExtension in extension.extension.where(url = 'statement') %}
+                                <td></td>
+                                <td>
                                     <pre class="highlight language-cql"><code
                                                 class="language-cql">{{statementExtension.value}}</code></pre>
-                                            </td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </table>
-                        </td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        {% else %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-dataRequirement').exists() %}
+            {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-parameter').exists() %}
+                <tr>
+                    <th scope="row"><b>Parameters: </b></th>
+                    <td style="padding-left: 4px;">
+                        <table class="grid-dict">
+                            <tr><th><b>name</b></th><th><b>use</b></th><th><b>min</b></th><th><b>max</b></th><th><b>type</b></th></tr>
+                            {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-parameter') %}
+                                <tr>
+                                    <td>{{extension.value.name}}</td>
+                                    <td>{{extension.value.use}}</td>
+                                    <td>{{extension.value.min}}</td>
+                                    <td>{{extension.value.max}}</td>
+                                    <td>{{extension.value.type}}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            {% endif %}
             {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-dataRequirement').exists() %}
-                {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-parameter').exists() %}
-                    <tr>
-                        <th scope="row"><b>Parameters: </b></th>
-                        <td style="padding-left: 4px;">
-                            <table class="grid-dict">
-                                <tr><th><b>name</b></th><th><b>use</b></th><th><b>min</b></th><th><b>max</b></th><th><b>type</b></th></tr>
-                                {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-parameter') %}
+                <tr>
+                    <th scope="row"><b>Data Requirements: </b></th>
+                    <td style="padding-left: 4px;">
+                        <table class="grid-dict">
+                            <tr><th><b>type</b></th><th><b>path</b></th><th><b>valueSet or system</b></th><th><b>code</b></th></tr>
+                            {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-dataRequirement') %}
+                                <tr>
+                                    <td>{{extension.value.type}}</td>
+                                    <td>{{extension.value.codeFilter.first().path}}</td>
+                                    {% if extension.value.codeFilter.first().valueSet.exists() %}
+                                        <td>{{extension.value.codeFilter.first().valueSet}}</td>
+                                        <td></td>
+                                    {% endif %}
+                                    {% if extension.value.codeFilter.first().code.exists() %}
+                                        <td>{{extension.value.codeFilter.first().code.first().system}}</td>
+                                        <td>{{extension.value.codeFilter.first().code.first().code}}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            {% endif %}
+            {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode').exists() %}
+                <tr>
+                    <th scope="row"><b>Direct Reference Codes: </b></th>
+                    <td style="padding-left: 4px;">
+                        <table class="grid-dict">
+                            <tr><th><b>display</b></th><th><b>code</b></th><th><b>system</b></th></tr>
+                            {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode') %}
+                                <tr>
+                                    <td>{{extension.value.display}}</td>
+                                    <td>{{extension.value.code}}</td>
+                                    <td>{{extension.value.system}}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            {% endif %}
+            {% if Measure.group.exists() %}
+                <tr>
+                    <th scope="row"><b>Populations: </b></th>
+                    <td style="padding-left: 4px;">
+                        <table class="grid-dict">
+                            <tr><th><b>Group</b></th><th><b>Population</b></th><th><b>Description</b></th></tr>
+                            {% for group in Measure.group %}
+                            <tr>
+                                <td>{{group.id}}</td>
+                                {% for population in group.population %}
                                     <tr>
-                                        <td>{{extension.value.name}}</td>
-                                        <td>{{extension.value.use}}</td>
-                                        <td>{{extension.value.min}}</td>
-                                        <td>{{extension.value.max}}</td>
-                                        <td>{{extension.value.type}}</td>
+                                        <td/>
+                                        <td>{{population.code.first().coding.first().display}}</td>
+                                        <td>
+                                            {% if population.description %}
+                                                {{(population.description)}}
+                                            {% endif %}
+                                        </td>
+                                     </tr>
+                                {% endfor %}
+                                {% for stratifier in group.stratifier %}
+                                    <tr>
+                                        <td/>
+                                        <td>{{stratifier.code.first().coding.first().display}}</td>
+                                        <td>
+                                            {% if stratifier.description %}
+                                                {{(stratifier.description)}}
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
-                            </table>
-                        </td>
-                    </tr>
-                {% endif %}
-                {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-dataRequirement').exists() %}
-                    <tr>
-                        <th scope="row"><b>Data Requirements: </b></th>
-                        <td style="padding-left: 4px;">
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            {% endif %}
+            {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition').exists() %}
+                <tr>
+                    <th scope="row"><b>Logic Definitions: </b></th>
+                    <td style="padding-left: 4px;">
+                        {% if Measure.group.exists() %}
                             <table class="grid-dict">
-                                <tr><th><b>type</b></th><th><b>path</b></th><th><b>valueSet or system</b></th><th><b>code</b></th></tr>
-                                {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-dataRequirement') %}
-                                    <tr>
-                                        <td>{{extension.value.type}}</td>
-                                        <td>{{extension.value.codeFilter.first().path}}</td>
-                                        {% if extension.value.codeFilter.first().valueSet.exists() %}
-                                            <td>{{extension.value.codeFilter.first().valueSet}}</td>
-                                            <td></td>
-                                        {% endif %}
-                                        {% if extension.value.codeFilter.first().code.exists() %}
-                                            <td>{{extension.value.codeFilter.first().code.first().system}}</td>
-                                            <td>{{extension.value.codeFilter.first().code.first().code}}</td>
-                                        {% endif %}
-                                    </tr>
-                                {% endfor %}
-                            </table>
-                        </td>
-                    </tr>
-                {% endif %}
-                {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode').exists() %}
-                    <tr>
-                        <th scope="row"><b>Direct Reference Codes: </b></th>
-                        <td style="padding-left: 4px;">
-                            <table class="grid-dict">
-                                <tr><th><b>display</b></th><th><b>code</b></th><th><b>system</b></th></tr>
-                                {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-directReferenceCode') %}
-                                    <tr>
-                                        <td>{{extension.value.display}}</td>
-                                        <td>{{extension.value.code}}</td>
-                                        <td>{{extension.value.system}}</td>
-                                    </tr>
-                                {% endfor %}
-                            </table>
-                        </td>
-                    </tr>
-                {% endif %}
-                {% if Measure.group.exists() %}
-                    <tr>
-                        <th scope="row"><b>Populations: </b></th>
-                        <td style="padding-left: 4px;">
-                            <table class="grid-dict">
-                                <tr><th><b>Group</b></th><th><b>Population</b></th><th><b>Description</b></th></tr>
-                                {% for group in Measure.group %}
-                                    <tr>
-                                    <td>{{group.id}}</td>
-                                    {% for population in group.population %}
-                                        <tr>
-                                            <td/>
-                                            <td>{{population.code.first().coding.first().display}}</td>
-                                            <td>
-                                                {% if population.description %}
-                                                    {{(population.description)}}
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    {% for stratifier in group.stratifier %}
-                                        <tr>
-                                            <td/>
-                                            <td>{{stratifier.code.first().coding.first().display}}</td>
-                                            <td>
-                                                {% if stratifier.description %}
-                                                    {{(stratifier.description)}}
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </table>
-                        </td>
-                    </tr>
-                {% endif %}
-                {% if Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition').exists() %}
-                    <tr>
-                        <th scope="row"><b>Logic Definitions: </b></th>
-                        <td style="padding-left: 4px;">
-                            {% if Measure.group.exists() %}
-                                <table class="grid-dict">
-                                    <tr>
+                                <tr>
                                         <th><b>Group</b></th><th><b>Scoring</b></th><th><b>Population Criteria</b></th><th><b>Expression</b></th>
-                                    </tr>
-                                    <tr>
-                                        {% for group in Measure.group %}
+                                </tr>
+                                <tr>
+                                    {% for group in Measure.group %}
                                         <td> {{group.id}} </td>
                                         <td>
                                             {% if group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring').exists() %}
                                                 <b>Group scoring:</b>
                                                 {% for extension in group.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-scoring') %}
-                                                    <span>  {{extension.value.coding.code}} </span>
+                                                <span>  {{extension.value.coding.code}} </span>
                                                 {% endfor %}
                                             {% endif %}
                                             {% if Measure.scoring.exists() %}
                                                 <b>Measure scoring:</b>
                                                 {% for coding in Measure.scoring.coding %}
                                                     <p style="margin-bottom: 5px;">
-                                                        <span>{{iif(coding.display.exists(), coding.display, coding.code)}}</span>
+                                                    <span>{{iif(coding.display.exists(), coding.display, coding.code)}}</span>
                                                     </p>
                                                 {% endfor %}
                                             {% endif %}
                                         </td>
                                         {% for population in group.population %}
-                                    <tr>
-                                        <td>Should be empty</td>
-                                        <td/>
-                                        <td/>
-                                        <td>{{population.code.first().coding.first().display}}</td>
-                                        <td>
-                                            {% if population.criteria.expression %}
-                                                <pre><code class="language-cql">{{(Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
-                                            {% else %}
-                                                None
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% for stratifier in group.stratifier %}
-                                        <tr>
-                                            <td>Should be empty</td>
-                                            <td/>
-                                            <td/>
-                                            <td>{{stratifier.code.first().coding.first().display}}</td>
-                                            <td>
-                                                {% if stratifier.criteria.expression %}
-                                                    <pre><code class="language-cql">{{(Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = stratifier.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
-                                                {% else %}
-                                                    None
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    {%  endfor %}
-                                    </tr>
-                                </table>
-                            {% endif %}
-                            {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition') %}
-                                <table class="grid-dict">
-                                    <tr><th><b>Library Name</b></th><th><b>Name</b></th></tr>
-                                    <tr>
-                                        {% for lNameExtension in extension.extension.where(url = 'libraryName') %}
-                                            <td>{{lNameExtension.value}}</td>
+                                           <tr>
+                                                <td>Should be empty</td>
+                                                <td/>
+                                                    <td/>
+                                                    <td>{{population.code.first().coding.first().display}}</td>
+                                                <td>
+                                                    {% if population.criteria.expression %}
+                                                        <pre><code class="language-cql">{{(Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = population.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
+                                                    {% else %}
+                                                        None
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
                                         {% endfor %}
-                                        {% for nameExtension in extension.extension.where(url = 'name') %}
-                                            <td>{{nameExtension.value}}</td>
+                                        {% for stratifier in group.stratifier %}
+                                           <tr>
+                                                <td>Should be empty</td>
+                                                <td/>
+                                                    <td/>
+                                                    <td>{{stratifier.code.first().coding.first().display}}</td>
+                                                <td>
+                                                    {% if stratifier.criteria.expression %}
+                                                        <pre><code class="language-cql">{{(Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition' and extension.where(url = 'name' and value = stratifier.criteria.expression)).extension.where(url = 'statement').value)}}</code></pre>
+                                                    {% else %}
+                                                        None
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
                                         {% endfor %}
-                                    </tr>
-                                </table>
-                                {% for statementExtension in extension.extension.where(url = 'statement') %}
-                                    <pre class="highlight language-cql"><code class="language-cql">{{statementExtension.value}}</code></pre>
-                                {% endfor %}
-                                <br/><br/>
+                                {%  endfor %}
+                                </tr>
+                            </table>
+                        {% endif %}
+                        {% for extension in Measure.extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-logicDefinition') %}
+                            <table class="grid-dict">
+                                <tr><th><b>Library Name</b></th><th><b>Name</b></th></tr>
+                                <tr>
+                                    {% for lNameExtension in extension.extension.where(url = 'libraryName') %}
+                                        <td>{{lNameExtension.value}}</td>
+                                    {% endfor %}
+                                    {% for nameExtension in extension.extension.where(url = 'name') %}
+                                        <td>{{nameExtension.value}}</td>
+                                    {% endfor %}
+                                </tr>
+                            </table>
+                            {% for statementExtension in extension.extension.where(url = 'statement') %}
+                                <pre class="highlight language-cql"><code class="language-cql">{{statementExtension.value}}</code></pre>
                             {% endfor %}
-                        </td>
-                    </tr>
-                {% endif %}
+                            <br/><br/>
+                        {% endfor %}
+                    </td>
+                </tr>
             {% endif %}
         {% endif %}
+    {% endif %}
 
     </table>
 </div>
