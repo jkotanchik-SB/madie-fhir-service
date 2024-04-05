@@ -28,6 +28,7 @@ import gov.cms.madie.models.measure.Group;
 import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.MeasureMetaData;
 import gov.cms.madie.models.measure.MeasureScoring;
+import gov.cms.madie.models.measure.MeasureSet;
 import gov.cms.madie.models.measure.Population;
 import gov.cms.madie.models.measure.PopulationType;
 import gov.cms.madie.models.measure.Stratification;
@@ -733,7 +734,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
             .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
-            .cmsId("REAL_CMS_ID")
+            .measureSet(MeasureSet.builder().measureSetId("MEASURE_SET_ID_99").cmsId(986).build())
             .measureMetaData(
                 MeasureMetaData.builder()
                     .endorsements(
@@ -793,7 +794,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(4), is(notNullValue()));
     assertThat(output.get(4).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
     assertThat(output.get(4).getSystem(), is(equalTo(UriConstants.MadieMeasure.CMS_ID)));
-    assertThat(output.get(4).getValue(), is(equalTo("REAL_CMS_ID")));
+    assertThat(output.get(4).getValue(), is(equalTo("986FHIR")));
     assertThat(output.get(4).getType(), is(notNullValue()));
     assertThat(
         output.get(4).getType().getCodingFirstRep().getSystem(),
@@ -811,7 +812,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
             .versionId("UUID_1")
             .measureSetId("MEASURE_SET_ID_99")
             .ecqmTitle("ECQM_TITLE")
-            .cmsId("REAL_CMS_ID")
+            .measureSet(MeasureSet.builder().cmsId(22).measureSetId("MEASURE_SET_ID_99").build())
             .build();
     List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
     assertThat(output, is(notNullValue()));
@@ -827,7 +828,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
     // CMS ID
     assertThat(output.get(3), is(notNullValue()));
-    assertThat(output.get(3).getValue(), is(equalTo("REAL_CMS_ID")));
+    assertThat(output.get(3).getValue(), is(equalTo("22FHIR")));
   }
 
   @Test
@@ -844,6 +845,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
                         List.of(
                             Endorsement.builder().endorsementId("CBE1234").endorser("CBE").build()))
                     .build())
+            .measureSet(MeasureSet.builder().measureSetId("MEASURE_SET_ID_99").build())
             .build();
     List<Identifier> output = measureTranslatorService.buildMeasureIdentifiers(madieMeasure);
     assertThat(output, is(notNullValue()));

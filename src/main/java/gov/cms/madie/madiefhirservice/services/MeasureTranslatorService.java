@@ -159,12 +159,13 @@ public class MeasureTranslatorService {
                     buildDisplayReference(
                         madieMeasure.getMeasureMetaData().getEndorsements().get(0).getEndorser())));
       }
-      if (StringUtils.isNotBlank(madieMeasure.getCmsId())) {
+      MeasureSet measureSet = madieMeasure.getMeasureSet();
+      if (measureSet != null && measureSet.getCmsId() != null) {
         identifiers.add(
             buildIdentifier(
                     IdentifierUse.OFFICIAL,
                     UriConstants.MadieMeasure.CMS_ID,
-                    madieMeasure.getCmsId(),
+                    madieMeasure.getMeasureSet().getCmsId() + "FHIR",
                     ValueConstants.CODE_PUBLISHER)
                 .setAssigner(buildDisplayReference("CMS")));
       }

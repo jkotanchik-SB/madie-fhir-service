@@ -53,7 +53,8 @@ public class MeasureBundleService {
         measureTranslatorService.createFhirMeasureForMadieMeasure(madieMeasure);
     Set<String> expressions = getExpressions(measure);
 
-    log.info("Mapping of MADiE measure to FHIR measure completed successfully {}", madieMeasure.getId());
+    log.info(
+        "Mapping of MADiE measure to FHIR measure completed successfully {}", madieMeasure.getId());
     // Bundle entry for Measure resource
     Bundle.BundleEntryComponent measureEntryComponent =
         FhirResourceHelpers.getBundleEntryComponent(measure, "Transaction");

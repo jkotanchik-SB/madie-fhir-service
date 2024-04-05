@@ -60,7 +60,8 @@ public class MeasureBundleController {
           .contentType(MediaType.APPLICATION_JSON)
           .body(fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
     } catch (Exception ex) {
-      log.error("An error occurred while creating measure bundle for measure [{}]", measure.getId(), ex);
+      log.error(
+          "An error occurred while creating measure bundle for measure [{}]", measure.getId(), ex);
       throw ex;
     }
   }
