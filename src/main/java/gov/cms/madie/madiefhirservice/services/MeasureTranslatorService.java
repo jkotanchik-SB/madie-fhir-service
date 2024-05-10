@@ -53,7 +53,10 @@ public class MeasureTranslatorService {
     String rationale = madieMeasure.getMeasureMetaData().getRationale();
     Instant approvalDate = madieMeasure.getReviewMetaData().getApprovalDate();
     Instant lastReviewDate = madieMeasure.getReviewMetaData().getLastReviewDate();
-
+    String version = madieMeasure.getVersion().toString();
+    if (madieMeasure.getMeasureMetaData() != null && madieMeasure.getMeasureMetaData().isDraft()) {
+      version = "Draft based on " + version;
+    }
     org.hl7.fhir.r4.model.Measure measure = new org.hl7.fhir.r4.model.Measure();
     measure
         .setName(madieMeasure.getCqlLibraryName())
@@ -62,7 +65,7 @@ public class MeasureTranslatorService {
         .setExperimental(madieMeasure.getMeasureMetaData().isExperimental())
         .setUrl(
             FhirResourceHelpers.buildResourceFullUrl("Measure", madieMeasure.getCqlLibraryName()))
-        .setVersion(madieMeasure.getVersion().toString())
+        .setVersion(version)
         .setEffectivePeriod(
             getPeriodFromDates(
                 madieMeasure.getMeasurementPeriodStart(), madieMeasure.getMeasurementPeriodEnd()))
