@@ -14,7 +14,6 @@ import gov.cms.madie.models.measure.Measure;
 import gov.cms.madie.models.measure.Population;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hl7.fhir.Uri;
 import org.hl7.fhir.r4.model.Identifier.IdentifierUse;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.CanonicalType;
