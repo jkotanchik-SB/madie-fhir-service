@@ -6,7 +6,7 @@ server:
 madie:
   cql-elm:
     service:
-      base-url: ${ELM_TRANSLATOR_SERVICE_URL:http://localhost:8084/api/fhir}
+      base-url: ${FHIR_ELM_TRANSLATOR_SERVICE_URL:http://localhost:8083/api/fhir}
       effective-data-requirements-uri: /effective-data-requirements
   library:
     service:
