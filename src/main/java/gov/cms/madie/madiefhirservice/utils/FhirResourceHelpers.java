@@ -29,20 +29,13 @@ public class FhirResourceHelpers {
             .setResource(resource);
     // for the transaction bundles, add request object to the entry
     if ("Transaction".equalsIgnoreCase(bundleType)) {
-      setPostRequestForResourceEntry(resource, entryComponent);
-    }
-    return entryComponent;
-  }
-
-  public static Bundle.BundleEntryComponent getBundleEntryComponentForTestCases(
-      Resource resource, String bundleType) {
-    Bundle.BundleEntryComponent entryComponent =
-        new Bundle.BundleEntryComponent()
-            .setFullUrl(buildResourceFullUrl(resource.fhirType(), resource.getIdPart()))
-            .setResource(resource);
-    // for the transaction bundles, add request object to the entry
-    if ("Transaction".equalsIgnoreCase(bundleType)) {
-      setPutRequestForResourceEntry(resource, entryComponent);
+      // We want to enforce PUT request temporarily
+      // https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1877
+      if (resource.getResourceType().toString().equals("MeasureReport")) {
+        setPutRequestForResourceEntry(resource, entryComponent);
+      } else {
+        setPostRequestForResourceEntry(resource, entryComponent);
+      }
     }
     return entryComponent;
   }
