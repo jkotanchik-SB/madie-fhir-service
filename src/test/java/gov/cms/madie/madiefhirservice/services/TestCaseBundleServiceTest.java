@@ -108,7 +108,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
 
     bundle = parser.parseResource(Bundle.class, testCase.getJson());
     assertEquals(
-        bundle.getEntry().get(0).getRequest().getMethod().toString(), HTTPVerb.POST.toString());
+        bundle.getEntry().get(0).getRequest().getMethod().toString(), HTTPVerb.PUT.toString());
   }
 
   @Test

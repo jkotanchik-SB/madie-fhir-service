@@ -43,6 +43,15 @@ public class FhirResourceHelpers {
     entryComponent.setRequest(requestComponent);
   }
 
+  public static void setPutRequestForResourceEntry(
+      Resource resource, Bundle.BundleEntryComponent entryComponent) {
+    Bundle.BundleEntryRequestComponent requestComponent =
+        new Bundle.BundleEntryRequestComponent()
+            .setMethod(Bundle.HTTPVerb.PUT)
+            .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
+    entryComponent.setRequest(requestComponent);
+  }
+
   public static Period getPeriodFromDates(Date startDate, Date endDate) {
     return new Period()
         .setStart(startDate, TemporalPrecisionEnum.DAY)
