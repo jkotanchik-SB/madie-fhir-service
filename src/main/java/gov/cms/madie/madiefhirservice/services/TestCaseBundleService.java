@@ -99,7 +99,7 @@ public class TestCaseBundleService {
       String fileName = ExportFileNamesUtil.getTestCaseExportFileName(measure, testCase);
       var measureReport = buildMeasureReport(testCase, measure, bundle);
       var bundleEntryComponent =
-          FhirResourceHelpers.getBundleEntryComponent(
+          FhirResourceHelpers.getBundleEntryComponentForTestCases(
               measureReport, String.valueOf(bundle.getType()));
       bundle.getEntry().add(bundleEntryComponent);
       testCaseBundle.put(fileName, bundle);

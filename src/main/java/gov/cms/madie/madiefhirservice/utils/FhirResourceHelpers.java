@@ -29,12 +29,25 @@ public class FhirResourceHelpers {
             .setResource(resource);
     // for the transaction bundles, add request object to the entry
     if ("Transaction".equalsIgnoreCase(bundleType)) {
-      setResourceEntry(resource, entryComponent);
+      setPostRequestForResourceEntry(resource, entryComponent);
     }
     return entryComponent;
   }
 
-  public static void setResourceEntry(
+  public static Bundle.BundleEntryComponent getBundleEntryComponentForTestCases(
+      Resource resource, String bundleType) {
+    Bundle.BundleEntryComponent entryComponent =
+        new Bundle.BundleEntryComponent()
+            .setFullUrl(buildResourceFullUrl(resource.fhirType(), resource.getIdPart()))
+            .setResource(resource);
+    // for the transaction bundles, add request object to the entry
+    if ("Transaction".equalsIgnoreCase(bundleType)) {
+      setPutRequestForResourceEntry(resource, entryComponent);
+    }
+    return entryComponent;
+  }
+
+  public static void setPostRequestForResourceEntry(
       Resource resource, Bundle.BundleEntryComponent entryComponent) {
     Bundle.BundleEntryRequestComponent requestComponent =
         new Bundle.BundleEntryRequestComponent()

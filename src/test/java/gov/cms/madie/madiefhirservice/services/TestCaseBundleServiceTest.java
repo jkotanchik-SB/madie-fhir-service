@@ -196,7 +196,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
     assertEquals(5, bundle.getEntry().size());
     assertEquals(bundle.getType(), Bundle.BundleType.TRANSACTION);
     bundleEntry = bundle.getEntry().get(4);
-    assertEquals(bundleEntry.getRequest().getMethod(), Bundle.HTTPVerb.POST);
+    assertEquals(bundleEntry.getRequest().getMethod(), Bundle.HTTPVerb.PUT);
     assertEquals(
         bundleEntry.getRequest().getUrl(),
         "MeasureReport/" + bundleEntry.getResource().getIdPart());
