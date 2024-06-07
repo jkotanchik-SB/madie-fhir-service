@@ -328,19 +328,26 @@ public class TestCaseBundleService {
     return readMe;
   }
 
-  private String generateMadieMetadataFile(List<TestCase> testCases) throws JsonProcessingException {
+  private String generateMadieMetadataFile(List<TestCase> testCases)
+      throws JsonProcessingException {
     if (CollectionUtils.isEmpty(testCases)) {
       return "";
     }
-    List<TestCaseExportMetaData> metaDataList = testCases.stream().map(testCase ->
-        TestCaseExportMetaData.builder()
-            .testCaseId(testCase.getId())
-            .title(testCase.getTitle())
-            .series(testCase.getSeries())
-            .description(testCase.getDescription())
-            .patientId(testCase.getPatientId() == null ? null : testCase.getPatientId().toString())
-            .build()
-    ).toList();
+    List<TestCaseExportMetaData> metaDataList =
+        testCases.stream()
+            .map(
+                testCase ->
+                    TestCaseExportMetaData.builder()
+                        .testCaseId(testCase.getId())
+                        .title(testCase.getTitle())
+                        .series(testCase.getSeries())
+                        .description(testCase.getDescription())
+                        .patientId(
+                            testCase.getPatientId() == null
+                                ? null
+                                : testCase.getPatientId().toString())
+                        .build())
+            .toList();
     ObjectMapper mapper = new ObjectMapper();
     return mapper.writeValueAsString(metaDataList);
   }
