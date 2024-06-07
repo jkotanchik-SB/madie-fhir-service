@@ -132,7 +132,8 @@ public class TestCaseBundleService {
             .map(
                 entry -> {
                   if (bundleType == BundleType.TRANSACTION) {
-                    FhirResourceHelpers.setPutRequestForResourceEntry(entry.getResource(), entry);
+                    FhirResourceHelpers.setRequestForResourceEntry(
+                        entry.getResource(), entry, Bundle.HTTPVerb.PUT);
                     return entry;
                   } else if (bundleType == BundleType.COLLECTION) {
                     entry.setRequest(null);

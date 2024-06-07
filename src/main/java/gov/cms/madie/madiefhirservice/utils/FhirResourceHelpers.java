@@ -32,28 +32,19 @@ public class FhirResourceHelpers {
       // We want to enforce PUT request temporarily
       // https://oncprojectracking.healthit.gov/support/browse/BONNIEMAT-1877
       if (resource.getResourceType().toString().equals("MeasureReport")) {
-        setPutRequestForResourceEntry(resource, entryComponent);
+        setRequestForResourceEntry(resource, entryComponent, Bundle.HTTPVerb.PUT);
       } else {
-        setPostRequestForResourceEntry(resource, entryComponent);
+        setRequestForResourceEntry(resource, entryComponent, Bundle.HTTPVerb.POST);
       }
     }
     return entryComponent;
   }
 
-  public static void setPostRequestForResourceEntry(
-      Resource resource, Bundle.BundleEntryComponent entryComponent) {
+  public static void setRequestForResourceEntry(
+      Resource resource, Bundle.BundleEntryComponent entryComponent, Bundle.HTTPVerb httpMethod) {
     Bundle.BundleEntryRequestComponent requestComponent =
         new Bundle.BundleEntryRequestComponent()
-            .setMethod(Bundle.HTTPVerb.POST)
-            .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
-    entryComponent.setRequest(requestComponent);
-  }
-
-  public static void setPutRequestForResourceEntry(
-      Resource resource, Bundle.BundleEntryComponent entryComponent) {
-    Bundle.BundleEntryRequestComponent requestComponent =
-        new Bundle.BundleEntryRequestComponent()
-            .setMethod(Bundle.HTTPVerb.PUT)
+            .setMethod(httpMethod)
             .setUrl(resource.getResourceType() + "/" + resource.getIdPart());
     entryComponent.setRequest(requestComponent);
   }
