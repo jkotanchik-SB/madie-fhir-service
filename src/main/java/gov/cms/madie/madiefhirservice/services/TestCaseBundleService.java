@@ -330,6 +330,7 @@ public class TestCaseBundleService {
             .title(testCase.getTitle())
             .series(testCase.getSeries())
             .description(testCase.getDescription())
+            .patientId(testCase.getPatientId() == null ? null : testCase.getPatientId().toString())
             .build()
     ).toList();
     ObjectMapper mapper = new ObjectMapper();
