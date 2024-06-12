@@ -67,7 +67,8 @@ public class TestCaseBundleService {
   @Value("${madie.resource.url}")
   private String madieResourceUrl;
 
-  public Map<String, Bundle> getTestCaseExportBundle(Measure measure, List<TestCase> testCases) {
+  public Map<String, Bundle> getTestCaseExportBundle(
+      Measure measure, List<TestCase> testCases, ExportDTO exportDTO) {
     if (measure == null || testCases == null || testCases.isEmpty()) {
       throw new InternalServerException("Unable to find Measure and/or test case");
     }
@@ -79,7 +80,6 @@ public class TestCaseBundleService {
             .setPrettyPrint(true);
 
     Map<String, Bundle> testCaseBundle = new HashMap<>();
-
     for (TestCase testCase : testCases) {
       Bundle bundle;
       try {
@@ -94,6 +94,15 @@ public class TestCaseBundleService {
             testCase.getId(),
             measure.getId());
         continue;
+      }
+
+      // MAT-6204 Here we're modifying the bundle based on export choice,
+      // but we don't want to modify it permanently
+      if (exportDTO.getBundleType() != null) {
+        BundleType bundleType = BundleType.valueOf(exportDTO.getBundleType().name());
+        updateEntry(bundle, bundleType);
+        String json = parser.encodeResourceToString(bundle);
+        testCase.setJson(json);
       }
 
       String fileName = ExportFileNamesUtil.getTestCaseExportFileName(measure, testCase);
@@ -113,16 +122,7 @@ public class TestCaseBundleService {
     return testCaseBundle;
   }
 
-  public void updateEntry(TestCase testCase, BundleType bundleType) {
-
-    // Convert Test case JSON to a BUndle
-    IParser parser =
-        fhirContext
-            .newJsonParser()
-            .setParserErrorHandler(new StrictErrorHandler())
-            .setPrettyPrint(true);
-    Bundle bundle = parser.parseResource(Bundle.class, testCase.getJson());
-
+  public void updateEntry(Bundle bundle, BundleType bundleType) {
     // modify the bundle
     org.hl7.fhir.r4.model.Bundle.BundleType fhirBundleType =
         org.hl7.fhir.r4.model.Bundle.BundleType.valueOf(bundleType.toString().toUpperCase());
@@ -131,6 +131,11 @@ public class TestCaseBundleService {
         bundle.getEntry().stream()
             .map(
                 entry -> {
+                  var resourceID = UUID.randomUUID().toString();
+                  entry.getResource().setId(resourceID);
+                  entry.setFullUrl(
+                      FhirResourceHelpers.buildResourceFullUrl(
+                          entry.getResource().getResourceType().toString(), resourceID));
                   if (bundleType == BundleType.TRANSACTION) {
                     FhirResourceHelpers.setRequestForResourceEntry(
                         entry.getResource(), entry, Bundle.HTTPVerb.PUT);
@@ -141,10 +146,6 @@ public class TestCaseBundleService {
                   return entry;
                 })
             .collect(Collectors.toList()));
-    // bundle to json
-    String json = parser.encodeResourceToString(bundle);
-
-    testCase.setJson(json);
   }
 
   private MeasureReport buildMeasureReport(
@@ -289,7 +290,9 @@ public class TestCaseBundleService {
             entry ->
                 references.add(
                     new Reference(
-                        StringUtils.remove(entry.getResource().getId(), madieResourceUrl))));
+                        entry.getResource().getResourceType()
+                            + "/"
+                            + entry.getResource().getId())));
     return references;
   }
 
@@ -324,26 +327,6 @@ public class TestCaseBundleService {
             .collect(Collectors.joining());
 
     return readMe;
-  }
-
-  public void setExportBundleType(ExportDTO exportDTO, Measure measure) {
-    if (exportDTO.getBundleType() != null) {
-      BundleType bundleType = BundleType.valueOf(exportDTO.getBundleType().name());
-      switch (bundleType) {
-        case COLLECTION:
-          log.debug("You're exporting a Collection");
-          // update bundle type for each entry MAT 6405
-          break;
-        case TRANSACTION:
-          log.debug("You're exporting a Transaction");
-          // update bundle type and add entry.request for each entry
-          if (measure.getTestCases() != null) {
-            measure.getTestCases().forEach(testCase -> updateEntry(testCase, bundleType));
-          }
-          break;
-        default:
-      }
-    }
   }
 
   /**
