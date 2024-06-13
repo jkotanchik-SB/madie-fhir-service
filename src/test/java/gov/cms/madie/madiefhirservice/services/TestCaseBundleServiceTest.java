@@ -5,11 +5,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
@@ -28,7 +24,6 @@ import java.util.zip.ZipInputStream;
 import gov.cms.madie.models.dto.ExportDTO;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.hl7.fhir.dstu2.model.Bundle.HTTPVerb;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.hl7.fhir.r4.model.Parameters;
@@ -109,23 +104,71 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
   void updateEntryForTransactionBundleType() {
     Bundle testBundle =
         parser.parseResource(Bundle.class, madieMeasure.getTestCases().get(0).getJson());
+    Bundle.BundleEntryComponent patientEntry = testBundle.getEntry().get(0);
+    Bundle.BundleEntryComponent encounterEntry = testBundle.getEntry().get(1);
     assertEquals(Bundle.BundleType.COLLECTION, testBundle.getType());
-    assertNull(testBundle.getEntry().get(0).getRequest().getMethod());
-    testCaseBundleService.updateEntry(testBundle, BundleType.TRANSACTION);
-    assertEquals(Bundle.BundleType.TRANSACTION, testBundle.getType());
+    assertEquals("Patient-1", patientEntry.getResource().getIdPart());
+    assertEquals("Encounter-1", encounterEntry.getResource().getIdPart());
+    assertNull(patientEntry.getRequest().getMethod());
+
+    var updatedBundle =
+        testCaseBundleService.updateEntry(testBundle, BundleType.TRANSACTION, parser);
+
+    Bundle.BundleEntryComponent updatedPatientEntry = updatedBundle.getEntry().get(0);
+    Bundle.BundleEntryComponent updatedEncounterEntry = updatedBundle.getEntry().get(1);
+    assertEquals(Bundle.BundleType.TRANSACTION, updatedBundle.getType());
+    assertNotNull(updatedPatientEntry.getResource().getIdPart());
+    assertNotEquals("Patient-1", updatedPatientEntry.getResource().getIdPart());
+    assertNotNull(updatedEncounterEntry.getResource().getIdPart());
+    assertEquals("Encounter-1", encounterEntry.getResource().getIdPart());
+    assertEquals(updatedPatientEntry.getRequest().getMethod(), Bundle.HTTPVerb.PUT);
     assertEquals(
-        testBundle.getEntry().get(0).getRequest().getMethod().toString(), HTTPVerb.PUT.toString());
+        "Patient/" + updatedPatientEntry.getResource().getId(),
+        updatedEncounterEntry
+            .getResource()
+            .getChildByName("subject")
+            .getValues()
+            .get(0)
+            .getChildByName("reference")
+            .getValues()
+            .get(0)
+            .toString());
   }
 
   @Test
   void updateEntryForCollectionBundleType() {
     Bundle testBundle =
         parser.parseResource(Bundle.class, madieMeasure.getTestCases().get(1).getJson());
+    Bundle.BundleEntryComponent patientEntry = testBundle.getEntry().get(0);
+    Bundle.BundleEntryComponent encounterEntry = testBundle.getEntry().get(1);
     assertEquals(Bundle.BundleType.TRANSACTION, testBundle.getType());
+    assertEquals("Patient-1", patientEntry.getResource().getIdPart());
+    assertEquals("Encounter-1", encounterEntry.getResource().getIdPart());
     assertNull(testBundle.getEntry().get(0).getRequest().getMethod());
-    testCaseBundleService.updateEntry(testBundle, BundleType.COLLECTION);
-    assertEquals(Bundle.BundleType.COLLECTION, testBundle.getType());
-    assertNull(testBundle.getEntry().get(0).getRequest().getMethod());
+
+    var updatedBundle =
+        testCaseBundleService.updateEntry(testBundle, BundleType.COLLECTION, parser);
+
+    Bundle.BundleEntryComponent updatedPatientEntry = updatedBundle.getEntry().get(0);
+    Bundle.BundleEntryComponent updatedEncounterEntry = updatedBundle.getEntry().get(1);
+    assertEquals(Bundle.BundleType.COLLECTION, updatedBundle.getType());
+    assertNotNull(updatedPatientEntry.getResource().getIdPart());
+    assertNotEquals("Patient-1", updatedPatientEntry.getResource().getIdPart());
+    assertNotNull(updatedEncounterEntry.getResource().getIdPart());
+    assertEquals("Encounter-1", encounterEntry.getResource().getIdPart());
+    assertNull(updatedPatientEntry.getRequest().getMethod());
+    assertNull(updatedEncounterEntry.getRequest().getMethod());
+    assertEquals(
+        "Patient/" + updatedPatientEntry.getResource().getId(),
+        updatedEncounterEntry
+            .getResource()
+            .getChildByName("subject")
+            .getValues()
+            .get(0)
+            .getChildByName("reference")
+            .getValues()
+            .get(0)
+            .toString());
   }
 
   @Test

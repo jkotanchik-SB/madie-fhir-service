@@ -100,7 +100,7 @@ public class TestCaseBundleService {
       // but we don't want to modify it permanently
       if (exportDTO.getBundleType() != null) {
         BundleType bundleType = BundleType.valueOf(exportDTO.getBundleType().name());
-        updateEntry(bundle, bundleType);
+        bundle = updateEntry(bundle, bundleType, parser);
         String json = parser.encodeResourceToString(bundle);
         testCase.setJson(json);
       }
@@ -122,20 +122,34 @@ public class TestCaseBundleService {
     return testCaseBundle;
   }
 
-  public void updateEntry(Bundle bundle, BundleType bundleType) {
-    // modify the bundle
+  public Bundle updateEntry(Bundle bundle, BundleType bundleType, IParser parser) {
+    Bundle bundleCopy = bundle.copy();
     org.hl7.fhir.r4.model.Bundle.BundleType fhirBundleType =
         org.hl7.fhir.r4.model.Bundle.BundleType.valueOf(bundleType.toString().toUpperCase());
-    bundle.setType(fhirBundleType);
-    bundle.setEntry(
-        bundle.getEntry().stream()
+    bundleCopy.setType(fhirBundleType);
+
+    // Generating a new UUID for each resource and updating all its references across the bundle.
+    // for example replaces string that matches "Patient/patient-id" with
+    // "Patient/madie-generated-uuid"
+    String bundleString = parser.encodeResourceToString(bundleCopy);
+    for (Bundle.BundleEntryComponent entry : bundleCopy.getEntry()) {
+      var resourceID = UUID.randomUUID().toString();
+      var resourceType = entry.getResource().getResourceType() + "/";
+      bundleString =
+          bundleString.replaceAll(
+              resourceType + entry.getResource().getIdPart(), resourceType + resourceID);
+    }
+    bundleCopy = parser.parseResource(Bundle.class, bundleString);
+
+    // Modifying Request attribute for each Resource
+    // Also updating the resource Id with the MADiE generated UUID
+    bundleCopy.setEntry(
+        bundleCopy.getEntry().stream()
             .map(
                 entry -> {
-                  var resourceID = UUID.randomUUID().toString();
-                  entry.getResource().setId(resourceID);
-                  entry.setFullUrl(
-                      FhirResourceHelpers.buildResourceFullUrl(
-                          entry.getResource().getResourceType().toString(), resourceID));
+                  entry
+                      .getResource()
+                      .setId(StringUtils.substringAfterLast(entry.getFullUrl(), "/"));
                   if (bundleType == BundleType.TRANSACTION) {
                     FhirResourceHelpers.setRequestForResourceEntry(
                         entry.getResource(), entry, Bundle.HTTPVerb.PUT);
@@ -146,6 +160,7 @@ public class TestCaseBundleService {
                   return entry;
                 })
             .collect(Collectors.toList()));
+    return bundleCopy;
   }
 
   private MeasureReport buildMeasureReport(
@@ -292,7 +307,7 @@ public class TestCaseBundleService {
                     new Reference(
                         entry.getResource().getResourceType()
                             + "/"
-                            + entry.getResource().getId())));
+                            + entry.getResource().getIdPart())));
     return references;
   }
 
