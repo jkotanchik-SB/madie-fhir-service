@@ -319,10 +319,9 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
 
   @Test
   void getTestCaseExportAllThrowExceptionWhenTestCaseIsNotFound() {
-    List<TestCase> testCaseList = null;
     assertThrows(
         InternalServerException.class,
-        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, testCaseList, exportDTO));
+        () -> testCaseBundleService.getTestCaseExportBundle(madieMeasure, null, exportDTO));
   }
 
   @Test

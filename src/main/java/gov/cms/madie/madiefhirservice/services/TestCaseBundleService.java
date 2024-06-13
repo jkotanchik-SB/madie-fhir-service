@@ -33,11 +33,9 @@ import org.hl7.fhir.r4.model.Parameters;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
@@ -63,9 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 public class TestCaseBundleService {
 
   private final FhirContext fhirContext;
-
-  @Value("${madie.resource.url}")
-  private String madieResourceUrl;
 
   public Map<String, Bundle> getTestCaseExportBundle(
       Measure measure, List<TestCase> testCases, ExportDTO exportDTO) {
