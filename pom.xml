@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.0.13</version>
+		<version>3.2.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>gov.cms.madie</groupId>
@@ -108,17 +108,11 @@
 			<artifactId>hapi-fhir-client</artifactId>
 			<version>${hapi.fhir.r4.version}</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.13.4.1</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.6.12</version>
+			<version>1.8.0</version>
 		</dependency>
 
 		<dependency>
@@ -129,7 +123,7 @@
 		<dependency>
 			<groupId>com.okta.spring</groupId>
 			<artifactId>okta-spring-boot-starter</artifactId>
-			<version>3.0.4</version>
+			<version>3.0.7</version>
 		</dependency>
 
 		<dependency>

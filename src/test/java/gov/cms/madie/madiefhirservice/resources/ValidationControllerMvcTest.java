@@ -80,7 +80,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
         .thenReturn(new OperationOutcome());
     when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.combineOutcomes(any())).thenReturn(new OperationOutcome());
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(new OperationOutcome());
 
     mockMvc
         .perform(
@@ -105,7 +105,8 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
         .thenReturn(operationOutcomeWithIssues);
     when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.combineOutcomes(any())).thenReturn(operationOutcomeWithIssues);
+    when(validationService.combineOutcomes(any(), any(), any()))
+        .thenReturn(operationOutcomeWithIssues);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(true);
 
     mockMvc
@@ -129,7 +130,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
         .thenReturn(new OperationOutcome());
     when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.combineOutcomes(any())).thenReturn(new OperationOutcome());
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(new OperationOutcome());
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(true);
 
     mockMvc
@@ -160,7 +161,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     OperationOutcome combinedOutcome = new OperationOutcome();
     combinedOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
     combinedOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
-    when(validationService.combineOutcomes(any())).thenReturn(combinedOutcome);
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(combinedOutcome);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(false);
 
     mockMvc

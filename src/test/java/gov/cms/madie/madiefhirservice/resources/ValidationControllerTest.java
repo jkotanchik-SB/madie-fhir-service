@@ -136,7 +136,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     ValidationResult result = Mockito.mock(ValidationResult.class);
     when(result.toOperationOutcome()).thenReturn(new OperationOutcome());
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
-    when(validationService.combineOutcomes(any())).thenReturn(operationOutcomeWithIssues);
+    when(validationService.combineOutcomes(any(), any(), any()))
+        .thenReturn(operationOutcomeWithIssues);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(false);
 
     HapiOperationOutcome output = validationController.validateBundle(entity);
@@ -197,7 +198,7 @@ class ValidationControllerTest implements ResourceFileUtil {
     outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
     outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
     when(result.toOperationOutcome()).thenReturn(outcome);
-    when(validationService.combineOutcomes(any())).thenReturn(outcome);
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(outcome);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(false);
 
     HapiOperationOutcome output = validationController.validateBundle(entity);
@@ -237,7 +238,7 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(new OperationOutcome());
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
 
-    when(validationService.combineOutcomes(any())).thenReturn(errorOutcome);
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(errorOutcome);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(false);
 
     HapiOperationOutcome output = validationController.validateBundle(entity);
@@ -275,7 +276,7 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(new OperationOutcome());
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
 
-    when(validationService.combineOutcomes(any())).thenReturn(errorOutcome);
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(errorOutcome);
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(false);
 
     HapiOperationOutcome output = validationController.validateBundle(entity);
@@ -298,7 +299,7 @@ class ValidationControllerTest implements ResourceFileUtil {
         .thenReturn(new OperationOutcome());
     when(validationService.validateBundleResourcesIdValid(any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.combineOutcomes(any())).thenReturn(new OperationOutcome());
+    when(validationService.combineOutcomes(any(), any(), any())).thenReturn(new OperationOutcome());
     when(validationService.isSuccessful(any(OperationOutcome.class))).thenReturn(true);
     OperationOutcome outcome = new OperationOutcome();
     outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.INFORMATION);
