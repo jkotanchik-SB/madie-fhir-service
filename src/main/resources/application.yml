@@ -16,6 +16,7 @@ madie:
   url: ${MADIE_URL:https://madie.cms.gov}
   resource:
     url: https://madie.cms.gov
+  useMultipleStratAssociation: ${USE_MULTIPLE_STRAT_ASSOCIATION:true}
 
 #springdoc:
 #  swagger-ui:

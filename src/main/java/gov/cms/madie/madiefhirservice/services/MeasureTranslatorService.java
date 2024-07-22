@@ -32,7 +32,7 @@ import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.*;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
@@ -44,6 +44,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MeasureTranslatorService {
   public static final String UNKNOWN = "UNKNOWN";
+
+  @Value("${madie.useMultipleStratAssociation}")
+  private boolean useMultipleStratAssociation;
 
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure) {
     Organization steward = madieMeasure.getMeasureMetaData().getSteward();
@@ -377,7 +380,6 @@ public class MeasureTranslatorService {
   }
 
   private List<MeasureGroupStratifierComponent> buildStratifications(Group madieGroup) {
-    AtomicReference<Extension> extension = new AtomicReference<>();
     List<MeasureGroupStratifierComponent> measureStratifications = null;
     if (madieGroup.getStratifications() != null && !madieGroup.getStratifications().isEmpty()) {
       AtomicReference<Integer> i = new AtomicReference<>();
@@ -386,26 +388,47 @@ public class MeasureTranslatorService {
           madieGroup.getStratifications().stream()
               .map(
                   strat -> {
-                    PopulationType associationPopulation = strat.getAssociation();
-                    extension.set(
-                        new Extension(
-                            UriConstants.CqfMeasures.APPLIES_TO_URI,
-                            buildCodeableConcept(
-                                associationPopulation.toCode(),
-                                UriConstants.POPULATION_SYSTEM_URI,
-                                associationPopulation.getDisplay())));
-                    i.set(Integer.valueOf(i.get().intValue() + 1));
-                    return (MeasureGroupStratifierComponent)
-                        (new MeasureGroupStratifierComponent()
-                                .setDescription(strat.getDescription())
-                                .setCriteria(
-                                    buildExpression(
-                                        "text/cql-identifier", strat.getCqlDefinition())))
-                            .setId(
-                                StringUtils.isNotBlank(strat.getId())
-                                    ? strat.getId()
-                                    : i.get().toString())
-                            .addExtension(extension.get());
+                    List<PopulationType> associations = strat.getAssociations();
+                    if (!useMultipleStratAssociation) {
+                      associations = new ArrayList<>();
+                      if (strat.getAssociation() != null) {
+                        associations.add(strat.getAssociation());
+                      }
+                    }
+                    MeasureGroupStratifierComponent stratComponent = null;
+                    if (CollectionUtils.isNotEmpty(associations)) {
+                      List<Extension> extensionList =
+                          associations.stream()
+                              .map(
+                                  associationPopulation -> {
+                                    AtomicReference<Extension> extension = new AtomicReference<>();
+                                    extension.set(
+                                        new Extension(
+                                            UriConstants.CqfMeasures.APPLIES_TO_URI,
+                                            buildCodeableConcept(
+                                                associationPopulation.toCode(),
+                                                UriConstants.POPULATION_SYSTEM_URI,
+                                                associationPopulation.getDisplay())));
+                                    return extension.get();
+                                  })
+                              .collect(Collectors.toList());
+                      i.set(Integer.valueOf(i.get().intValue() + 1));
+                      stratComponent =
+                          (MeasureGroupStratifierComponent)
+                              new MeasureGroupStratifierComponent()
+                                  .setDescription(strat.getDescription())
+                                  .setCriteria(
+                                      buildExpression(
+                                          "text/cql-identifier", strat.getCqlDefinition()))
+                                  .setId(
+                                      StringUtils.isNotBlank(strat.getId())
+                                          ? strat.getId()
+                                          : i.get().toString());
+                      for (Extension extension : extensionList) {
+                        stratComponent.addExtension(extension);
+                      }
+                    }
+                    return stratComponent;
                   })
               .collect(Collectors.toList());
     }

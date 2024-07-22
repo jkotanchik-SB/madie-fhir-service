@@ -665,9 +665,14 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     group.setPopulations(pops);
     List<Stratification> stratifications = new ArrayList<>();
     Stratification strat1 = new Stratification();
+    strat1.setId("testStrat1Id");
     strat1.setDescription("strat-description");
     strat1.setAssociation(PopulationType.INITIAL_POPULATION);
     stratifications.add(strat1);
+    Stratification strat2 = new Stratification();
+    strat2.setDescription("strat-description");
+    strat2.setAssociation(PopulationType.MEASURE_POPULATION);
+    stratifications.add(strat2);
     group.setStratifications(stratifications);
     List<Group> groups = new ArrayList<>();
     groups.add(group);
@@ -680,7 +685,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measureGroupComponent, is(notNullValue()));
     List<MeasureGroupStratifierComponent> stratifier = measureGroupComponent.getStratifier();
     assertThat(stratifier, is(notNullValue()));
-    assertThat(stratifier.size(), is(equalTo(1)));
+    assertThat(stratifier.size(), is(equalTo(2)));
     MeasureGroupStratifierComponent measureGroupStratifierComponent = stratifier.get(0);
     assertThat(measureGroupStratifierComponent, is(notNullValue()));
     assertThat(measureGroupStratifierComponent.getDescription(), is(equalTo("strat-description")));
@@ -702,6 +707,127 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         codeableConcept.getCodingFirstRep().getCode(),
         is(equalTo(PopulationType.INITIAL_POPULATION.toCode())));
+  }
+
+  @Test
+  public void testBuildFhirPopulationGroupsWithStratificationsOfMultipleAssociations() {
+    ReflectionTestUtils.setField(measureTranslatorService, "useMultipleStratAssociation", true);
+
+    Population ip1 = new Population();
+    ip1.setName(PopulationType.INITIAL_POPULATION);
+    ip1.setAssociationType(AssociationType.DENOMINATOR);
+    ip1.setId("initial-population-1");
+    Population ip2 = new Population();
+    ip2.setName(PopulationType.MEASURE_POPULATION);
+    ip2.setAssociationType(AssociationType.NUMERATOR);
+    ip2.setId("measure-population-2");
+    Population ip3 = new Population();
+    ip3.setName(PopulationType.MEASURE_OBSERVATION);
+    ip3.setAssociationType(AssociationType.NUMERATOR);
+    ip3.setId("measure-observation-3");
+
+    Group group = new Group();
+    group.setScoring(MeasureScoring.CONTINUOUS_VARIABLE.toString());
+    List<Population> pops = new ArrayList<>();
+    pops.add(ip1);
+    pops.add(ip2);
+    pops.add(ip3);
+    group.setPopulations(pops);
+
+    List<Stratification> stratifications = new ArrayList<>();
+    Stratification strat1 = new Stratification();
+    strat1.setId("testStrat1Id");
+    strat1.setDescription("strat-description");
+    strat1.setAssociations(
+        List.of(PopulationType.INITIAL_POPULATION, PopulationType.MEASURE_POPULATION));
+    stratifications.add(strat1);
+    Stratification strat2 = new Stratification();
+    strat2.setDescription("strat-description2");
+    strat1.setAssociations(
+        List.of(PopulationType.MEASURE_POPULATION, PopulationType.INITIAL_POPULATION));
+    stratifications.add(strat2);
+    group.setStratifications(stratifications);
+    List<Group> groups = new ArrayList<>();
+    groups.add(group);
+
+    List<MeasureGroupComponent> groupComponent = measureTranslatorService.buildGroups(groups);
+    assertNotNull(groupComponent);
+
+    assertThat(groupComponent.size(), is(equalTo(1)));
+    MeasureGroupComponent measureGroupComponent = groupComponent.get(0);
+    assertThat(measureGroupComponent, is(notNullValue()));
+    List<MeasureGroupStratifierComponent> stratifier = measureGroupComponent.getStratifier();
+    assertThat(stratifier, is(notNullValue()));
+    assertThat(stratifier.size(), is(equalTo(2)));
+    MeasureGroupStratifierComponent measureGroupStratifierComponent = stratifier.get(0);
+    assertThat(measureGroupStratifierComponent, is(notNullValue()));
+    assertThat(measureGroupStratifierComponent.getDescription(), is(equalTo("strat-description")));
+    Expression expression = measureGroupStratifierComponent.getCriteria();
+    assertThat(expression, is(notNullValue()));
+
+    List<Extension> appliesToExt = measureGroupStratifierComponent.getExtension();
+    assertThat(appliesToExt.size(), is(2));
+    Type value = appliesToExt.get(0).getValue();
+    CodeableConcept codeableConcept = value.castToCodeableConcept(value);
+    assertThat(codeableConcept.getCoding(), is(notNullValue()));
+    assertThat(codeableConcept.getCoding().size(), is(equalTo(1)));
+    assertThat(codeableConcept.getCodingFirstRep(), is(notNullValue()));
+    assertThat(
+        codeableConcept.getCodingFirstRep().getSystem(),
+        is(equalTo(UriConstants.POPULATION_SYSTEM_URI)));
+    assertThat(
+        codeableConcept.getCodingFirstRep().getCode(),
+        is(equalTo(PopulationType.MEASURE_POPULATION.toCode())));
+  }
+
+  @Test
+  public void testBuildFhirPopulationGroupsWithStratificationsOfNoAssociations() {
+    ReflectionTestUtils.setField(measureTranslatorService, "useMultipleStratAssociation", false);
+
+    Population ip1 = new Population();
+    ip1.setName(PopulationType.INITIAL_POPULATION);
+    ip1.setAssociationType(AssociationType.DENOMINATOR);
+    ip1.setId("initial-population-1");
+    Population ip2 = new Population();
+    ip2.setName(PopulationType.MEASURE_POPULATION);
+    ip2.setAssociationType(AssociationType.NUMERATOR);
+    ip2.setId("measure-population-2");
+    Population ip3 = new Population();
+    ip3.setName(PopulationType.MEASURE_OBSERVATION);
+    ip3.setAssociationType(AssociationType.NUMERATOR);
+    ip3.setId("measure-observation-3");
+
+    Group group = new Group();
+    group.setScoring(MeasureScoring.CONTINUOUS_VARIABLE.toString());
+    List<Population> pops = new ArrayList<>();
+    pops.add(ip1);
+    pops.add(ip2);
+    pops.add(ip3);
+    group.setPopulations(pops);
+
+    List<Stratification> stratifications = new ArrayList<>();
+    Stratification strat1 = new Stratification();
+    strat1.setId("testStrat1Id");
+    strat1.setDescription("strat-description");
+    stratifications.add(strat1);
+    Stratification strat2 = new Stratification();
+    strat2.setDescription("strat-description2");
+    stratifications.add(strat2);
+    group.setStratifications(stratifications);
+    List<Group> groups = new ArrayList<>();
+    groups.add(group);
+
+    List<MeasureGroupComponent> groupComponent = measureTranslatorService.buildGroups(groups);
+    assertNotNull(groupComponent);
+
+    assertThat(groupComponent.size(), is(equalTo(1)));
+    MeasureGroupComponent measureGroupComponent = groupComponent.get(0);
+    assertThat(measureGroupComponent, is(notNullValue()));
+    List<MeasureGroupStratifierComponent> stratifier = measureGroupComponent.getStratifier();
+    assertThat(stratifier, is(notNullValue()));
+    assertThat(stratifier.size(), is(equalTo(2)));
+    MeasureGroupStratifierComponent measureGroupStratifierComponent = stratifier.get(0);
+    assertNull(measureGroupStratifierComponent);
   }
 
   @Test
