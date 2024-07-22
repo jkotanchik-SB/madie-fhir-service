@@ -372,6 +372,7 @@ public class LibraryCqlVisitor extends cqlBaseVisitor<String> {
   }
 
   private Pair<String, String> getNameVersionFromInclude(cqlParser.IncludeDefinitionContext ctx) {
-    return Pair.of(ctx.getChild(1).getText(), trim1(ctx.getChild(3).getText()));
+    return Pair.of(
+        StringUtils.strip(ctx.getChild(1).getText(), "\""), trim1(ctx.getChild(3).getText()));
   }
 }
