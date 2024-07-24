@@ -15,9 +15,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
+import gov.cms.madie.madiefhirservice.dto.MadieFeatureFlag;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.madiefhirservice.utils.MeasureTestHelper;
 import gov.cms.madie.madiefhirservice.utils.ResourceFileUtil;
@@ -60,8 +62,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 public class MeasureTranslatorServiceTest implements ResourceFileUtil {
   @InjectMocks private MeasureTranslatorService measureTranslatorService;
-
   @Mock private FhirResourceHelpers fhirResourceHelpers;
+  @Mock private AppConfigService appConfigService;
 
   private Measure madieMeasure;
   private Measure madieRatioMeasure;
@@ -711,7 +713,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @Test
   public void testBuildFhirPopulationGroupsWithStratificationsOfMultipleAssociations() {
-    ReflectionTestUtils.setField(measureTranslatorService, "useMultipleStratAssociation", true);
+    when(appConfigService.isFlagEnabled(MadieFeatureFlag.QiCore_STU4_UPDATES)).thenReturn(true);
 
     Population ip1 = new Population();
     ip1.setName(PopulationType.INITIAL_POPULATION);
@@ -782,7 +784,7 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @Test
   public void testBuildFhirPopulationGroupsWithStratificationsOfNoAssociations() {
-    ReflectionTestUtils.setField(measureTranslatorService, "useMultipleStratAssociation", false);
+    when(appConfigService.isFlagEnabled(MadieFeatureFlag.QiCore_STU4_UPDATES)).thenReturn(false);
 
     Population ip1 = new Population();
     ip1.setName(PopulationType.INITIAL_POPULATION);
