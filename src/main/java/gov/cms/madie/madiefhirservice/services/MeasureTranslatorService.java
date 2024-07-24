@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
+import gov.cms.madie.madiefhirservice.dto.MadieFeatureFlag;
 import gov.cms.madie.madiefhirservice.constants.ValueConstants;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.models.common.Organization;
@@ -32,7 +32,6 @@ import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import gov.cms.madie.madiefhirservice.constants.UriConstants;
@@ -44,9 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MeasureTranslatorService {
   public static final String UNKNOWN = "UNKNOWN";
-
-  @Value("${madie.useMultipleStratAssociation}")
-  private boolean useMultipleStratAssociation;
+  private final AppConfigService appConfigService;
 
   public org.hl7.fhir.r4.model.Measure createFhirMeasureForMadieMeasure(Measure madieMeasure) {
     Organization steward = madieMeasure.getMeasureMetaData().getSteward();
@@ -389,7 +386,7 @@ public class MeasureTranslatorService {
               .map(
                   strat -> {
                     List<PopulationType> associations = strat.getAssociations();
-                    if (!useMultipleStratAssociation) {
+                    if (!appConfigService.isFlagEnabled(MadieFeatureFlag.QiCore_STU4_UPDATES)) {
                       associations = new ArrayList<>();
                       if (strat.getAssociation() != null) {
                         associations.add(strat.getAssociation());
