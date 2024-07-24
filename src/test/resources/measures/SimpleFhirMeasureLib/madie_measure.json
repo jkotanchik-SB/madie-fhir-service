@@ -264,11 +264,15 @@
    "supplementalData": [
       {
          "definition":  "SDE Race",
-         "description":  "SDE Race description"
+         "description":  "SDE Race description",
+         "includeInReportType": null
       },
       {
          "definition":  "SDE Payor",
-         "description":  "SDE Payor description"
+         "description":  "SDE Payor description",
+         "includeInReportType": [
+            "Individual"
+         ]
       }
    ],
    "riskAdjustments": [
@@ -278,11 +282,22 @@
       },
       {
          "definition":  "Risk Adjustments example 2",
-         "description":  "Risk Adjustments example 2 description"
+         "description":  "Risk Adjustments example 2 description",
+         "includeInReportType": [
+            "Individual",
+            "Summary",
+            "Data Collection"
+         ]
       },
       {
          "definition":  "Risk Adjustments example 3",
-         "description":  "Risk Adjustments example 3 description"
+         "description":  "Risk Adjustments example 3 description",
+         "includeInReportType": [
+            "Individual",
+            "Subject List",
+            "Summary",
+            "Data Collection"
+         ]
       }
    ],
    "reviewMetaData" : {
