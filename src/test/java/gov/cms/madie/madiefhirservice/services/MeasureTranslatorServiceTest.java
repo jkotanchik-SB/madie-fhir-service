@@ -288,29 +288,108 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(measure.getSupplementalData().get(0).getExtension().isEmpty(), is(true));
     // SDE Payor has one Include In Report Type
     assertThat(measure.getSupplementalData().get(1).getExtension().size(), is(equalTo(1)));
-    assertThat(measure.getSupplementalData().get(1).getExtension().get(0).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(1).getExtension().get(0).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.INDIVIDUAL.toCode())));
-    // SDE Payor has one Include In Report Type
+    assertThat(
+        measure.getSupplementalData().get(1).getExtension().get(0).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(1)
+            .getExtension()
+            .get(0)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.INDIVIDUAL.toCode())));
+    // RAV example has one Include In Report Type
     assertThat(measure.getSupplementalData().get(2).getExtension().isEmpty(), is(true));
-    // SDE Payor has one Include In Report Type
+    // RAV example2 has one Include In Report Type
     assertThat(measure.getSupplementalData().get(3).getExtension().size(), is(equalTo(3)));
-    assertThat(measure.getSupplementalData().get(3).getExtension().get(0).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(3).getExtension().get(0).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.INDIVIDUAL.toCode())));
-    assertThat(measure.getSupplementalData().get(3).getExtension().get(1).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(3).getExtension().get(1).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.SUMMARY.toCode())));
-    assertThat(measure.getSupplementalData().get(3).getExtension().get(2).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(3).getExtension().get(2).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.DATA_COLLECTION.toCode())));
-    // SDE Payor has one Include In Report Type
+    assertThat(
+        measure.getSupplementalData().get(3).getExtension().get(0).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(3)
+            .getExtension()
+            .get(0)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.INDIVIDUAL.toCode())));
+    assertThat(
+        measure.getSupplementalData().get(3).getExtension().get(1).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(3)
+            .getExtension()
+            .get(1)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.SUMMARY.toCode())));
+    assertThat(
+        measure.getSupplementalData().get(3).getExtension().get(2).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(3)
+            .getExtension()
+            .get(2)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.DATA_COLLECTION.toCode())));
+    // RAV example3 has four Include In Report Type
     assertThat(measure.getSupplementalData().get(4).getExtension().size(), is(equalTo(4)));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(0).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(0).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.INDIVIDUAL.toCode())));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(1).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(1).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.SUBJECT_LIST.toCode())));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(2).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(2).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.SUMMARY.toCode())));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(3).getUrl(), is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
-    assertThat(measure.getSupplementalData().get(4).getExtension().get(3).getValueAsPrimitive().getValueAsString(), is(equalTo(MeasureReportType.DATA_COLLECTION.toCode())));
-
+    assertThat(
+        measure.getSupplementalData().get(4).getExtension().get(0).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(4)
+            .getExtension()
+            .get(0)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.INDIVIDUAL.toCode())));
+    assertThat(
+        measure.getSupplementalData().get(4).getExtension().get(1).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(4)
+            .getExtension()
+            .get(1)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.SUBJECT_LIST.toCode())));
+    assertThat(
+        measure.getSupplementalData().get(4).getExtension().get(2).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(4)
+            .getExtension()
+            .get(2)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.SUMMARY.toCode())));
+    assertThat(
+        measure.getSupplementalData().get(4).getExtension().get(3).getUrl(),
+        is(equalTo(UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI)));
+    assertThat(
+        measure
+            .getSupplementalData()
+            .get(4)
+            .getExtension()
+            .get(3)
+            .getValueAsPrimitive()
+            .getValueAsString(),
+        is(equalTo(MeasureReportType.DATA_COLLECTION.toCode())));
 
     assertEquals("risk-adjustments-example", measure.getSupplementalData().get(2).getId());
     assertEquals(
