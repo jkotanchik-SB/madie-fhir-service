@@ -620,6 +620,14 @@ public class MeasureTranslatorService {
                           "supplemental-data",
                           "http://terminology.hl7.org/CodeSystem/measure-data-usage",
                           null)));
+              if (CollectionUtils.isNotEmpty(supplementalData.getIncludeInReportType())) {
+                supplementalData
+                    .getIncludeInReportType()
+                    .forEach(
+                        measureReportType ->
+                            measureSupplementalDataComponent.addExtension(
+                                buildIncludeInReportTypeExtension(measureReportType)));
+              }
               return measureSupplementalDataComponent;
             })
         .collect(Collectors.toList());
@@ -644,8 +652,22 @@ public class MeasureTranslatorService {
                           "http://terminology.hl7.org/CodeSystem/measure-data-usage",
                           null)));
               measureSupplementalDataComponent.setDescription(riskAdjustment.getDefinition());
+              if (CollectionUtils.isNotEmpty(riskAdjustment.getIncludeInReportType())) {
+                riskAdjustment
+                    .getIncludeInReportType()
+                    .forEach(
+                        measureReportType ->
+                            measureSupplementalDataComponent.addExtension(
+                                buildIncludeInReportTypeExtension(measureReportType)));
+              }
               return measureSupplementalDataComponent;
             })
         .collect(Collectors.toList());
+  }
+
+  private Extension buildIncludeInReportTypeExtension(MeasureReportType measureReportType) {
+    return new Extension(
+        UriConstants.CqfMeasures.INCLUDE_IN_REPORT_TYPE_URI,
+        new CodeType(measureReportType.toCode()));
   }
 }
