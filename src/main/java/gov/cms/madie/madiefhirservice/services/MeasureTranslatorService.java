@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import gov.cms.madie.madiefhirservice.dto.MadieFeatureFlag;
-import gov.cms.madie.madiefhirservice.constants.ValueConstants;
+import gov.cms.madie.madiefhirservice.constants.IdentifierType;
 import gov.cms.madie.madiefhirservice.utils.FhirResourceHelpers;
 import gov.cms.madie.models.common.Organization;
 import gov.cms.madie.models.measure.*;
@@ -132,19 +132,19 @@ public class MeasureTranslatorService {
               IdentifierUse.USUAL,
               UriConstants.MadieMeasure.SHORT_NAME,
               madieMeasure.getEcqmTitle(),
-              ValueConstants.CODE_SHORT_NAME));
+              IdentifierType.CODE_SHORT_NAME));
       identifiers.add(
           buildIdentifier(
               IdentifierUse.OFFICIAL,
-              ValueConstants.URN_IETF_RFC_3986,
+              UriConstants.URN_IETF_RFC_3986,
               buildUrnUuid(madieMeasure.getMeasureSetId()),
-              ValueConstants.CODE_VERSION_INDEPENDENT));
+              IdentifierType.CODE_VERSION_INDEPENDENT));
       identifiers.add(
           buildIdentifier(
               IdentifierUse.OFFICIAL,
-              ValueConstants.URN_IETF_RFC_3986,
+              UriConstants.URN_IETF_RFC_3986,
               buildUrnUuid(madieMeasure.getVersionId()),
-              ValueConstants.CODE_VERSION_SPECIFIC));
+              IdentifierType.CODE_VERSION_SPECIFIC));
       if (madieMeasure.getMeasureMetaData() != null
           && madieMeasure.getMeasureMetaData().getEndorsements() != null
           && CollectionUtils.isNotEmpty(madieMeasure.getMeasureMetaData().getEndorsements())
@@ -156,7 +156,7 @@ public class MeasureTranslatorService {
                     IdentifierUse.OFFICIAL,
                     UriConstants.MadieMeasure.CBE_ID,
                     endorsement.getEndorsementId(),
-                    ValueConstants.CODE_ENDORSER)
+                    IdentifierType.CODE_ENDORSER)
                 .setAssigner(
                     buildDisplayReference(
                         madieMeasure.getMeasureMetaData().getEndorsements().get(0).getEndorser())));
@@ -168,7 +168,7 @@ public class MeasureTranslatorService {
                     IdentifierUse.OFFICIAL,
                     UriConstants.MadieMeasure.CMS_ID,
                     madieMeasure.getMeasureSet().getCmsId() + "FHIR",
-                    ValueConstants.CODE_PUBLISHER)
+                    IdentifierType.CODE_PUBLISHER)
                 .setAssigner(buildDisplayReference("CMS")));
       }
     }
@@ -176,7 +176,7 @@ public class MeasureTranslatorService {
   }
 
   private String buildUrnUuid(String value) {
-    return ValueConstants.URN_UUID_PREFIX + (value == null ? "null" : value);
+    return UriConstants.URN_UUID_PREFIX + (value == null ? "null" : value);
   }
 
   private Reference buildDisplayReference(String display) {
@@ -186,14 +186,16 @@ public class MeasureTranslatorService {
   }
 
   public Identifier buildIdentifier(
-      IdentifierUse use, String system, String value, String conceptCode) {
+      IdentifierUse use, String system, String value, IdentifierType identifierType) {
     Identifier identifier = new Identifier();
     identifier.setUse(use);
     identifier.setSystem(system);
     identifier.setValue(value);
     identifier.setType(
         buildCodeableConcept(
-            conceptCode, UriConstants.CqfMeasures.CODE_SYSTEM_IDENTIFIER_TYPE_URI, null));
+            identifierType.getCode(),
+            UriConstants.CqfMeasures.CODE_SYSTEM_IDENTIFIER_TYPE_URI,
+            identifierType.getDisplay()));
     return identifier;
   }
 

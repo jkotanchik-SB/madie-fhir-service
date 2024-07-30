@@ -2,13 +2,11 @@ package gov.cms.madie.madiefhirservice.services;
 
 import static gov.cms.madie.madiefhirservice.constants.UriConstants.CqfMeasures.CODE_SYSTEM_IDENTIFIER_TYPE_URI;
 import static gov.cms.madie.madiefhirservice.constants.UriConstants.MadieMeasure.SHORT_NAME;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_ENDORSER;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_PUBLISHER;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_SHORT_NAME;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_VERSION_INDEPENDENT;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.CODE_VERSION_SPECIFIC;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.URN_IETF_RFC_3986;
-import static gov.cms.madie.madiefhirservice.constants.ValueConstants.URN_UUID_PREFIX;
+import static gov.cms.madie.madiefhirservice.constants.IdentifierType.CODE_ENDORSER;
+import static gov.cms.madie.madiefhirservice.constants.IdentifierType.CODE_PUBLISHER;
+import static gov.cms.madie.madiefhirservice.constants.IdentifierType.CODE_SHORT_NAME;
+import static gov.cms.madie.madiefhirservice.constants.IdentifierType.CODE_VERSION_INDEPENDENT;
+import static gov.cms.madie.madiefhirservice.constants.IdentifierType.CODE_VERSION_SPECIFIC;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -989,30 +987,40 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         output.get(0).getType().getCodingFirstRep().getSystem(),
         is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
-    assertThat(output.get(0).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_SHORT_NAME)));
+    assertThat(
+        output.get(0).getType().getCodingFirstRep().getCode(),
+        is(equalTo(CODE_SHORT_NAME.getCode())));
+    assertThat(
+        output.get(0).getType().getCodingFirstRep().getDisplay(),
+        is(equalTo(CODE_SHORT_NAME.getDisplay())));
     // Measure Set ID
     assertThat(output.get(1), is(notNullValue()));
     assertThat(output.get(1).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
-    assertThat(output.get(1).getSystem(), is(equalTo(URN_IETF_RFC_3986)));
-    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    assertThat(output.get(1).getSystem(), is(equalTo(UriConstants.URN_IETF_RFC_3986)));
+    assertThat(
+        output.get(1).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     assertThat(output.get(1).getType(), is(notNullValue()));
     assertThat(
         output.get(1).getType().getCodingFirstRep().getSystem(),
         is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
     assertThat(
         output.get(1).getType().getCodingFirstRep().getCode(),
-        is(equalTo(CODE_VERSION_INDEPENDENT)));
+        is(equalTo(CODE_VERSION_INDEPENDENT.getCode())));
+    assertThat(
+        output.get(1).getType().getCodingFirstRep().getDisplay(),
+        is(equalTo(CODE_VERSION_INDEPENDENT.getDisplay())));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
     assertThat(output.get(2).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
-    assertThat(output.get(2).getSystem(), is(equalTo(URN_IETF_RFC_3986)));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
+    assertThat(output.get(2).getSystem(), is(equalTo(UriConstants.URN_IETF_RFC_3986)));
+    assertThat(output.get(2).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "UUID_1")));
     assertThat(output.get(2).getType(), is(notNullValue()));
     assertThat(
         output.get(2).getType().getCodingFirstRep().getSystem(),
         is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
     assertThat(
-        output.get(2).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_VERSION_SPECIFIC)));
+        output.get(2).getType().getCodingFirstRep().getCode(),
+        is(equalTo(CODE_VERSION_SPECIFIC.getCode())));
     // CBE ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getUse(), is(equalTo(Identifier.IdentifierUse.OFFICIAL)));
@@ -1022,7 +1030,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         output.get(3).getType().getCodingFirstRep().getSystem(),
         is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
-    assertThat(output.get(3).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_ENDORSER)));
+    assertThat(
+        output.get(3).getType().getCodingFirstRep().getCode(),
+        is(equalTo(CODE_ENDORSER.getCode())));
+    assertThat(
+        output.get(3).getType().getCodingFirstRep().getDisplay(),
+        is(equalTo(CODE_ENDORSER.getDisplay())));
     assertThat(output.get(3).getAssigner(), is(notNullValue()));
     assertThat(output.get(3).getAssigner().getDisplay(), is(equalTo("CBE")));
     // CMS ID
@@ -1034,7 +1047,12 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(
         output.get(4).getType().getCodingFirstRep().getSystem(),
         is(equalTo(CODE_SYSTEM_IDENTIFIER_TYPE_URI)));
-    assertThat(output.get(4).getType().getCodingFirstRep().getCode(), is(equalTo(CODE_PUBLISHER)));
+    assertThat(
+        output.get(4).getType().getCodingFirstRep().getCode(),
+        is(equalTo(CODE_PUBLISHER.getCode())));
+    assertThat(
+        output.get(4).getType().getCodingFirstRep().getDisplay(),
+        is(equalTo(CODE_PUBLISHER.getDisplay())));
     assertThat(output.get(4).getAssigner(), is(notNullValue()));
     assertThat(output.get(4).getAssigner().getDisplay(), is(equalTo("CMS")));
   }
@@ -1057,10 +1075,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
     // Measure Set ID
     assertThat(output.get(1), is(notNullValue()));
-    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    assertThat(
+        output.get(1).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "UUID_1")));
     // CMS ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getValue(), is(equalTo("22FHIR")));
@@ -1090,10 +1109,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
     // Measure Set ID
     assertThat(output.get(1), is(notNullValue()));
-    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    assertThat(
+        output.get(1).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "UUID_1")));
     // CBE ID
     assertThat(output.get(3), is(notNullValue()));
     assertThat(output.get(3).getValue(), is(equalTo("CBE1234")));
@@ -1121,10 +1141,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
     assertThat(output.get(0).getSystem(), is(equalTo(SHORT_NAME)));
     // Measure Set ID
     assertThat(output.get(1), is(notNullValue()));
-    assertThat(output.get(1).getValue(), is(equalTo(URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
+    assertThat(
+        output.get(1).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "MEASURE_SET_ID_99")));
     // Measure ID
     assertThat(output.get(2), is(notNullValue()));
-    assertThat(output.get(2).getValue(), is(equalTo(URN_UUID_PREFIX + "UUID_1")));
+    assertThat(output.get(2).getValue(), is(equalTo(UriConstants.URN_UUID_PREFIX + "UUID_1")));
   }
 
   @Test
