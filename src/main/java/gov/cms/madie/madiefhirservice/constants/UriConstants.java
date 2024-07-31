@@ -1,6 +1,8 @@
 package gov.cms.madie.madiefhirservice.constants;
 
 public final class UriConstants {
+  public static final String URN_UUID_PREFIX = "urn:uuid:";
+  public static final String URN_IETF_RFC_3986 = "urn:ietf:rfc:3986";
   public static final String POPULATION_SYSTEM_URI =
       "http://terminology.hl7.org/CodeSystem/measure-population";
   public static final String SCORING_SYSTEM_URI =
