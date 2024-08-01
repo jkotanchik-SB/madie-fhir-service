@@ -93,8 +93,7 @@ class TestCaseBundleServiceTest implements ResourceFileUtil {
             .newJsonParser()
             .setParserErrorHandler(new StrictErrorHandler())
             .setPrettyPrint(true);
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
     testCase = Objects.requireNonNull(madieMeasure).getTestCases().get(0);
     exportDTO = ExportDTO.builder().bundleType(BundleType.TRANSACTION).build();

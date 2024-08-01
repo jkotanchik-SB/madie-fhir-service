@@ -50,8 +50,7 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
 
   @BeforeEach
   public void setUp() throws JsonProcessingException {
-    madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     String testCaseJson = getStringFromTestResource("/testCaseBundles/validTestCase.json");
     testCaseBundle = FhirContext.forR4().newJsonParser().parseResource(Bundle.class, testCaseJson);
     dto =
@@ -146,8 +145,7 @@ class TestCaseBundleControllerMvcTest implements ResourceFileUtil {
   @Test
   void getTestCaseExportAllThrowExceptionWhenTestCasesAreNotFoundInMeasure() throws Exception {
     var madieMeasureWithNoTestCases =
-        getStringFromTestResource(
-            "/measures/SimpleFhirMeasureLib/madie_measure_no_test_cases.json");
+        getStringFromTestResource("/measures/madie_measure_no_test_cases.json");
 
     ExportDTO dto =
         ExportDTO.builder()

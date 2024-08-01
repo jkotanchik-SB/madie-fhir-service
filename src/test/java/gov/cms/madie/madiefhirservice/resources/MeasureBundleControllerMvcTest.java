@@ -54,8 +54,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
 
   @Test
   public void testGetMeasureBundle() throws Exception {
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
@@ -82,8 +81,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
 
   @Test
   public void testGetMeasureBundleXml() throws Exception {
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     Bundle testBundle = MeasureTestHelper.createTestMeasureBundle();
 
     when(measureBundleService.createMeasureBundle(
@@ -108,8 +106,7 @@ public class MeasureBundleControllerMvcTest implements ResourceFileUtil {
 
   @Test
   public void testExportMeasure() throws Exception {
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
 
     MvcResult result =
         mockMvc

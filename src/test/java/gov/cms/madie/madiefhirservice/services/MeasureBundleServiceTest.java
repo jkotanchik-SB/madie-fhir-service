@@ -57,18 +57,15 @@ public class MeasureBundleServiceTest implements ResourceFileUtil {
 
   @BeforeEach
   public void setup() throws JsonProcessingException {
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
 
-    String fhirMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/fhir_measure.json");
+    String fhirMeasureJson = getStringFromTestResource("/measures/fhir_measure.json");
     measure =
         MeasureTestHelper.createFhirResourceFromJson(
             fhirMeasureJson, org.hl7.fhir.r4.model.Measure.class);
 
-    String fhirLibraryJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/fhir_measure_library.json");
+    String fhirLibraryJson = getStringFromTestResource("/measures/fhir_measure_library.json");
     library = MeasureTestHelper.createFhirResourceFromJson(fhirLibraryJson, Library.class);
     effectiveDataRequirements =
         convertToFhirR5Resource(
