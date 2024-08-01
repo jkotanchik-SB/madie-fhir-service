@@ -259,7 +259,8 @@
       "rationale":null,
       "developers":[{ "name": "testDeveloper", "url":  "test-developer-url.com" }],
       "guidance":"test guidance",
-      "clinicalRecommendation": "testClinical"
+      "clinicalRecommendation": "testClinical",
+      "experimental": "false"
    },
    "supplementalData": [
       {
