@@ -71,7 +71,8 @@
     "rationale":null,
     "developers":[{ "name": "testDeveloper", "url":  "test-developer-url.com" }],
     "guidance":"test guidance",
-    "clinicalRecommendation": "testClinical"
+    "clinicalRecommendation": "testClinical",
+    "experimental": "false"
   },
   "versionId": "492e7385-7d16-4e33-878b-17d97101a12f"
 }
