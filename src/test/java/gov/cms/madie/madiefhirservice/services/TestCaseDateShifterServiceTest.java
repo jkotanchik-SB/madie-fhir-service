@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -122,6 +123,17 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
             .getRepeat()
             .getBoundsPeriod()
             .getEnd());
+  }
+
+  @Test
+  void testDateShiftLeapYear() {
+    Date leapYearBirthDate = new Date(Instant.parse("1992-02-29T10:15:30.00Z").toEpochMilli());
+    Patient patient = (Patient) ResourceUtils.getResource(testCaseBundle, "Patient");
+    patient.setBirthDate(leapYearBirthDate);
+    int shiftBy = -2; // years
+    testCaseDateShifterService.shiftDates(patient, shiftBy);
+    assertEquals(DateUtils.addYears(leapYearBirthDate, shiftBy), patient.getBirthDate());
+    assertEquals(new Date(Instant.parse("1990-02-28T10:15:30.00Z").toEpochMilli()), patient.getBirthDate());
   }
 
   @Test
