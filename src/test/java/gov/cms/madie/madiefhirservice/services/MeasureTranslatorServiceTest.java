@@ -70,14 +70,11 @@ public class MeasureTranslatorServiceTest implements ResourceFileUtil {
 
   @BeforeEach
   public void setUp() throws JsonProcessingException {
-    String madieMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_measure.json");
+    String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     madieMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
-    String madieRatioMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_ratio_measure.json");
+    String madieRatioMeasureJson = getStringFromTestResource("/measures/madie_ratio_measure.json");
     madieRatioMeasure = MeasureTestHelper.createMadieMeasureFromJson(madieRatioMeasureJson);
-    String cvMeasureJson =
-        getStringFromTestResource("/measures/SimpleFhirMeasureLib/madie_cv_measure.json");
+    String cvMeasureJson = getStringFromTestResource("/measures/madie_cv_measure.json");
     madieCVMeasure = MeasureTestHelper.createMadieMeasureFromJson(cvMeasureJson);
     ReflectionTestUtils.setField(fhirResourceHelpers, "madieUrl", "madie.cms.gov");
   }
