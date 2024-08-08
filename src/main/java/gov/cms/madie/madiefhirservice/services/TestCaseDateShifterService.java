@@ -75,7 +75,6 @@ public class TestCaseDateShifterService {
             if (value.isDateTime()) {
               BaseDateTimeType dateType = (BaseDateTimeType) value;
               dateType.add(1, shifted);
-              baseResource.getNamedProperty(field.getName());
             }
           } else {
             shiftDates(value, shifted);
