@@ -133,7 +133,8 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
     int shiftBy = -2; // years
     testCaseDateShifterService.shiftDates(patient, shiftBy);
     assertEquals(DateUtils.addYears(leapYearBirthDate, shiftBy), patient.getBirthDate());
-    assertEquals(new Date(Instant.parse("1990-02-28T10:15:30.00Z").toEpochMilli()), patient.getBirthDate());
+    assertEquals(
+        new Date(Instant.parse("1990-02-28T10:15:30.00Z").toEpochMilli()), patient.getBirthDate());
   }
 
   @Test
