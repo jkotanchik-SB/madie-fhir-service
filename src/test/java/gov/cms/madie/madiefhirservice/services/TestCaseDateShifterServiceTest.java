@@ -34,20 +34,21 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
   @Autowired TestCaseDateShifterService testCaseDateShifterService;
   private Measure measure;
   private Bundle testCaseBundle;
+  private IParser fhirParser;
 
   @BeforeEach
   void setUpMeasure() throws JsonProcessingException {
     String madieMeasureJson = getStringFromTestResource("/measures/madie_measure.json");
     measure = MeasureTestHelper.createMadieMeasureFromJson(madieMeasureJson);
 
-    IParser fhirParser = testCaseDateShifterService.getIParser();
+    fhirParser = testCaseDateShifterService.getIParser();
     // Canned measure has 2 test cases, which are duplicates except for FHIR Bundle type
     // (transaction vs collection)
     testCaseBundle = (Bundle) fhirParser.parseResource(measure.getTestCases().get(0).getJson());
   }
 
   @Test
-  void testPositiveDateShift_Birthdate() {
+  void testPositiveDateShiftBirthdate() {
     Patient patient = (Patient) ResourceUtils.getResource(testCaseBundle, "Patient");
     Date originalBirthDate = (Date) patient.getBirthDate().clone();
     int shiftBy = 2; // years
@@ -56,7 +57,7 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  void testNegativeDateShift_Birthdate() {
+  void testNegativeDateShiftBirthdate() {
     Patient patient = (Patient) ResourceUtils.getResource(testCaseBundle, "Patient");
     Date originalBirthDate = (Date) patient.getBirthDate().clone();
     int shiftBy = -2; // years
@@ -65,7 +66,7 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  void testDateShift_Encounter() {
+  void testDateShiftEncounter() {
     Encounter encounter = (Encounter) ResourceUtils.getResource(testCaseBundle, "Encounter");
     Date orgPeriodStart = (Date) encounter.getPeriod().getStart().clone();
     Date orgPeriodEnd = (Date) encounter.getPeriod().getEnd().clone();
@@ -76,7 +77,7 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
   }
 
   @Test
-  void testDateShift_MedicationRequest() {
+  void testDateShiftMedicationRequest() {
     MedicationRequest medicationRequest =
         (MedicationRequest) ResourceUtils.getResource(testCaseBundle, "MedicationRequest");
     DateTimeType orgAuthoredOn = medicationRequest.getAuthoredOnElement().copy();
@@ -224,5 +225,37 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
         testCaseDateShifterService.shiftDates(measure.getTestCases(), 1);
     assertEquals(measure.getTestCases().size() - 1, shiftedTestCases.size());
     assertFalse(shiftedTestCases.contains(badTestCase));
+  }
+
+  @Test
+  void verifiesPartialDateTypeHasDateValue() {
+    // Parse a Procedure with partial Performed element that only contains an extension and no date values.
+    Procedure procedure = fhirParser.parseResource(Procedure.class, "{\n" +
+        "        \"resourceType\": \"Procedure\",\n" +
+        "        \"id\": \"device-application-2c38\",\n" +
+        "        \"meta\": {\n" +
+        "          \"profile\": [\n" +
+        "            \"http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-procedurenotdone\"\n" +
+        "          ]\n" +
+        "        },\n" +
+        "        \"extension\": [\n" +
+        "          {\n" +
+        "            \"url\": \"http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-recorded\",\n" +
+        "            \"valueDateTime\": \"2025-10-31T17:35:00-04:00\"\n" +
+        "          }\n" +
+        "        ],\n" +
+        "        \"status\": \"not-done\",\n" +
+        "        \"_performedDateTime\": {\n" +
+        "          \"extension\": [\n" +
+        "            {\n" +
+        "              \"url\": \"http://hl7.org/fhir/StructureDefinition/data-absent-reason\",\n" +
+        "              \"valueCode\": \"not-performed\"\n" +
+        "            }\n" +
+        "          ]\n" +
+        "        }\n" +
+        "      }");
+    Procedure copy = procedure.copy();
+    testCaseDateShifterService.shiftDates(procedure,1);
+    assertTrue(copy.getPerformed().equalsDeep(procedure.getPerformed()));
   }
 }
