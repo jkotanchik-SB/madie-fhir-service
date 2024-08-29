@@ -76,7 +76,7 @@ public class TestCaseDateShifterService {
               BaseDateTimeType dateType = (BaseDateTimeType) value;
               // HAPI will build partial objects when given partial data, like only an extension.
               // Verify the target date value is non-null.
-              if(dateType.getValue() != null) {
+              if (dateType.getValue() != null) {
                 dateType.add(1, shifted);
               }
             }

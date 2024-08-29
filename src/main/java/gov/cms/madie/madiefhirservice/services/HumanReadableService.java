@@ -375,9 +375,7 @@ public class HumanReadableService extends ResourceUtils {
     r5Library.setContent(
         r5Library.getContent().stream()
             .filter(content -> content.getContentType().equalsIgnoreCase("text/cql"))
-            .map(
-                content ->
-                    content.setData(escapeStr(Arrays.toString(content.getData())).getBytes()))
+            .map(content -> content.setData(escapeStr(new String(content.getData())).getBytes()))
             .collect(Collectors.toList()));
   }
 
