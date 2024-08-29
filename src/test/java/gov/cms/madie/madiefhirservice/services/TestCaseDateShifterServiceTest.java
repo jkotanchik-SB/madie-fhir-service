@@ -278,6 +278,6 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
     Date originalBirthDate = (Date) patient.getBirthDate().clone();
     int shiftBy = -1000000; // years
     testCaseDateShifterService.shiftDates(patient, shiftBy);
-    assertEquals(DateUtils.setYears(originalBirthDate, 1), patient.getBirthDate());
+    assertEquals(DateUtils.setYears(originalBirthDate, 1900), patient.getBirthDate());
   }
 }

@@ -85,8 +85,8 @@ public class TestCaseDateShifterService {
                 ZonedDateTime shifted = date.atZone(ZoneId.of("UTC")).plusYears(shiftBy);
                 if (shifted.getYear() > 9999) {
                   dateType.setValue(DateUtils.setYears(dateType.getValue(), 9999));
-                } else if (shifted.getYear() < 0) {
-                  dateType.setValue(DateUtils.setYears(dateType.getValue(), 1));
+                } else if (shifted.getYear() < 1900) {
+                  dateType.setValue(DateUtils.setYears(dateType.getValue(), 1900));
                 } else {
                   dateType.add(1, shiftBy);
                 }
