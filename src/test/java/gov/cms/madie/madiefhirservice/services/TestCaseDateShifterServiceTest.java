@@ -229,33 +229,37 @@ public class TestCaseDateShifterServiceTest implements ResourceFileUtil {
 
   @Test
   void verifiesPartialDateTypeHasDateValue() {
-    // Parse a Procedure with partial Performed element that only contains an extension and no date values.
-    Procedure procedure = fhirParser.parseResource(Procedure.class, "{\n" +
-        "        \"resourceType\": \"Procedure\",\n" +
-        "        \"id\": \"device-application-2c38\",\n" +
-        "        \"meta\": {\n" +
-        "          \"profile\": [\n" +
-        "            \"http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-procedurenotdone\"\n" +
-        "          ]\n" +
-        "        },\n" +
-        "        \"extension\": [\n" +
-        "          {\n" +
-        "            \"url\": \"http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-recorded\",\n" +
-        "            \"valueDateTime\": \"2025-10-31T17:35:00-04:00\"\n" +
-        "          }\n" +
-        "        ],\n" +
-        "        \"status\": \"not-done\",\n" +
-        "        \"_performedDateTime\": {\n" +
-        "          \"extension\": [\n" +
-        "            {\n" +
-        "              \"url\": \"http://hl7.org/fhir/StructureDefinition/data-absent-reason\",\n" +
-        "              \"valueCode\": \"not-performed\"\n" +
-        "            }\n" +
-        "          ]\n" +
-        "        }\n" +
-        "      }");
+    // Parse a Procedure with partial Performed element that only contains an extension and no date
+    // values.
+    Procedure procedure =
+        fhirParser.parseResource(
+            Procedure.class,
+            "{\n"
+                + "        \"resourceType\": \"Procedure\",\n"
+                + "        \"id\": \"device-application-2c38\",\n"
+                + "        \"meta\": {\n"
+                + "          \"profile\": [\n"
+                + "            \"http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-procedurenotdone\"\n"
+                + "          ]\n"
+                + "        },\n"
+                + "        \"extension\": [\n"
+                + "          {\n"
+                + "            \"url\": \"http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-recorded\",\n"
+                + "            \"valueDateTime\": \"2025-10-31T17:35:00-04:00\"\n"
+                + "          }\n"
+                + "        ],\n"
+                + "        \"status\": \"not-done\",\n"
+                + "        \"_performedDateTime\": {\n"
+                + "          \"extension\": [\n"
+                + "            {\n"
+                + "              \"url\": \"http://hl7.org/fhir/StructureDefinition/data-absent-reason\",\n"
+                + "              \"valueCode\": \"not-performed\"\n"
+                + "            }\n"
+                + "          ]\n"
+                + "        }\n"
+                + "      }");
     Procedure copy = procedure.copy();
-    testCaseDateShifterService.shiftDates(procedure,1);
+    testCaseDateShifterService.shiftDates(procedure, 1);
     assertTrue(copy.getPerformed().equalsDeep(procedure.getPerformed()));
   }
 }
