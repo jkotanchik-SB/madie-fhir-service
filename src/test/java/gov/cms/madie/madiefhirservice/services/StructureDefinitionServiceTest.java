@@ -78,18 +78,19 @@ class StructureDefinitionServiceTest {
     def3.setId("us-core-practitioner");
     when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .thenReturn(List.of(def1, def2, def3));
-    when(validationSupportChainQiCore600.getFhirContext())
-        .thenReturn(fhirContextQiCoreStu600);
+    when(validationSupportChainQiCore600.getFhirContext()).thenReturn(fhirContextQiCoreStu600);
 
     // when
-    StructureDefinitionDto output = structureDefinitionService.getStructureDefinitionById("qicore-patient");
+    StructureDefinitionDto output =
+        structureDefinitionService.getStructureDefinitionById("qicore-patient");
 
     // then
     assertThat(output, is(notNullValue()));
     assertThat(output.getDefinition(), is(notNullValue()));
     assertThat(output.getDefinition().contains("\"id\": \"qicore-patient\""), is(true));
     assertThat(output.getDefinition().contains("\"kind\": \"resource\""), is(true));
-    assertThat(output.getDefinition().contains("\"resourceType\": \"StructureDefinition\""), is(true));
+    assertThat(
+        output.getDefinition().contains("\"resourceType\": \"StructureDefinition\""), is(true));
   }
 
   @Test
@@ -109,18 +110,19 @@ class StructureDefinitionServiceTest {
     def3.setId("us-core-practitioner");
     when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .thenReturn(List.of(def1, def2, def3));
-    when(validationSupportChainQiCore600.getFhirContext())
-        .thenReturn(fhirContextQiCoreStu600);
+    when(validationSupportChainQiCore600.getFhirContext()).thenReturn(fhirContextQiCoreStu600);
 
     // when
-    StructureDefinitionDto output = structureDefinitionService.getStructureDefinitionById("qicore-keyelement");
+    StructureDefinitionDto output =
+        structureDefinitionService.getStructureDefinitionById("qicore-keyelement");
 
     // then
     assertThat(output, is(notNullValue()));
     assertThat(output.getDefinition(), is(notNullValue()));
     assertThat(output.getDefinition().contains("\"id\": \"qicore-keyelement\""), is(true));
     assertThat(output.getDefinition().contains("\"kind\": \"complex-type\""), is(true));
-    assertThat(output.getDefinition().contains("\"resourceType\": \"StructureDefinition\""), is(true));
+    assertThat(
+        output.getDefinition().contains("\"resourceType\": \"StructureDefinition\""), is(true));
   }
 
   @Test
