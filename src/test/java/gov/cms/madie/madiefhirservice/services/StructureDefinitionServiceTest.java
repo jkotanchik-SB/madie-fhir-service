@@ -26,14 +26,14 @@ import static org.mockito.Mockito.when;
 class StructureDefinitionServiceTest {
 
   @Spy private FhirContext fhirContextQiCoreStu600;
-  @Mock private IValidationSupport validationSupportChainQiCore6_0_0;
+  @Mock private IValidationSupport validationSupportChainQiCore600;
 
   @InjectMocks private StructureDefinitionService structureDefinitionService;
 
   @Test
   void testGetStructureDefinitionByIdThrowsNotFoundForNoDefinitions() {
     // given
-    when(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions()).thenReturn(List.of());
+    when(validationSupportChainQiCore600.fetchAllStructureDefinitions()).thenReturn(List.of());
 
     // when / then
     assertThrows(
@@ -52,7 +52,7 @@ class StructureDefinitionServiceTest {
     def3.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
     def3.setTitle("US Core Practitioner Profile");
     def3.setId("us-core-practitioner");
-    when(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions())
+    when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .thenReturn(List.of(def1, def3));
 
     // when / then
@@ -76,9 +76,9 @@ class StructureDefinitionServiceTest {
     def3.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
     def3.setTitle("US Core Practitioner Profile");
     def3.setId("us-core-practitioner");
-    when(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions())
+    when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .thenReturn(List.of(def1, def2, def3));
-    when(validationSupportChainQiCore6_0_0.getFhirContext())
+    when(validationSupportChainQiCore600.getFhirContext())
         .thenReturn(fhirContextQiCoreStu600);
 
     // when
@@ -107,9 +107,9 @@ class StructureDefinitionServiceTest {
     def3.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
     def3.setTitle("US Core Practitioner Profile");
     def3.setId("us-core-practitioner");
-    when(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions())
+    when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .thenReturn(List.of(def1, def2, def3));
-    when(validationSupportChainQiCore6_0_0.getFhirContext())
+    when(validationSupportChainQiCore600.getFhirContext())
         .thenReturn(fhirContextQiCoreStu600);
 
     // when
@@ -138,7 +138,7 @@ class StructureDefinitionServiceTest {
     def3.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
     def3.setTitle("US Core Practitioner Profile");
     def3.setId("us-core-practitioner");
-    when(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions())
+    when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .thenReturn(List.of(def1, def2, def3));
 
     // when

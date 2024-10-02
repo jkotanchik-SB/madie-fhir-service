@@ -20,7 +20,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class StructureDefinitionService {
 
-  private IValidationSupport validationSupportChainQiCore6_0_0;
+  private IValidationSupport validationSupportChainQiCore600;
 
   /**
    * Fetches the structure definition for the given resource
@@ -31,7 +31,7 @@ public class StructureDefinitionService {
    */
   public StructureDefinitionDto getStructureDefinitionById(String structureDefinitionId) {
     IBaseResource structureDefinition =
-        Objects.requireNonNull(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions())
+        Objects.requireNonNull(validationSupportChainQiCore600.fetchAllStructureDefinitions())
             .stream()
             .filter(resource -> structureDefinitionId.equals(resource.getIdElement().getIdPart()))
             .findFirst()
@@ -41,7 +41,7 @@ public class StructureDefinitionService {
     // Todo: enhance with model-info, or at least primary code path
 
     IParser parser =
-        validationSupportChainQiCore6_0_0
+        validationSupportChainQiCore600
             .getFhirContext()
             .newJsonParser()
             .setParserErrorHandler(new StrictErrorHandler())
@@ -58,7 +58,7 @@ public class StructureDefinitionService {
    * @return list of ResourceIdentifier, comprised of ID and title of the structure definitions
    */
   public List<ResourceIdentifier> getAllResources() {
-    return Objects.requireNonNull(validationSupportChainQiCore6_0_0.fetchAllStructureDefinitions())
+    return Objects.requireNonNull(validationSupportChainQiCore600.fetchAllStructureDefinitions())
         .stream()
         .filter(
             resource ->

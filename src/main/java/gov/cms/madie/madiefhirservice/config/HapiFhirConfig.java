@@ -65,7 +65,7 @@ public class HapiFhirConfig {
   }
 
   @Bean
-  public IValidationSupport validationSupportChainQiCore6_0_0(
+  public IValidationSupport validationSupportChainQiCore600(
       @Autowired FhirContext fhirContextQiCoreStu600) throws IOException {
     NpmPackageValidationSupport npmPackageSupport =
         new NpmPackageValidationSupport(fhirContextQiCoreStu600);
