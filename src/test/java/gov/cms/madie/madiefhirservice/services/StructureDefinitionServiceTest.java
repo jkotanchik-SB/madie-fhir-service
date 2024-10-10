@@ -2,9 +2,12 @@ package gov.cms.madie.madiefhirservice.services;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.IValidationSupport;
+import gov.cms.madie.madiefhirservice.constants.UriConstants;
 import gov.cms.madie.madiefhirservice.dto.ResourceIdentifier;
 import gov.cms.madie.madiefhirservice.dto.StructureDefinitionDto;
 import gov.cms.madie.madiefhirservice.exceptions.ResourceNotFoundException;
+import org.hl7.fhir.r4.model.Extension;
+import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.StructureDefinition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -131,17 +134,30 @@ class StructureDefinitionServiceTest {
     StructureDefinition def1 = new StructureDefinition();
     def1.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
     def1.setTitle("QICore Patient");
+    def1.setType("Patient");
     def1.setId("qicore-patient");
+    def1.setUrl("http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient");
     StructureDefinition def2 = new StructureDefinition();
     def2.setKind(StructureDefinition.StructureDefinitionKind.COMPLEXTYPE);
     def2.setTitle("QI-Core Key Element Extension");
+    def2.setType("Extension");
     def2.setId("qicore-keyelement");
+    def2.setUrl("http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-keyelement");
     StructureDefinition def3 = new StructureDefinition();
     def3.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
     def3.setTitle("US Core Practitioner Profile");
+    def3.setType("Practitioner");
     def3.setId("us-core-practitioner");
+    def3.setUrl("http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner");
+    StructureDefinition def4 = new StructureDefinition();
+    def4.setKind(StructureDefinition.StructureDefinitionKind.RESOURCE);
+    def4.setTitle(null);
+    def4.setType("Patient");
+    def4.setId("Patient");
+    def4.setUrl("http://hl7.org/fhir/StructureDefinition/Patient");
+    def4.setExtension(List.of(new Extension(UriConstants.FhirStructureDefinitions.CATEGORY_URI, new StringType("Base.Individuals"))));
     when(validationSupportChainQiCore600.fetchAllStructureDefinitions())
-        .thenReturn(List.of(def1, def2, def3));
+        .thenReturn(List.of(def1, def2, def3, def4));
 
     // when
     List<ResourceIdentifier> output = structureDefinitionService.getAllResources();
@@ -150,5 +166,9 @@ class StructureDefinitionServiceTest {
     assertThat(output, is(notNullValue()));
     assertThat(output.size(), is(equalTo(1)));
     assertThat(output.get(0).getId(), is(equalTo("qicore-patient")));
+    assertThat(output.get(0).getTitle(), is(equalTo("QICore Patient")));
+    assertThat(output.get(0).getType(), is(equalTo("Patient")));
+    assertThat(output.get(0).getCategory(), is(equalTo("Base.Individuals")));
+    assertThat(output.get(0).getProfile(), is(equalTo("http://hl7.org/fhir/us/qicore/StructureDefinition/qicore-patient")));
   }
 }
