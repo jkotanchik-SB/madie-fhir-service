@@ -10,6 +10,11 @@ public final class UriConstants {
   public static final String LIBRARY_SYSTEM_TYPE_URI =
       "http://terminology.hl7.org/CodeSystem/library-type";
 
+  public static final class FhirStructureDefinitions {
+    public static final String CATEGORY_URI =
+        "http://hl7.org/fhir/StructureDefinition/structuredefinition-category";
+  }
+
   public static final class CqfMeasures {
     public static final String EFFECTIVE_DATA_REQUIREMENT_URL =
         "http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements";

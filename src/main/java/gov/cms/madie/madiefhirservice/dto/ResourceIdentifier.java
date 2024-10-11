@@ -12,4 +12,7 @@ import lombok.NoArgsConstructor;
 public class ResourceIdentifier {
   private String id;
   private String title;
+  private String type;
+  private String category;
+  private String profile;
 }
