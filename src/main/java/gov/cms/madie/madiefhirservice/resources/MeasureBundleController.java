@@ -54,11 +54,19 @@ public class MeasureBundleController {
           && accept.toUpperCase().contains(MediaType.APPLICATION_XML_VALUE.toUpperCase())) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_XML)
-            .body(qicoreFhirContext.newXmlParser().setPrettyPrint(true).encodeResourceToString(bundle));
+            .body(
+                qicoreFhirContext
+                    .newXmlParser()
+                    .setPrettyPrint(true)
+                    .encodeResourceToString(bundle));
       }
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_JSON)
-          .body(qicoreFhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
+          .body(
+              qicoreFhirContext
+                  .newJsonParser()
+                  .setPrettyPrint(true)
+                  .encodeResourceToString(bundle));
     } catch (Exception ex) {
       log.error(
           "An error occurred while creating measure bundle for measure [{}]", measure.getId(), ex);

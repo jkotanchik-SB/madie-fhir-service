@@ -349,10 +349,8 @@ class ResourceValidationServiceTest {
   @Test
   void testCombineOutcomesHandlesR4NoIssues() {
     // given
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome1 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome2 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
+    OperationOutcome operationOutcome1 = new OperationOutcome();
+    OperationOutcome operationOutcome2 = new OperationOutcome();
 
     // when
     IBaseOperationOutcome output =
@@ -361,19 +359,17 @@ class ResourceValidationServiceTest {
     // then
     assertThat(output, is(notNullValue()));
 
-    assertThat(((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue(), is(notNullValue()));
-    assertThat(((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().isEmpty(), is(true));
+    assertThat(((OperationOutcome) output).getIssue(), is(notNullValue()));
+    assertThat(((OperationOutcome) output).getIssue().isEmpty(), is(true));
   }
 
   @Test
   void testCombineOutcomesHandlesR4OneIssueEach() {
     // given
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome1 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
+    OperationOutcome operationOutcome1 = new OperationOutcome();
     OperationOutcomeUtil.addIssue(
         fhirContext, operationOutcome1, "warning", "test-warning", null, "invalid");
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome2 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
+    OperationOutcome operationOutcome2 = new OperationOutcome();
     OperationOutcomeUtil.addIssue(
         fhirContext, operationOutcome2, "information", "test-info", null, "business-rule");
 
@@ -384,33 +380,28 @@ class ResourceValidationServiceTest {
     // then
     assertThat(output, is(notNullValue()));
 
-    assertThat(((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue(), is(notNullValue()));
-    assertThat(((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().size(), is(equalTo(2)));
+    assertThat(((OperationOutcome) output).getIssue(), is(notNullValue()));
+    assertThat(((OperationOutcome) output).getIssue().size(), is(equalTo(2)));
+    assertThat(((OperationOutcome) output).getIssue().get(0), is(notNullValue()));
     assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(0), is(notNullValue()));
-    assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(0).getSeverity().toCode(),
+        ((OperationOutcome) output).getIssue().get(0).getSeverity().toCode(),
         is(equalTo("warning")));
+    assertThat(((OperationOutcome) output).getIssue().get(1), is(notNullValue()));
     assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(1), is(notNullValue()));
-    assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(1).getSeverity().toCode(),
+        ((OperationOutcome) output).getIssue().get(1).getSeverity().toCode(),
         is(equalTo("information")));
   }
 
   @Test
   void testCombineOutcomesHandlesR4MultipleOutcomes() {
     // given
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome1 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
+    OperationOutcome operationOutcome1 = new OperationOutcome();
     OperationOutcomeUtil.addIssue(
         fhirContext, operationOutcome1, "information", "test-info", null, "business-rule");
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome2 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
+    OperationOutcome operationOutcome2 = new OperationOutcome();
     OperationOutcomeUtil.addIssue(
         fhirContext, operationOutcome2, "warning", "test-warning", null, "invalid");
-    org.hl7.fhir.r4.model.OperationOutcome operationOutcome3 =
-        new org.hl7.fhir.r4.model.OperationOutcome();
+    OperationOutcome operationOutcome3 = new OperationOutcome();
     OperationOutcomeUtil.addIssue(
         fhirContext, operationOutcome3, "error", "test-error", null, "invalid");
     OperationOutcomeUtil.addIssue(
@@ -424,28 +415,22 @@ class ResourceValidationServiceTest {
     // then
     assertThat(output, is(notNullValue()));
 
-    assertThat(((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue(), is(notNullValue()));
-    assertThat(((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().size(), is(equalTo(4)));
+    assertThat(((OperationOutcome) output).getIssue(), is(notNullValue()));
+    assertThat(((OperationOutcome) output).getIssue().size(), is(equalTo(4)));
+    assertThat(((OperationOutcome) output).getIssue().get(0), is(notNullValue()));
     assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(0), is(notNullValue()));
-    assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(0).getSeverity().toCode(),
+        ((OperationOutcome) output).getIssue().get(0).getSeverity().toCode(),
         is(equalTo("information")));
+    assertThat(((OperationOutcome) output).getIssue().get(1), is(notNullValue()));
     assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(1), is(notNullValue()));
-    assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(1).getSeverity().toCode(),
+        ((OperationOutcome) output).getIssue().get(1).getSeverity().toCode(),
         is(equalTo("warning")));
+    assertThat(((OperationOutcome) output).getIssue().get(2), is(notNullValue()));
     assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(2), is(notNullValue()));
+        ((OperationOutcome) output).getIssue().get(2).getDiagnostics(), is(equalTo("test-error")));
+    assertThat(((OperationOutcome) output).getIssue().get(3), is(notNullValue()));
     assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(2).getDiagnostics(),
-        is(equalTo("test-error")));
-    assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(3), is(notNullValue()));
-    assertThat(
-        ((org.hl7.fhir.r4.model.OperationOutcome) output).getIssue().get(3).getDiagnostics(),
-        is(equalTo("test-error2")));
+        ((OperationOutcome) output).getIssue().get(3).getDiagnostics(), is(equalTo("test-error2")));
   }
 
   @Test

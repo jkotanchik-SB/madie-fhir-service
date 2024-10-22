@@ -46,8 +46,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ValidationControllerTest implements ResourceFileUtil {
 
-  @Spy
-  FhirContext fhirContext;
+  @Spy FhirContext fhirContext;
 
   @Mock ResourceValidationService validationService;
 
@@ -59,8 +58,7 @@ class ValidationControllerTest implements ResourceFileUtil {
 
   @Mock ObjectMapper mapper;
 
-  @Mock
-  ModelAwareFhirFactory validatorFactory;
+  @Mock ModelAwareFhirFactory validatorFactory;
 
   @InjectMocks private ValidationController validationController;
 
@@ -80,13 +78,15 @@ class ValidationControllerTest implements ResourceFileUtil {
         .thenThrow(new DataFormatException("BAD JSON, BAD!"));
     when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
-    when(validationService.invalidErrorOutcome(any(FhirContext.class), any(IParser.class), anyString(), anyString()))
-        .thenReturn(HapiOperationOutcome.builder()
-            .code(HttpStatus.BAD_REQUEST.value())
-            .message("BAD")
-            .successful(false)
-            .outcomeResponse(null)
-            .build());
+    when(validationService.invalidErrorOutcome(
+            any(FhirContext.class), any(IParser.class), anyString(), anyString()))
+        .thenReturn(
+            HapiOperationOutcome.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message("BAD")
+                .successful(false)
+                .outcomeResponse(null)
+                .build());
 
     when(entity.getBody()).thenReturn("{\"foo\": \"foo2\" }");
     HapiOperationOutcome output = validationController.validateBundle(entity);
@@ -102,13 +102,15 @@ class ValidationControllerTest implements ResourceFileUtil {
         .thenThrow(new ClassCastException("wrong resource type!"));
     when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
-    when(validationService.invalidErrorOutcome(any(FhirContext.class), any(IParser.class), anyString(), anyString()))
-        .thenReturn(HapiOperationOutcome.builder()
-            .code(HttpStatus.BAD_REQUEST.value())
-            .message("BAD")
-            .successful(false)
-            .outcomeResponse(null)
-            .build());
+    when(validationService.invalidErrorOutcome(
+            any(FhirContext.class), any(IParser.class), anyString(), anyString()))
+        .thenReturn(
+            HapiOperationOutcome.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message("BAD")
+                .successful(false)
+                .outcomeResponse(null)
+                .build());
     when(entity.getBody()).thenReturn("{\"foo\": \"foo2\" }");
 
     // when
@@ -127,7 +129,8 @@ class ValidationControllerTest implements ResourceFileUtil {
         .thenThrow(new ClassCastException("wrong resource type!"));
     when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
-    when(validationService.invalidErrorOutcome(any(FhirContext.class), any(IParser.class), anyString(), anyString()))
+    when(validationService.invalidErrorOutcome(
+            any(FhirContext.class), any(IParser.class), anyString(), anyString()))
         .thenThrow(HapiJsonException.class);
     when(entity.getBody()).thenReturn("{\"foo\": \"foo2\" }");
 
@@ -152,7 +155,7 @@ class ValidationControllerTest implements ResourceFileUtil {
             any(FhirContext.class), any(IBaseBundle.class)))
         .thenReturn(operationOutcomeWithIssues);
     when(validationService.validateBundleResourcesIdValid(
-        any(FhirContext.class), any(IBaseBundle.class)))
+            any(FhirContext.class), any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
 
     ValidationResult result = Mockito.mock(ValidationResult.class);
@@ -234,7 +237,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
     outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
     when(result.toOperationOutcome()).thenReturn(outcome);
-    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any())).thenReturn(outcome);
+    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any()))
+        .thenReturn(outcome);
     when(validationService.isSuccessful(any(FhirContext.class), any(OperationOutcome.class)))
         .thenReturn(false);
 
@@ -281,7 +285,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(new OperationOutcome());
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
 
-    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any())).thenReturn(errorOutcome);
+    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any()))
+        .thenReturn(errorOutcome);
     when(validationService.isSuccessful(any(FhirContext.class), any(OperationOutcome.class)))
         .thenReturn(false);
 
@@ -326,7 +331,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(result.toOperationOutcome()).thenReturn(new OperationOutcome());
     when(fhirValidator.validateWithResult(any(IBaseResource.class))).thenReturn(result);
 
-    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any())).thenReturn(errorOutcome);
+    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any()))
+        .thenReturn(errorOutcome);
     when(validationService.isSuccessful(any(FhirContext.class), any(OperationOutcome.class)))
         .thenReturn(false);
 
@@ -356,7 +362,8 @@ class ValidationControllerTest implements ResourceFileUtil {
     when(validationService.validateBundleResourcesIdValid(
             any(FhirContext.class), any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any())).thenReturn(new OperationOutcome());
+    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any()))
+        .thenReturn(new OperationOutcome());
     when(validationService.isSuccessful(any(FhirContext.class), any(OperationOutcome.class)))
         .thenReturn(true);
     OperationOutcome outcome = new OperationOutcome();

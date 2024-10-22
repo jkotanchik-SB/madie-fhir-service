@@ -7,29 +7,24 @@ import ca.uhn.fhir.parser.StrictErrorHandler;
 import ca.uhn.fhir.validation.FhirValidator;
 import gov.cms.madie.madiefhirservice.exceptions.UnsupportedTypeException;
 import gov.cms.madie.models.common.ModelType;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class ModelAwareFhirFactory {
 
   private final Map<String, FhirValidator> fhirValidatorMap;
   private final Map<String, FhirContext> fhirContextMap;
 
-  @Autowired
-  public ModelAwareFhirFactory(
-      Map<String, FhirValidator> fhirValidatorMap, Map<String, FhirContext> fhirContextMap) {
-    this.fhirValidatorMap = fhirValidatorMap;
-    this.fhirContextMap = fhirContextMap;
-  }
-
   public FhirValidator getValidatorForModel(ModelType modelType) {
     FhirValidator validator = fhirValidatorMap.get(modelType.getShortValue() + "NpmFhirValidator");
+
     if (validator == null) {
       throw new UnsupportedTypeException(this.getClass().getName(), modelType.toString());
     }
@@ -39,6 +34,7 @@ public class ModelAwareFhirFactory {
 
   public FhirContext getContextForModel(ModelType modelType) {
     FhirContext context = fhirContextMap.get(modelType.getShortValue() + "FhirContext");
+
     if (context == null) {
       throw new UnsupportedTypeException(this.getClass().getName(), modelType.toString());
     }

@@ -46,7 +46,8 @@ public class HapiFhirConfig {
   @Bean
   public IValidationSupport validationSupportChain411(@Autowired FhirContext qicoreFhirContext)
       throws IOException {
-    NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(qicoreFhirContext);
+    NpmPackageValidationSupport npmPackageSupport =
+        new NpmPackageValidationSupport(qicoreFhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.core-3.1.0.tgz");
     npmPackageSupport.loadPackageFromClasspath(
@@ -90,7 +91,8 @@ public class HapiFhirConfig {
 
   @Bean
   public FhirValidator qicoreNpmFhirValidator(
-      @Autowired FhirContext qicoreFhirContext, @Autowired IValidationSupport validationSupportChain411) {
+      @Autowired FhirContext qicoreFhirContext,
+      @Autowired IValidationSupport validationSupportChain411) {
     log.info("validator config on FHIR Context v{}", qicoreFhirContext.getVersion());
     // Ask the context for a validator
     FhirValidator validator = qicoreFhirContext.newValidator();

@@ -12,7 +12,7 @@ public class ModelEndpointMap {
   public static final Map<String, ModelType> QICORE_VERSION_MODELTYPE_MAP;
 
   static {
-    QICORE_VERSION_MODELTYPE_MAP = Map.of(QICORE_4_1_1, ModelType.QI_CORE, QICORE_6_0_0, ModelType.QI_CORE_6_0_0);
+    QICORE_VERSION_MODELTYPE_MAP =
+        Map.of(QICORE_4_1_1, ModelType.QI_CORE, QICORE_6_0_0, ModelType.QI_CORE_6_0_0);
   }
-
 }

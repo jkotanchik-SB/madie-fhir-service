@@ -24,10 +24,12 @@ public class ValidationMvcTestConfiguration {
   public FhirContext qicoreFhirContext() {
     return FhirContext.forR4();
   }
+
   @Bean
   public FhirContext qicore6FhirContext() {
     return FhirContext.forR4();
   }
+
   @Bean
   public FhirContext fhirContextForR5() {
     return FhirContext.forR5();
@@ -36,7 +38,8 @@ public class ValidationMvcTestConfiguration {
   @Bean
   public ValidationSupportChain validationSupportChain411(@Autowired FhirContext qicoreFhirContext)
       throws IOException {
-    NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(qicoreFhirContext);
+    NpmPackageValidationSupport npmPackageSupport =
+        new NpmPackageValidationSupport(qicoreFhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
 
     return new ValidationSupportChain(
@@ -60,9 +63,10 @@ public class ValidationMvcTestConfiguration {
   }
 
   @Bean
-  public ValidationSupportChain validationSupportChainQiCore600(@Autowired FhirContext qicore6FhirContext)
-      throws IOException {
-    NpmPackageValidationSupport npmPackageSupport = new NpmPackageValidationSupport(qicore6FhirContext);
+  public ValidationSupportChain validationSupportChainQiCore600(
+      @Autowired FhirContext qicore6FhirContext) throws IOException {
+    NpmPackageValidationSupport npmPackageSupport =
+        new NpmPackageValidationSupport(qicore6FhirContext);
     npmPackageSupport.loadPackageFromClasspath("classpath:packages/hl7.fhir.us.qicore-4.1.1.tgz");
 
     return new ValidationSupportChain(

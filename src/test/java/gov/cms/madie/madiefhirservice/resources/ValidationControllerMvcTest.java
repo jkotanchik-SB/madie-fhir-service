@@ -49,13 +49,10 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
 
   @Autowired private MockMvc mockMvc;
 
-  @Autowired
-  FhirValidator qicoreNpmFhirValidator;
-  @Autowired
-  FhirValidator qicore6NpmFhirValidator;
+  @Autowired FhirValidator qicoreNpmFhirValidator;
+  @Autowired FhirValidator qicore6NpmFhirValidator;
 
-  @MockBean
-  private ModelAwareFhirFactory validatorFactory;
+  @MockBean private ModelAwareFhirFactory validatorFactory;
 
   private IParser r4Parser;
 
@@ -72,18 +69,16 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
   void testUnsuccessfulOutcomeReturnedForInvalidFhirJson() throws Exception {
     final String testCaseJson = "{ }";
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
-    when(validatorFactory.getParserForModel(any(ModelType.class)))
-        .thenReturn(r4Parser);
+    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
-        .thenAnswer(invocationOnMock -> {
-          String bundleString = invocationOnMock.getArgument(1);
-          return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
-        });
-    when(validationService.invalidErrorOutcome(any(FhirContext.class), any(IParser.class), anyString(), anyString()))
-        .thenReturn(HapiOperationOutcome.builder()
-            .code(400)
-            .successful(false)
-            .build());
+        .thenAnswer(
+            invocationOnMock -> {
+              String bundleString = invocationOnMock.getArgument(1);
+              return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
+            });
+    when(validationService.invalidErrorOutcome(
+            any(FhirContext.class), any(IParser.class), anyString(), anyString()))
+        .thenReturn(HapiOperationOutcome.builder().code(400).successful(false).build());
 
     mockMvc
         .perform(
@@ -98,26 +93,23 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
         .andExpect(jsonPath("$.code").value(400))
         .andExpect(jsonPath("$.successful").value(false));
 
-    verify(validatorFactory, times(1))
-        .parseForModel(any(ModelType.class), anyString());
+    verify(validatorFactory, times(1)).parseForModel(any(ModelType.class), anyString());
   }
 
   @Test
   void testUnsuccessfulOutcomeReturnedForBadResourceType() throws Exception {
     final String testCaseJson = "{\"resourceType\": \"Patient\" }";
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
-    when(validatorFactory.getParserForModel(any(ModelType.class)))
-        .thenReturn(r4Parser);
+    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
-        .thenAnswer(invocationOnMock -> {
-          String bundleString = invocationOnMock.getArgument(1);
-          return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
-        });
-    when(validationService.invalidErrorOutcome(any(FhirContext.class), any(IParser.class), anyString(), anyString()))
-        .thenReturn(HapiOperationOutcome.builder()
-            .code(400)
-            .successful(false)
-            .build());
+        .thenAnswer(
+            invocationOnMock -> {
+              String bundleString = invocationOnMock.getArgument(1);
+              return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
+            });
+    when(validationService.invalidErrorOutcome(
+            any(FhirContext.class), any(IParser.class), anyString(), anyString()))
+        .thenReturn(HapiOperationOutcome.builder().code(400).successful(false).build());
 
     mockMvc
         .perform(
@@ -142,17 +134,18 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validationService.validateBundleResourcesIdValid(
             any(FhirContext.class), any(IBaseBundle.class)))
         .thenReturn(new OperationOutcome());
-    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any())).thenReturn(new OperationOutcome());
+    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any()))
+        .thenReturn(new OperationOutcome());
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
-        .thenAnswer(invocationOnMock -> {
-          String bundleString = invocationOnMock.getArgument(1);
-          return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
-        });
+        .thenAnswer(
+            invocationOnMock -> {
+              String bundleString = invocationOnMock.getArgument(1);
+              return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
+            });
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class)))
-        .thenReturn(r4Parser);
+    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
@@ -185,15 +178,15 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
         .thenReturn(true);
 
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
-        .thenAnswer(invocationOnMock -> {
-          String bundleString = invocationOnMock.getArgument(1);
-          return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
-        });
+        .thenAnswer(
+            invocationOnMock -> {
+              String bundleString = invocationOnMock.getArgument(1);
+              return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
+            });
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class)))
-        .thenReturn(r4Parser);
+    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
@@ -224,15 +217,15 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
         .thenReturn(true);
 
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
-        .thenAnswer(invocationOnMock -> {
-          String bundleString = invocationOnMock.getArgument(1);
-          return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
-        });
+        .thenAnswer(
+            invocationOnMock -> {
+              String bundleString = invocationOnMock.getArgument(1);
+              return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
+            });
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class)))
-        .thenReturn(r4Parser);
+    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
@@ -264,20 +257,21 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     OperationOutcome combinedOutcome = new OperationOutcome();
     combinedOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR);
     combinedOutcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.WARNING);
-    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any())).thenReturn(combinedOutcome);
+    when(validationService.combineOutcomes(any(FhirContext.class), any(), any(), any()))
+        .thenReturn(combinedOutcome);
     when(validationService.isSuccessful(any(FhirContext.class), any(OperationOutcome.class)))
         .thenReturn(false);
 
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
-        .thenAnswer(invocationOnMock -> {
-          String bundleString = invocationOnMock.getArgument(1);
-          return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
-        });
+        .thenAnswer(
+            invocationOnMock -> {
+              String bundleString = invocationOnMock.getArgument(1);
+              return r4Parser.parseResource(org.hl7.fhir.r4.model.Bundle.class, bundleString);
+            });
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class)))
-        .thenReturn(r4Parser);
+    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
