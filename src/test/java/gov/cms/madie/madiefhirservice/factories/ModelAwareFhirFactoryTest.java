@@ -114,7 +114,7 @@ class ModelAwareFhirFactoryTest {
   }
 
   @Test
-  public void testGetParserForModelReturnsParser() {
+  public void testGetJsonParserForModelReturnsParser() {
     // given
     ModelType modelType = ModelType.QI_CORE;
     IParser mockParser = Mockito.mock(IParser.class);
@@ -127,7 +127,7 @@ class ModelAwareFhirFactoryTest {
     when(mockParser.setPrettyPrint(true)).thenReturn(mockParser);
 
     // when
-    IParser output = modelAwareFhirFactory.getParserForModel(modelType);
+    IParser output = modelAwareFhirFactory.getJsonParserForModel(modelType);
 
     assertThat(output, is(equalTo(mockParser)));
     verify(fhirContextMap).get(lookup);
@@ -137,7 +137,7 @@ class ModelAwareFhirFactoryTest {
   }
 
   @Test
-  public void testGetParserForModelThrowsUnsupportedTypeException() {
+  public void testGetJsonParserForModelThrowsUnsupportedTypeException() {
     // given
     ModelType modelType = ModelType.QDM_5_6;
     String lookup = modelType.getShortValue() + "FhirContext";
@@ -148,7 +148,7 @@ class ModelAwareFhirFactoryTest {
     assertThrows(
         UnsupportedTypeException.class,
         () -> {
-          modelAwareFhirFactory.getParserForModel(modelType);
+          modelAwareFhirFactory.getJsonParserForModel(modelType);
         });
 
     // then
@@ -164,7 +164,7 @@ class ModelAwareFhirFactoryTest {
     Bundle mockBundle = Mockito.mock(Bundle.class);
 
     when(fhirContextMap.get(anyString())).thenReturn(qicoreFhirContext);
-    when(modelAwareFhirFactory.getParserForModel(modelType)).thenReturn(mockParser);
+    when(modelAwareFhirFactory.getJsonParserForModel(modelType)).thenReturn(mockParser);
     when(mockParser.parseResource(Bundle.class, bundleString)).thenReturn(mockBundle);
 
     // when
@@ -183,7 +183,7 @@ class ModelAwareFhirFactoryTest {
     IParser mockParser = Mockito.mock(IParser.class);
 
     when(fhirContextMap.get(anyString())).thenReturn(qicoreFhirContext);
-    when(modelAwareFhirFactory.getParserForModel(modelType)).thenReturn(mockParser);
+    when(modelAwareFhirFactory.getJsonParserForModel(modelType)).thenReturn(mockParser);
 
     // when
     assertThrows(

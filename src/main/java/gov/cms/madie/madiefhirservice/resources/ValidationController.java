@@ -52,7 +52,7 @@ public class ValidationController {
     final ModelType modelType = QICORE_VERSION_MODELTYPE_MAP.get(modelVersion);
     FhirContext fhirContext = validatorFactory.getContextForModel(modelType);
     IBaseBundle bundle;
-    IParser parser = validatorFactory.getParserForModel(modelType);
+    IParser parser = validatorFactory.getJsonParserForModel(modelType);
     FhirValidator fhirValidator = validatorFactory.getValidatorForModel(modelType);
 
     try {

@@ -69,7 +69,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
   void testUnsuccessfulOutcomeReturnedForInvalidFhirJson() throws Exception {
     final String testCaseJson = "{ }";
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(r4Parser);
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenAnswer(
             invocationOnMock -> {
@@ -100,7 +100,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
   void testUnsuccessfulOutcomeReturnedForBadResourceType() throws Exception {
     final String testCaseJson = "{\"resourceType\": \"Patient\" }";
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(r4Parser);
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenAnswer(
             invocationOnMock -> {
@@ -145,7 +145,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
@@ -186,7 +186,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
@@ -225,7 +225,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(
@@ -271,7 +271,7 @@ class ValidationControllerMvcTest implements ResourceFileUtil {
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(qicoreFhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class)))
         .thenReturn(qicoreNpmFhirValidator);
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(r4Parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(r4Parser);
 
     mockMvc
         .perform(

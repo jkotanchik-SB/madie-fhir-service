@@ -41,7 +41,7 @@ public class ModelAwareFhirFactory {
     return context;
   }
 
-  public IParser getParserForModel(ModelType modelType) {
+  public IParser getJsonParserForModel(ModelType modelType) {
     FhirContext context = getContextForModel(modelType);
 
     if (context == null) {
@@ -65,7 +65,7 @@ public class ModelAwareFhirFactory {
    * @throws ClassCastException
    */
   public IBaseBundle parseForModel(ModelType modelType, String bundleString) {
-    IParser parser = this.getParserForModel(modelType);
+    IParser parser = this.getJsonParserForModel(modelType);
 
     IBaseBundle bundle;
     switch (modelType) {

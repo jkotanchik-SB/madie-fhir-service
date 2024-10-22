@@ -76,7 +76,7 @@ class ValidationControllerTest implements ResourceFileUtil {
   void testValidationControllerReturnsOutcomeForDataFormatException() {
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenThrow(new DataFormatException("BAD JSON, BAD!"));
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validationService.invalidErrorOutcome(
             any(FhirContext.class), any(IParser.class), anyString(), anyString()))
@@ -100,7 +100,7 @@ class ValidationControllerTest implements ResourceFileUtil {
     // given
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenThrow(new ClassCastException("wrong resource type!"));
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validationService.invalidErrorOutcome(
             any(FhirContext.class), any(IParser.class), anyString(), anyString()))
@@ -127,7 +127,7 @@ class ValidationControllerTest implements ResourceFileUtil {
     // given
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenThrow(new ClassCastException("wrong resource type!"));
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validationService.invalidErrorOutcome(
             any(FhirContext.class), any(IParser.class), anyString(), anyString()))
@@ -143,7 +143,7 @@ class ValidationControllerTest implements ResourceFileUtil {
     // given
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenReturn(new Bundle());
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class))).thenReturn(fhirValidator);
     when(parser.encodeResourceToString(any(OperationOutcome.class))).thenReturn("{}");
@@ -180,7 +180,7 @@ class ValidationControllerTest implements ResourceFileUtil {
       throws JsonProcessingException {
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenReturn(new Bundle());
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class))).thenReturn(fhirValidator);
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
@@ -210,7 +210,7 @@ class ValidationControllerTest implements ResourceFileUtil {
   void testValidationControllerReturnsOutcomeWithIssues() throws JsonProcessingException {
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenReturn(new Bundle());
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class))).thenReturn(fhirValidator);
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
@@ -256,7 +256,7 @@ class ValidationControllerTest implements ResourceFileUtil {
   void testValidationControllerReturnsOutcomeWithUniqueIdIssues() throws JsonProcessingException {
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenReturn(new Bundle());
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class))).thenReturn(fhirValidator);
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
@@ -303,7 +303,7 @@ class ValidationControllerTest implements ResourceFileUtil {
   void testValidationControllerReturnsOutcomeWithInvalidIdIssues() throws JsonProcessingException {
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenReturn(new Bundle());
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class))).thenReturn(fhirValidator);
     String tc1Json = getStringFromTestResource("/testCaseBundles/testCaseInvalidEncounter.json");
@@ -349,7 +349,7 @@ class ValidationControllerTest implements ResourceFileUtil {
   void testValidationControllerReturnsSuccessfulOutcome() {
     when(validatorFactory.parseForModel(any(ModelType.class), anyString()))
         .thenReturn(new Bundle());
-    when(validatorFactory.getParserForModel(any(ModelType.class))).thenReturn(parser);
+    when(validatorFactory.getJsonParserForModel(any(ModelType.class))).thenReturn(parser);
     when(validatorFactory.getContextForModel(any(ModelType.class))).thenReturn(fhirContext);
     when(validatorFactory.getValidatorForModel(any(ModelType.class))).thenReturn(fhirValidator);
     String tc1Json = getStringFromTestResource("/testCaseBundles/validTestCase.json");
